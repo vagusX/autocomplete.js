@@ -1,0 +1,338 @@
+body {
+  font-family: 'Nunito Sans', -apple-system, '.SFNSText-Regular',
+    'San Francisco', BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica,
+    Arial, sans-serif;
+}
+
+:root {
+  --algolia-autocomplete-input-color: #5d6494;
+  --algolia-autocomplete-highlight-color: #5468ff;
+  --algolia-autocomplete-lvl0-color: #5d6494;
+  --algolia-autocomplete-lvl1-color: #232533;
+  --algolia-autocomplete-lvl2-color: rgba(93, 100, 148, 0.7);
+  --algolia-autocomplete-content-color: rgba(0, 0, 0, 0.5);
+  --algolia-autocomplete-background-start-color: #f5f5fa;
+  --algolia-autocomplete-background-end-color: #fff;
+  --algolia-autocomplete-background-highlight-color: rgba(218, 219, 234, 0.4);
+  --algolia-autocomplete-border-color: rgba(197, 201, 224, 0.4);
+  --algolia-autocomplete-logo-color-outer: #5468ff;
+  --algolia-autocomplete-logo-color-inner: #fff;
+}
+@media (min-width: 640px) {
+  .algolia-autocomplete {
+    position: relative;
+  }
+}
+.algolia-autocomplete * {
+  box-sizing: border-box;
+}
+.algolia-autocomplete a {
+  text-decoration: none;
+}
+.algolia-autocomplete-form {
+  -webkit-box-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: flex;
+  margin: 0;
+  position: relative;
+}
+.algolia-autocomplete-input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: inherit;
+  border: none;
+  font: inherit;
+  height: 100%;
+  outline: none;
+  padding: 1rem;
+  width: 100%;
+}
+.algolia-autocomplete-input::-webkit-search-cancel-button,
+.algolia-autocomplete-input::-webkit-search-decoration,
+.algolia-autocomplete-input::-webkit-search-results-button,
+.algolia-autocomplete-input::-webkit-search-results-decoration {
+  display: none;
+}
+.algolia-autocomplete-loadingIndicator,
+.algolia-autocomplete-magnifierLabel,
+.algolia-autocomplete-reset {
+  color: #5d6494;
+  color: var(--algolia-autocomplete-input-color);
+  height: 100%;
+}
+.algolia-autocomplete-loadingIndicator,
+.algolia-autocomplete-magnifierLabel {
+  width: 2rem;
+}
+.algolia-autocomplete--stalled .algolia-autocomplete-loadingIndicator,
+.algolia-autocomplete-magnifierLabel {
+  -webkit-box-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-pack: center;
+  justify-content: center;
+}
+.algolia-autocomplete--stalled .algolia-autocomplete-magnifierLabel,
+.algolia-autocomplete-loadingIndicator {
+  display: none;
+}
+.algolia-autocomplete-reset {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  right: 0;
+}
+.algolia-autocomplete-reset[hidden] {
+  display: none;
+}
+.algolia-autocomplete-reset:focus {
+  color: #5468ff;
+  color: var(--algolia-autocomplete-highlight-color);
+  outline: none;
+}
+.algolia-autocomplete-loadingIndicator svg,
+.algolia-autocomplete-magnifierLabel svg {
+  height: 18px;
+  width: 18px;
+}
+.algolia-autocomplete-reset svg {
+  height: 10px;
+  width: 10px;
+}
+.algolia-autocomplete-dropdown {
+  background: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    from(#f5f5fa),
+    to(#fff)
+  );
+  background: linear-gradient(0deg, #f5f5fa, #fff);
+  background: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    from(var(--algolia-autocomplete-background-start-color)),
+    to(var(--algolia-autocomplete-background-end-color))
+  );
+  background: linear-gradient(
+    0deg,
+    var(--algolia-autocomplete-background-start-color),
+    var(--algolia-autocomplete-background-end-color)
+  );
+  box-shadow: 0 2px 4px 0 rgba(93, 100, 148, 0.2),
+    0 5px 15px 0 rgba(37, 44, 97, 0.15);
+  margin-top: 1rem;
+  overflow: scroll;
+  -ms-overflow-style: none;
+  position: absolute;
+  right: 0;
+  scrollbar-width: none;
+  width: 100%;
+  min-height: -webkit-max-content;
+  min-height: -moz-max-content;
+  min-height: max-content;
+}
+@media (min-width: 640px) {
+  .algolia-autocomplete-dropdown {
+    border-radius: 6px;
+    min-width: 532px;
+  }
+}
+.algolia-autocomplete-dropdown::-webkit-scrollbar {
+  display: none;
+}
+.algolia-autocomplete-dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.algolia-autocomplete-dropdown-container {
+  position: relative;
+  height: 100%;
+  min-height: -webkit-max-content;
+  min-height: -moz-max-content;
+  min-height: max-content;
+}
+.algolia-autocomplete-results {
+  padding: 1.5rem 1.5rem 0;
+  height: calc(100% - 55px);
+  max-height: 85vh;
+  min-height: unset;
+  overflow: scroll;
+}
+@media (min-width: 640px) {
+  .algolia-autocomplete-results {
+    min-height: -webkit-max-content;
+    min-height: -moz-max-content;
+    min-height: max-content;
+  }
+}
+.algolia-autocomplete-item {
+  margin-bottom: 1rem;
+}
+.algolia-autocomplete-item-header {
+  color: #5d6494;
+  color: var(--algolia-autocomplete-lvl0-color);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.078125rem;
+  line-height: 1.2rem;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+}
+.algolia-autocomplete-item-body {
+  border-radius: 0.1875rem;
+  display: block;
+  margin: 0.5rem 0;
+  padding: 0.5rem 0;
+}
+.algolia-autocomplete-item[aria-selected='true'] {
+  background-color: rgba(218, 219, 234, 0.4);
+  background-color: var(--algolia-autocomplete-background-highlight-color);
+  border-radius: 0.1875rem;
+}
+.algolia-autocomplete-item-body-title {
+  color: #232533;
+  color: var(--algolia-autocomplete-lvl1-color);
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: -0.009375rem;
+  line-height: 1rem;
+  margin: 0 0 0.1875rem;
+}
+.algolia-autocomplete-item-body-subtitle {
+  color: rgba(93, 100, 148, 0.7);
+  color: var(--algolia-autocomplete-lvl2-color);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.078125rem;
+  line-height: 1rem;
+  margin: 0;
+  text-transform: uppercase;
+}
+.algolia-autocomplete-item-body-paragraph {
+  color: rgba(0, 0, 0, 0.5);
+  color: var(--algolia-autocomplete-content-color);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1rem;
+  margin: 0.1875rem 0 0;
+}
+.algolia-autocomplete-results mark {
+  background: none;
+  color: #5468ff;
+  color: var(--algolia-autocomplete-highlight-color);
+  font-weight: 700;
+}
+.algolia-autocomplete-footer {
+  -webkit-box-align: center;
+  align-items: center;
+  border-top: 1px solid rgba(197, 201, 224, 0.4);
+  border-top: 1px solid var(--algolia-autocomplete-border-color);
+  color: rgba(0, 0, 0, 0.5);
+  color: var(--algolia-autocomplete-content-color);
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-pack: end;
+  justify-content: flex-end;
+  min-height: 55px;
+  padding: 1rem 1.5rem;
+  position: relative;
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .algolia-autocomplete-footer {
+    border: none;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+  }
+  .algolia-autocomplete-footer:before {
+    background-color: rgba(197, 201, 224, 0.4);
+    background-color: var(--algolia-autocomplete-border-color);
+    content: '';
+    display: block;
+    height: 1px;
+    position: absolute;
+    top: 0;
+    width: calc(100% - 3rem);
+  }
+}
+.algolia-autocomplete-commands {
+  display: none;
+}
+@media (min-width: 640px) {
+  .algolia-autocomplete-commands,
+  .algolia-autocomplete-commands li {
+    display: -webkit-box;
+    display: flex;
+  }
+  .algolia-autocomplete-commands li {
+    -webkit-box-align: center;
+    align-items: center;
+    margin-right: 1rem;
+  }
+  .algolia-autocomplete-commands-border {
+    color: #d5d6e5;
+  }
+  .algolia-autocomplete-commands svg {
+    height: 1rem;
+    width: 1rem;
+  }
+  .algolia-autocomplete-commands svg + svg {
+    margin-left: 0.125rem;
+  }
+  .algolia-autocomplete-commands-description {
+    font-size: 0.75rem;
+    letter-spacing: 0;
+    margin-left: 0.25rem;
+  }
+}
+.algolia-autocomplete-logo a {
+  -webkit-box-align: center;
+  align-items: center;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-pack: center;
+  justify-content: center;
+}
+.algolia-autocomplete-logo-brand-outer {
+  fill: #5468ff;
+  fill: var(--algolia-autocomplete-logo-color-outer);
+}
+.algolia-autocomplete-logo-brand-inner {
+  fill: #fff;
+  fill: var(--algolia-autocomplete-logo-color-inner);
+}
+.algolia-autocomplete-logo svg {
+  color: #5d6494;
+  color: var(--algolia-autocomplete-lvl0-color);
+  height: 1.1875rem;
+}
+.algolia-autocomplete-dropdown-container > div > p:first-child {
+  color: #5d6494;
+  color: var(--algolia-autocomplete-lvl0-color);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.078125rem;
+  line-height: 1.2rem;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+  padding: 1.5rem 1.5rem 0.25rem;
+}
+.algolia-autocomplete-dropdown-container > div > p:not(:first-child) {
+  -webkit-box-align: center;
+  align-items: center;
+  width: 100%;
+  letter-spacing: 0;
+  padding-left: 1.5rem;
+  color: rgba(0, 0, 0, 0.5);
+  color: var(--algolia-autocomplete-content-color);
+}

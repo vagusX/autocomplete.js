@@ -1,13 +1,16 @@
+/** @jsx h */
+
+import { h } from 'preact';
 import { storiesOf } from '@storybook/html';
 import * as algoliasearch from 'algoliasearch';
 import instantsearch from 'instantsearch.js';
 import { connectAutocomplete } from 'instantsearch.js/es/connectors';
-import { index, configure, hits } from 'instantsearch.js/es/widgets';
+import { configure } from 'instantsearch.js/es/widgets';
 
 import autocomplete, {
   highlightAlgoliaHit,
   reverseHighlightAlgoliaHit,
-} from '../src/';
+} from '../src';
 
 const fruits = [{ value: 'Orange' }, { value: 'Apple' }, { value: 'Banana' }];
 const people = [
@@ -284,6 +287,7 @@ storiesOf('Autocomplete', module)
                     hitsPerPage: 5,
                     highlightPreTag: '<mark>',
                     highlightPostTag: '</mark>',
+                    attributesToSnippet: ['description'],
                   },
                 },
               ])
@@ -295,10 +299,49 @@ storiesOf('Autocomplete', module)
             header: () =>
               '<h5 class="algolia-autocomplete-item-header">Products</h5>',
             suggestion(suggestion) {
-              return `<a href="${suggestion.url}">${highlightAlgoliaHit({
-                hit: suggestion,
-                attribute: 'name',
-              })}</a>`;
+              return (
+                <a
+                  href={suggestion.url}
+                  style={{ display: 'flex', alignItems: 'center' }}
+                >
+                  <div
+                    style={{
+                      flex: 1,
+                      maxWidth: 70,
+                      maxHeight: 70,
+                      paddingRight: '1rem',
+                    }}
+                  >
+                    <img
+                      src={suggestion.image}
+                      alt={suggestion.name}
+                      style={{ maxWidth: '100%', maxHeight: '100%' }}
+                    />
+                  </div>
+
+                  <div style={{ flex: 3 }}>
+                    <h2
+                      style={{ fontSize: 'inherit', margin: 0 }}
+                      dangerouslySetInnerHTML={{
+                        __html: highlightAlgoliaHit({
+                          hit: suggestion,
+                          attribute: 'name',
+                        }),
+                      }}
+                    />
+
+                    <p
+                      style={{
+                        margin: '.5rem 0 0 0',
+                        color: 'rgba(0, 0, 0, 0.5)',
+                      }}
+                      dangerouslySetInnerHTML={{
+                        __html: suggestion._snippetResult.description.value,
+                      }}
+                    />
+                  </div>
+                </a>
+              );
             },
           },
         },

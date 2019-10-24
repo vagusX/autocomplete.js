@@ -1,7 +1,13 @@
 import { storiesOf } from '@storybook/html';
 import * as algoliasearch from 'algoliasearch';
+import instantsearch from 'instantsearch.js';
+import { connectAutocomplete } from 'instantsearch.js/es/connectors';
+import { index, configure, hits } from 'instantsearch.js/es/widgets';
 
-import autocomplete from '../src/';
+import autocomplete, {
+  highlightAlgoliaHit,
+  reverseHighlightAlgoliaHit,
+} from '../src/';
 
 const fruits = [{ value: 'Orange' }, { value: 'Apple' }, { value: 'Banana' }];
 const people = [
@@ -9,6 +15,10 @@ const people = [
   { value: 'John Mayer' },
   { value: 'Justin Vernon' },
 ];
+const searchClient = algoliasearch(
+  'latency',
+  '6be0576ff61c053d5f9a3225e2a90f76'
+);
 
 const fruitSource = {
   getSuggestions({ query }) {
@@ -20,7 +30,7 @@ const fruitSource = {
   },
   getSuggestionValue: suggestion => suggestion.value,
   templates: {
-    header: () => '<h5>Fruits</h5>',
+    header: () => '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
     suggestion: fruit => fruit.value,
     empty: ({ query }) => `No fruits found for "${query}".`,
   },
@@ -49,7 +59,8 @@ storiesOf('Autocomplete', module)
           },
           getSuggestionValue: suggestion => suggestion.value,
           templates: {
-            header: () => '<h5>People</h5>',
+            header: () =>
+              '<h5 class="algolia-autocomplete-item-header">People</h5>',
             suggestion: person => person.value,
             empty: ({ query }) => `No people found for "${query}".`,
           },
@@ -127,7 +138,8 @@ storiesOf('Autocomplete', module)
           },
           getSuggestionValue: suggestion => suggestion.value,
           templates: {
-            header: () => '<h5>Fruits</h5>',
+            header: () =>
+              '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
             suggestion: fruit => fruit.value,
             empty: ({ query }) => `No fruits found for "${query}".`,
           },
@@ -149,7 +161,8 @@ storiesOf('Autocomplete', module)
           },
           getSuggestionValue: suggestion => suggestion.value,
           templates: {
-            header: () => '<h5>People</h5>',
+            header: () =>
+              '<h5 class="algolia-autocomplete-item-header">People</h5>',
             suggestion: person => person.value,
             empty: ({ query }) => `No people found for "${query}".`,
           },
@@ -186,7 +199,8 @@ storiesOf('Autocomplete', module)
           },
           getSuggestionValue: suggestion => suggestion.value,
           templates: {
-            header: () => '<h5>Fruits</h5>',
+            header: () =>
+              '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
             suggestion: fruit => fruit.value,
             empty: ({ query }) => `No fruits found for "${query}".`,
           },
@@ -208,7 +222,8 @@ storiesOf('Autocomplete', module)
           },
           getSuggestionValue: suggestion => suggestion.value,
           templates: {
-            header: () => '<h5>People</h5>',
+            header: () =>
+              '<h5 class="algolia-autocomplete-item-header">People</h5>',
             suggestion: person => person.value,
             empty: ({ query }) => `No people found for "${query}".`,
           },
@@ -218,12 +233,7 @@ storiesOf('Autocomplete', module)
 
     return container;
   })
-  .add('with Algolia', () => {
-    const searchClient = algoliasearch(
-      'latency',
-      '6be0576ff61c053d5f9a3225e2a90f76'
-    );
-
+  .add('with Algolia API client', () => {
     const container = document.createElement('div');
 
     autocomplete(
@@ -233,15 +243,37 @@ storiesOf('Autocomplete', module)
       },
       [
         {
+          getSuggestionValue: (suggestion: any) => suggestion.query,
+          getSuggestions({ query }) {
+            return searchClient
+              .search([
+                {
+                  indexName: 'instant_search_demo_query_suggestions',
+                  query,
+                  params: {
+                    hitsPerPage: 3,
+                    highlightPreTag: '<mark>',
+                    highlightPostTag: '</mark>',
+                  },
+                },
+              ])
+              .then(response => {
+                return response.results.map(result => result.hits).flat();
+              });
+          },
           templates: {
+            header: () =>
+              '<h5 class="algolia-autocomplete-item-header">Suggestions</h5>',
             suggestion(suggestion) {
-              return suggestion.name;
+              return reverseHighlightAlgoliaHit({
+                hit: suggestion,
+                attribute: 'query',
+              });
             },
-            header: () => '<h5>E-commerce</h5>',
           },
-          getSuggestionValue(suggestion) {
-            return suggestion.name;
-          },
+        },
+        {
+          getSuggestionValue: () => '',
           getSuggestions({ query }) {
             return searchClient
               .search([
@@ -250,6 +282,8 @@ storiesOf('Autocomplete', module)
                   query,
                   params: {
                     hitsPerPage: 5,
+                    highlightPreTag: '<mark>',
+                    highlightPostTag: '</mark>',
                   },
                 },
               ])
@@ -257,31 +291,15 @@ storiesOf('Autocomplete', module)
                 return response.results.map(result => result.hits).flat();
               });
           },
-        },
-        {
           templates: {
+            header: () =>
+              '<h5 class="algolia-autocomplete-item-header">Products</h5>',
             suggestion(suggestion) {
-              return suggestion.title;
+              return `<a href="${suggestion.url}">${highlightAlgoliaHit({
+                hit: suggestion,
+                attribute: 'name',
+              })}</a>`;
             },
-            header: () => '<h5>Media</h5>',
-          },
-          getSuggestionValue(suggestion) {
-            return suggestion.title;
-          },
-          getSuggestions({ query }) {
-            return searchClient
-              .search([
-                {
-                  indexName: 'instant_search_media',
-                  query,
-                  params: {
-                    hitsPerPage: 5,
-                  },
-                },
-              ])
-              .then(response => {
-                return response.results.map(result => result.hits).flat();
-              });
           },
         },
       ]

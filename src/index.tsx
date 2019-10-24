@@ -12,6 +12,20 @@ export type AutocompleteTemplates = {
   footer?: Template;
 };
 
+export interface AutocompleteSource {
+  getSuggestionValue(value: unknown): string;
+  getSuggestions({ query }: { query: string }): Promise<Result[]>;
+  templates?: AutocompleteTemplates;
+}
+
+/**
+ * Item exposed to the lifecycle hooks.
+ */
+export type AutocompleteItem = {
+  suggestion: unknown;
+  suggestionValue: ReturnType<AutocompleteSource['getSuggestionValue']>;
+};
+
 export interface AutocompleteOptions {
   /**
    * The input container to insert the search box.
@@ -27,7 +41,7 @@ export interface AutocompleteOptions {
    *
    * @default 300
    */
-  stalledSearchDelay?: number;
+  stalledDelay?: number;
   /**
    * The default item index to pre-select.
    *
@@ -35,16 +49,15 @@ export interface AutocompleteOptions {
    */
   defaultHighlightedIndex?: number;
   /**
-   * Shortcuts to focus the input.
+   * The keyboard shortcuts keys to focus the input.
    */
   keyboardShortcuts?: string[];
+  /**
+   * The minimum number of characters long the autocomplete opens.
+   */
   minLength?: number;
-}
-
-export interface AutocompleteSource {
-  getSuggestionValue?(value: unknown): string;
-  getSuggestions({ query }: { query: string }): Promise<Result[]>;
-  templates?: AutocompleteTemplates;
+  onInput?: ({ query }: { query: string }) => void;
+  onSelect?: (item: AutocompleteItem) => void;
 }
 
 function autocomplete(
@@ -54,26 +67,31 @@ function autocomplete(
   const {
     container,
     placeholder,
-    stalledSearchDelay,
+    stalledDelay,
     defaultHighlightedIndex,
     keyboardShortcuts,
     minLength,
+    onInput,
+    onSelect,
   } = options || {};
 
   const sanitizedSources = sources.map(source => ({
-    getSuggestionValue: (suggestion: unknown) => suggestion as string,
+    // @TODO: set `getSuggestionValue` as `() => ''` by default
     templates: {},
     ...source,
   }));
 
   render(
+    // @ts-ignore @TODO: fix refs error
     <Autocomplete
       placeholder={placeholder}
-      stalledSearchDelay={stalledSearchDelay}
+      stalledDelay={stalledDelay}
       defaultHighlightedIndex={defaultHighlightedIndex}
       keyboardShortcuts={keyboardShortcuts}
       minLength={minLength}
       sources={sanitizedSources}
+      onInput={onInput}
+      onSelect={onSelect}
     />,
     container,
     container.lastChild as Element
@@ -81,3 +99,7 @@ function autocomplete(
 }
 
 export default autocomplete;
+export {
+  highlightAlgoliaHit,
+  reverseHighlightAlgoliaHit,
+} from './utils/highlight';

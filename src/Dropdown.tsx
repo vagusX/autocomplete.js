@@ -34,18 +34,7 @@ export const Dropdown = ({
               <Template template={source.templates.header} />
 
               {!isLoading && suggestions.length === 0 ? (
-                <Template
-                  data={{ query }}
-                  template={source.templates.empty}
-                  defaultTemplate={({ query }) => (
-                    <div>
-                      <p>
-                        No results for <q>{query}</q>
-                      </p>
-                      <p>Try to use different terms.</p>
-                    </div>
-                  )}
-                />
+                <Template data={{ query }} template={source.templates.empty} />
               ) : (
                 <Suggestions
                   suggestions={suggestions}
@@ -88,19 +77,20 @@ const Suggestions = ({
     >
       {suggestions.map(suggestion => {
         return (
-          <li
-            {...getItemProps({
-              item: { suggestion, source },
-              tabIndex: 0,
-            })}
-            className="algolia-autocomplete-item"
-          >
-            <Template
-              data={suggestion}
-              template={source.templates.suggestion}
-              defaultTemplate={suggestion => suggestion}
-            />
-          </li>
+          <Template
+            tagName="li"
+            rootProps={{
+              className: 'algolia-autocomplete-item',
+              // tabIndex: 0,
+              ...getItemProps({
+                item: { suggestion, source },
+                tabIndex: 0,
+              }),
+            }}
+            data={suggestion}
+            template={source.templates.suggestion}
+            defaultTemplate={suggestion => suggestion}
+          />
         );
       })}
     </ul>

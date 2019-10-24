@@ -3,7 +3,7 @@
 import { h, Component } from 'preact';
 import Downshift from 'downshift/preact';
 
-import { AutocompleteSource } from '.';
+import { AutocompleteSource, AutocompleteItem } from '.';
 import { Dropdown } from './Dropdown';
 import { SearchBox } from './SearchBox';
 
@@ -17,14 +17,6 @@ type InternalItem = {
   source: AutocompleteSource;
 };
 
-/**
- * Item exposed to the lifecycle hooks.
- */
-type AutocompleteItem = {
-  suggestion: unknown;
-  suggestionValue: ReturnType<AutocompleteSource['getSuggestionValue']>;
-};
-
 type AutocompleteProps = {
   /**
    * The text that appears in the search box input when there is no query.
@@ -35,25 +27,26 @@ type AutocompleteProps = {
    */
   defaultHighlightedIndex?: number;
   minLength?: number;
-  stalledSearchDelay: number;
+  stalledDelay: number;
   keyboardShortcuts?: string[];
   /**
    * The sources to get the suggestions.
    */
   sources: AutocompleteSource[];
-  // @TODO: call whenever state.isDropdownOpen is true
+  // @TODO: call whenever state.isOpen is true
   onOpen: () => void;
-  // @TODO: call whenever state.isDropdownOpen is false
+  // @TODO: call whenever state.isOpen is false
   onClose: () => void;
   onFocus: () => void;
   onSelect: (item: AutocompleteItem) => void;
   onHover: (item: AutocompleteItem) => void;
+  onInput?: ({ query }: { query: string }) => void;
 };
 
 type AutocompleteState = {
   query: string;
   results: Result[];
-  isDropdownOpen: boolean;
+  isOpen: boolean;
   isLoading: boolean;
   isStalled: boolean;
 };
@@ -71,7 +64,7 @@ const defaultProps: Partial<AutocompleteProps> = {
   placeholder: '',
   minLength: 1,
   defaultHighlightedIndex: 0,
-  stalledSearchDelay: 300,
+  stalledDelay: 300,
   keyboardShortcuts: [],
   onHover: ({ suggestion, suggestionValue }) => {
     console.log('onHover', { suggestion, suggestionValue });
@@ -79,6 +72,7 @@ const defaultProps: Partial<AutocompleteProps> = {
   onSelect: ({ suggestion, suggestionValue }) => {
     console.log('onItemSelect', { suggestion, suggestionValue });
   },
+  onInput: () => {},
   onFocus: () => {},
 };
 
@@ -87,13 +81,13 @@ export class Autocomplete extends Component<
   AutocompleteState
 > {
   static defaultProps = defaultProps;
-  setIsStalledId: number | null;
+  setIsStalledId: number | null = null;
   inputRef = null;
 
   state = {
     query: '',
     results: [],
-    isDropdownOpen: false,
+    isOpen: false,
     isLoading: false,
     isStalled: false,
   };
@@ -104,11 +98,15 @@ export class Autocomplete extends Component<
   // };
 
   componentDidMount() {
-    window.addEventListener('keydown', this.onGlobalKeyDown);
+    if (this.props.keyboardShortcuts.length > 1) {
+      window.addEventListener('keydown', this.onGlobalKeyDown);
+    }
   }
 
   componentWillUnmount() {
-    window.removeEventListener('keydown', this.onGlobalKeyDown);
+    if (this.props.keyboardShortcuts.length > 1) {
+      window.removeEventListener('keydown', this.onGlobalKeyDown);
+    }
   }
 
   onGlobalKeyDown = (event: KeyboardEvent) => {
@@ -143,10 +141,10 @@ export class Autocomplete extends Component<
   render() {
     const canOpen = this.state.query.length >= this.props.minLength;
     const isOpen =
-      this.state.isDropdownOpen &&
+      this.state.isOpen &&
       // We don't want to open the dropdown when the results
       // are loading coming from an empty input.
-      // !this.state.isLoading &&
+      // !this.state.isStalled &&
       // However, we do want to leave the dropdown open when it's
       // already open because there are results displayed. Otherwise,
       // it would result in a flashy behavior.
@@ -156,9 +154,7 @@ export class Autocomplete extends Component<
       <Downshift
         id={`autocomplete-${generateId()}`}
         itemToString={(item: InternalItem) => {
-          if (item) {
-            return item.source.getSuggestionValue(item.suggestion);
-          }
+          return item ? item.source.getSuggestionValue(item.suggestion) : '';
         }}
         defaultHighlightedIndex={this.props.defaultHighlightedIndex}
         // onStateChange={(changes: {
@@ -182,7 +178,7 @@ export class Autocomplete extends Component<
         // }}
         onSelect={(item: InternalItem) => {
           this.setState({
-            isDropdownOpen: false,
+            isOpen: false,
           });
 
           if (item) {
@@ -195,13 +191,17 @@ export class Autocomplete extends Component<
           }
         }}
         onChange={(item: InternalItem) => {
+          if (!item) {
+            return;
+          }
+
           this.setState({
             query: item.source.getSuggestionValue(item.suggestion),
           });
         }}
         onOuterClick={() => {
           this.setState({
-            isDropdownOpen: false,
+            isOpen: false,
           });
         }}
         scrollIntoView={(itemNode: HTMLElement) => {
@@ -210,7 +210,7 @@ export class Autocomplete extends Component<
           }
         }}
       >
-        {({ getInputProps, getItemProps, getMenuProps }) => (
+        {({ highlightedIndex, getInputProps, getItemProps, getMenuProps }) => (
           <div
             className={[
               'algolia-autocomplete',
@@ -219,6 +219,8 @@ export class Autocomplete extends Component<
               .filter(Boolean)
               .join(' ')}
           >
+            {/*
+          // @ts-ignore @TODO: fix refs error */}
             <SearchBox
               placeholder={this.props.placeholder}
               query={this.state.query}
@@ -229,7 +231,7 @@ export class Autocomplete extends Component<
               onFocus={() => {
                 if (canOpen) {
                   this.setState({
-                    isDropdownOpen: true,
+                    isOpen: true,
                   });
                 }
 
@@ -237,16 +239,32 @@ export class Autocomplete extends Component<
               }}
               onKeyDown={(event: KeyboardEvent) => {
                 if (event.key === 'Escape') {
-                  this.setState({
-                    query: '',
-                    isDropdownOpen: false,
-                  });
+                  this.setState(
+                    {
+                      // @TODO: should the query become empty?
+                      query: '',
+                      isOpen: false,
+                    },
+                    () => {
+                      this.props.onInput({ query: this.state.query });
+                    }
+                  );
+                } else if (event.key === 'Tab') {
+                  // this.setState({
+                  //   query: this.state.results[highlightedIndex],
+                  // });
                 }
               }}
               onReset={() => {
-                this.setState({
-                  query: '',
-                });
+                this.setState(
+                  {
+                    query: '',
+                  },
+                  () => {
+                    // this.props.onSelect(undefined);
+                    this.props.onInput({ query: this.state.query });
+                  }
+                );
               }}
               onChange={(event: KeyboardEvent) => {
                 if (this.setIsStalledId) {
@@ -259,27 +277,37 @@ export class Autocomplete extends Component<
                 const query = (event.target as any).value;
 
                 if (query.length < this.props.minLength) {
-                  this.setState({
-                    isLoading: false,
-                    isDropdownOpen: false,
-                    query,
-                    results: [],
-                  });
+                  this.setState(
+                    {
+                      isLoading: false,
+                      isOpen: false,
+                      query,
+                      results: [],
+                    },
+                    () => {
+                      this.props.onInput({ query });
+                    }
+                  );
 
                   return;
                 }
 
-                this.setState({
-                  isLoading: true,
-                  query,
-                });
+                this.setState(
+                  {
+                    isLoading: true,
+                    query,
+                  },
+                  () => {
+                    this.props.onInput({ query });
+                  }
+                );
 
                 if (typeof window !== 'undefined') {
                   this.setIsStalledId = window.setTimeout(() => {
                     this.setState({
                       isStalled: true,
                     });
-                  }, this.props.stalledSearchDelay);
+                  }, this.props.stalledDelay);
                 }
 
                 Promise.all(
@@ -300,7 +328,7 @@ export class Autocomplete extends Component<
                     this.setState({
                       results,
                       isLoading: false,
-                      isDropdownOpen: true,
+                      isOpen: true,
                     });
                   })
                   .catch(error => {
@@ -313,7 +341,7 @@ export class Autocomplete extends Component<
 
                     this.setState({
                       isLoading: false,
-                      isDropdownOpen: false,
+                      isOpen: false,
                     });
 
                     throw error;

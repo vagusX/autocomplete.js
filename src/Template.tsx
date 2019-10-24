@@ -9,6 +9,7 @@ interface TemplateProps {
   defaultTemplate?: Template;
   data?: any;
   tagName?: string;
+  rootProps: { [prop: string]: any };
 }
 
 export const Template = ({
@@ -16,6 +17,7 @@ export const Template = ({
   defaultTemplate = () => '',
   data = {},
   tagName: TagName = 'div',
+  rootProps,
 }: TemplateProps) => {
   const renderTemplate = template || defaultTemplate;
   const content = renderTemplate(data);
@@ -23,7 +25,9 @@ export const Template = ({
   if (typeof content === 'string') {
     // @ts-ignore
     // TypeScript isn't aware that `TagName` is an element.
-    return <TagName dangerouslySetInnerHTML={{ __html: content }} />;
+    return (
+      <TagName {...rootProps} dangerouslySetInnerHTML={{ __html: content }} />
+    );
   }
 
   return content;

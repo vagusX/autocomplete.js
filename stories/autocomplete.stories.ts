@@ -306,4 +306,75 @@ storiesOf('Autocomplete', module)
     );
 
     return container;
+  })
+  .add('with InstantSearch', () => {
+    const container = document.createElement('div');
+    const autocompleteContainer = document.createElement('div');
+    const hitsContainer = document.createElement('div');
+
+    container.appendChild(autocompleteContainer);
+    container.appendChild(hitsContainer);
+
+    const search = instantsearch({
+      searchClient,
+      indexName: 'instant_search',
+    });
+
+    const autocompleteWidget = connectAutocomplete(
+      (renderOptions, isFirstRender) => {
+        console.log(renderOptions);
+
+        const {
+          currentRefinement,
+          indices,
+          refine,
+          widgetParams,
+        } = renderOptions;
+
+        const hits = indices.map(index => index.hits).flat();
+
+        autocomplete(
+          {
+            container: widgetParams.container,
+            placeholder: 'Search…',
+            onInput: ({ query }) => {
+              console.log('onInput', query);
+              refine(query);
+            },
+            onSelect: ({ suggestionValue }) => refine(suggestionValue),
+          },
+          [
+            {
+              templates: {
+                suggestion(suggestion) {
+                  return suggestion._highlightResult.name.value;
+                },
+                header: () =>
+                  '<h5 class="algolia-autocomplete-item-header">E-commerce</h5>',
+              },
+              getSuggestionValue(suggestion) {
+                return suggestion.name;
+              },
+              getSuggestions({ query }) {
+                // refine(query);
+                return Promise.resolve(hits);
+              },
+            },
+          ]
+        );
+      }
+    );
+
+    search.addWidgets([
+      configure({
+        hitsPerPage: 5,
+      }),
+      autocompleteWidget({
+        container: autocompleteContainer,
+      }),
+    ]);
+
+    search.start();
+
+    return container;
   });

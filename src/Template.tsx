@@ -22,6 +22,10 @@ export const Template = ({
   const renderTemplate = template || defaultTemplate;
   const content = renderTemplate(data);
 
+  if (!content) {
+    return null;
+  }
+
   if (typeof content === 'string') {
     // @ts-ignore
     // TypeScript isn't aware that `TagName` is an element.

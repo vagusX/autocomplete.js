@@ -306,8 +306,8 @@ export class Autocomplete extends Component<
         }}
       >
         {({
-          setHighlightedIndex,
           highlightedIndex,
+          setHighlightedIndex,
           getInputProps,
           getItemProps,
           getMenuProps,

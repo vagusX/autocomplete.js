@@ -207,7 +207,7 @@ storiesOf('Autocomplete', module)
 
     return container;
   })
-  .add('with deferred values but no `stalledSearchDelay`', () => {
+  .add('with deferred values but no `stalledDelay`', () => {
     const container = document.createElement('div');
 
     autocomplete(
@@ -523,31 +523,27 @@ storiesOf('Autocomplete', module)
       indexName: 'instant_search',
     });
 
-    const autocompleteWidget = connectAutocomplete(function(
-      renderOptions,
-      isFirstRender
-    ) {
-      console.log(renderOptions);
+    const autocompleteWidget = connectAutocomplete(
+      (renderOptions, isFirstRender) => {
+        console.log(renderOptions);
 
-      const {
-        currentRefinement,
-        indices,
-        refine,
-        widgetParams,
-      } = renderOptions;
+        const {
+          currentRefinement,
+          indices,
+          refine,
+          widgetParams,
+        } = renderOptions;
 
-      if (isFirstRender) {
         const hits = indices.map(index => index.hits).flat();
 
         autocomplete(
           {
             container: widgetParams.container,
             placeholder: 'Search…',
-            // onKeyDown: ({ event }) => {
-            //   console.log('onKeyDown', event.target.value);
-
-            //   refine(event.target.value);
-            // },
+            onInput: ({ query }) => {
+              console.log('onInput', query);
+              refine(query);
+            },
             onSelect: ({ suggestionValue }) => refine(suggestionValue),
           },
           [
@@ -556,21 +552,21 @@ storiesOf('Autocomplete', module)
                 suggestion(suggestion) {
                   return suggestion._highlightResult.name.value;
                 },
+                header: () =>
+                  '<h5 class="algolia-autocomplete-item-header">E-commerce</h5>',
               },
               getSuggestionValue(suggestion) {
                 return suggestion.name;
               },
               getSuggestions({ query }) {
-                refine(query);
-
+                // refine(query);
                 return hits;
               },
             },
           ]
         );
-        return;
       }
-    });
+    );
 
     search.addWidgets([
       configure({

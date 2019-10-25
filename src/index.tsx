@@ -2,7 +2,7 @@
 
 import { h, render } from 'preact';
 
-import { Autocomplete, Result } from './Autocomplete';
+import { Autocomplete, Result, InternalItem } from './Autocomplete';
 import { Template } from './Template';
 
 export type AutocompleteTemplates = {
@@ -13,8 +13,9 @@ export type AutocompleteTemplates = {
 };
 
 export interface AutocompleteSource {
-  getSuggestionValue(value: unknown): string;
-  getSuggestions({ query }: { query: string }): Promise<Result[]>;
+  key?: string;
+  getSuggestionValue(value: unknown, item: InternalItem): string;
+  getSuggestions({ query }: { query: string }): Result[] | Promise<Result[]>;
   templates?: AutocompleteTemplates;
 }
 
@@ -56,8 +57,16 @@ export interface AutocompleteOptions {
    * The minimum number of characters long the autocomplete opens.
    */
   minLength?: number;
-  onInput?: ({ query }: { query: string }) => void;
-  onSelect?: (item: AutocompleteItem) => void;
+  onInput?({ query }: { query: string }): void;
+  onSelect?: ({ item }: { item: InternalItem }) => void;
+  onClick?({ event, item }: { event: MouseEvent; item: InternalItem }): void;
+  onKeyDown?({
+    event,
+    item,
+  }: {
+    event: KeyboardEvent;
+    item: InternalItem;
+  }): void;
 }
 
 function autocomplete(
@@ -73,6 +82,8 @@ function autocomplete(
     minLength,
     onInput,
     onSelect,
+    onClick,
+    onKeyDown,
   } = options || {};
 
   const sanitizedSources = sources.map(source => ({
@@ -92,6 +103,8 @@ function autocomplete(
       sources={sanitizedSources}
       onInput={onInput}
       onSelect={onSelect}
+      onClick={onClick}
+      onKeyDown={onKeyDown}
     />,
     container,
     container.lastChild as Element

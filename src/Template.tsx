@@ -34,7 +34,5 @@ export const Template = ({
     );
   }
 
-  console.log('content', content);
-
   return <TagName {...rootProps}>{content}</TagName>;
 };

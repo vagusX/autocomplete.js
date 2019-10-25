@@ -69,6 +69,7 @@
     "jest": "24.9.0",
     "jest-watch-typeahead": "0.4.0",
     "preact-testing-library": "0.4.0",
+    "recent-searches": "1.0.1",
     "rollup": "1.25.1",
     "rollup-plugin-babel": "4.3.3",
     "rollup-plugin-commonjs": "10.1.0",

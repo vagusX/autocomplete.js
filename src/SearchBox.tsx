@@ -17,7 +17,7 @@ export type SearchBoxProps = {
   onFocus: () => void;
   onKeyDown: (event: KeyboardEvent) => void;
   onReset: (event: MouseEvent) => void;
-  onInputRef: (ref: HTMLElement) => void;
+  onInputRef: (ref: HTMLInputElement) => void;
   getInputProps?(options?: object): any;
 } & typeof defaultProps;
 
@@ -28,7 +28,7 @@ const defaultProps = {
 export class SearchBox extends Component<SearchBoxProps> {
   static defaultProps = defaultProps;
 
-  private inputRef: null | HTMLElement = null;
+  private inputRef: null | HTMLInputElement = null;
 
   render() {
     return (
@@ -79,7 +79,7 @@ export class SearchBox extends Component<SearchBoxProps> {
           {...this.props.getInputProps({
             placeholder: this.props.placeholder,
             ref: (ref: HTMLElement) => {
-              this.inputRef = ref;
+              this.inputRef = ref as HTMLInputElement;
 
               this.props.onInputRef(this.inputRef);
             },
@@ -105,7 +105,7 @@ export class SearchBox extends Component<SearchBoxProps> {
           onClick={(event: MouseEvent) => {
             this.props.onReset(event);
 
-            this.inputRef!.focus();
+            this.inputRef && this.inputRef.focus();
           }}
         >
           <svg viewBox="0 0 10 10">

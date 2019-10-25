@@ -146,7 +146,7 @@ body {
   box-shadow: 0 2px 4px 0 rgba(93, 100, 148, 0.2),
     0 5px 15px 0 rgba(37, 44, 97, 0.15);
   margin-top: 1rem;
-  padding: 1rem 1rem 0 1rem;
+  padding: 1rem;
   overflow: scroll;
   -ms-overflow-style: none;
   position: absolute;
@@ -180,10 +180,6 @@ body {
   min-height: max-content;
 }
 
-.algolia-autocomplete-results {
-  padding-bottom: 1rem;
-}
-
 .algolia-autocomplete-item {
   padding: 0.5rem;
   cursor: default;
@@ -203,6 +199,7 @@ body {
   line-height: 1.2rem;
   margin: 0 0 0.5rem;
   text-transform: uppercase;
+  padding-top: 1rem;
 }
 
 .algolia-autocomplete-item-body {

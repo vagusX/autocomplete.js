@@ -4,13 +4,21 @@ import { h } from 'preact';
 
 import { AutocompleteSource } from '.';
 import { Template } from './Template';
-import { Result } from './Autocomplete';
+import {
+  Result,
+  AutocompleteState,
+  InternalItem,
+  AutocompleteProps,
+} from './Autocomplete';
 
 interface DropdownProps {
   isLoading: boolean;
   query: string;
   results: Result[];
   sources: AutocompleteSource[];
+  internalState: AutocompleteState;
+  internalSetState(nextState: Partial<AutocompleteState>): void;
+  onClick: AutocompleteProps['onClick'];
   getItemProps(options?: object): any;
   getMenuProps(options?: object): any;
 }
@@ -20,6 +28,9 @@ export const Dropdown = ({
   query,
   results,
   sources,
+  internalState,
+  internalSetState,
+  onClick,
   getItemProps,
   getMenuProps,
 }: DropdownProps) => {
@@ -45,6 +56,20 @@ export const Dropdown = ({
                   )}
                 >
                   {suggestions.map(suggestion => {
+                    const item: InternalItem = {
+                      suggestionValue: source.getSuggestionValue(suggestion, {
+                        item: {},
+                        suggestion,
+                        source,
+                        state: internalState,
+                        setState: internalSetState,
+                      }),
+                      suggestion,
+                      source,
+                      state: internalState,
+                      setState: internalSetState,
+                    };
+
                     return (
                       <Template
                         tagName="li"
@@ -52,8 +77,10 @@ export const Dropdown = ({
                           className: 'algolia-autocomplete-item',
                           // tabIndex: 0,
                           ...getItemProps({
-                            item: { suggestion, source },
+                            item,
                             tabIndex: 0,
+                            onClick: (event: MouseEvent) =>
+                              onClick({ event, item }),
                           }),
                         }}
                         data={suggestion}

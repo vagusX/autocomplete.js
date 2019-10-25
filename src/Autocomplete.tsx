@@ -12,12 +12,15 @@ export type Result = any;
 /**
  * Item used internally.
  */
-type InternalItem = {
+export type InternalItem = {
   suggestion: unknown;
+  suggestionValue: ReturnType<AutocompleteSource['getSuggestionValue']>;
   source: AutocompleteSource;
+  state: AutocompleteState;
+  setState(nextState: Partial<AutocompleteState>): void;
 };
 
-type AutocompleteProps = {
+type AutocompleteOptions = {
   /**
    * The text that appears in the search box input when there is no query.
    */
@@ -34,16 +37,24 @@ type AutocompleteProps = {
    */
   sources: AutocompleteSource[];
   // @TODO: call whenever state.isOpen is true
-  onOpen: () => void;
+  // onOpen: () => void;
   // @TODO: call whenever state.isOpen is false
-  onClose: () => void;
+  // onClose: () => void;
+  // onHover: (item: InternalItem) => void;
   onFocus: () => void;
-  onSelect: (item: AutocompleteItem) => void;
-  onHover: (item: AutocompleteItem) => void;
+  onSelect: ({ item }: { item: InternalItem }) => void;
   onInput?: ({ query }: { query: string }) => void;
+  onClick?({ event, item }: { event: MouseEvent; item: InternalItem }): void;
+  onKeyDown?({
+    event,
+    item,
+  }: {
+    event: KeyboardEvent;
+    item: InternalItem;
+  }): void;
 };
 
-type AutocompleteState = {
+export type AutocompleteState = {
   query: string;
   results: Result[];
   isOpen: boolean;
@@ -60,21 +71,25 @@ function generateId(): string {
   return String(autocompleteIdCounter++);
 }
 
-const defaultProps: Partial<AutocompleteProps> = {
+const defaultProps: AutocompleteOptions = {
   placeholder: '',
   minLength: 1,
   defaultHighlightedIndex: 0,
   stalledDelay: 300,
   keyboardShortcuts: [],
-  onHover: ({ suggestion, suggestionValue }) => {
-    console.log('onHover', { suggestion, suggestionValue });
-  },
-  onSelect: ({ suggestion, suggestionValue }) => {
-    console.log('onItemSelect', { suggestion, suggestionValue });
+  sources: [],
+  onSelect: ({ item }) => {
+    item.setState({
+      isOpen: false,
+    });
   },
   onInput: () => {},
   onFocus: () => {},
+  onClick: () => {},
+  onKeyDown: () => {},
 };
+
+export type AutocompleteProps = Required<AutocompleteOptions>;
 
 export class Autocomplete extends Component<
   AutocompleteProps,
@@ -82,7 +97,7 @@ export class Autocomplete extends Component<
 > {
   static defaultProps = defaultProps;
   setIsStalledId: number | null = null;
-  inputRef = null;
+  inputRef: HTMLInputElement | null = null;
 
   state = {
     query: '',
@@ -138,6 +153,86 @@ export class Autocomplete extends Component<
     event.preventDefault();
   };
 
+  performQuery = (query: string) => {
+    if (this.setIsStalledId) {
+      clearTimeout(this.setIsStalledId);
+      this.setState({
+        isStalled: false,
+      });
+    }
+
+    if (query.length < this.props.minLength) {
+      this.setState(
+        {
+          isLoading: false,
+          isOpen: false,
+          query,
+          results: [],
+        },
+        () => {
+          this.props.onInput({ query });
+        }
+      );
+
+      return;
+    }
+
+    this.setState(
+      {
+        isLoading: true,
+        query,
+      },
+      () => {
+        this.props.onInput({ query });
+      }
+    );
+
+    if (typeof window !== 'undefined') {
+      this.setIsStalledId = window.setTimeout(() => {
+        this.setState({
+          isStalled: true,
+        });
+      }, this.props.stalledDelay);
+    }
+
+    Promise.all(
+      this.props.sources.map(source =>
+        source.getSuggestions({
+          query: this.state.query,
+        })
+      )
+    )
+      .then(results => {
+        if (this.setIsStalledId) {
+          clearTimeout(this.setIsStalledId);
+          this.setState({
+            isStalled: false,
+          });
+        }
+
+        this.setState({
+          results,
+          isLoading: false,
+          isOpen: true,
+        });
+      })
+      .catch(error => {
+        if (this.setIsStalledId) {
+          clearTimeout(this.setIsStalledId);
+          this.setState({
+            isStalled: false,
+          });
+        }
+
+        this.setState({
+          isLoading: false,
+          isOpen: false,
+        });
+
+        throw error;
+      });
+  };
+
   render() {
     const canOpen = this.state.query.length >= this.props.minLength;
     const isOpen =
@@ -154,39 +249,23 @@ export class Autocomplete extends Component<
       <Downshift
         id={`autocomplete-${generateId()}`}
         itemToString={(item: InternalItem) => {
-          return item ? item.source.getSuggestionValue(item.suggestion) : '';
+          return item
+            ? item.source.getSuggestionValue(item.suggestion, item)
+            : '';
         }}
         defaultHighlightedIndex={this.props.defaultHighlightedIndex}
-        // onStateChange={(changes: {
-        //   highlightedIndex?: number;
-        //   inputValue: string;
-        //   isOpen: boolean;
-        //   selectedItem?: DownshiftItem;
-        // }) => {
-        //   if (changes.highlightedIndex === undefined) {
-        //     return;
-        //   }
-
-        //   // const highlightedItem = this.state.results[changes.highlightedIndex];
-
-        //   // @TODO: move `onHover` hook somewhere else
-        //   // const { suggestion, source } = changes.selectedItem;
-        //   // this.props.onHover({
-        //   //   suggestion,
-        //   //   suggestionValue: source.getSuggestionValue(suggestion),
-        //   // });
-        // }}
         onSelect={(item: InternalItem) => {
-          this.setState({
-            isOpen: false,
-          });
-
           if (item) {
-            const { suggestion, source } = item;
+            const { suggestion, source, state, setState } = item;
 
             this.props.onSelect({
-              suggestion: suggestion,
-              suggestionValue: source.getSuggestionValue(suggestion),
+              item: {
+                suggestion: suggestion,
+                suggestionValue: source.getSuggestionValue(suggestion, item),
+                source,
+                state,
+                setState,
+              },
             });
           }
         }}
@@ -196,7 +275,7 @@ export class Autocomplete extends Component<
           }
 
           this.setState({
-            query: item.source.getSuggestionValue(item.suggestion),
+            query: item.source.getSuggestionValue(item.suggestion, item),
           });
         }}
         onOuterClick={() => {
@@ -210,7 +289,13 @@ export class Autocomplete extends Component<
           }
         }}
       >
-        {({ highlightedIndex, getInputProps, getItemProps, getMenuProps }) => (
+        {({
+          highlightedIndex,
+          getInputProps,
+          getItemProps,
+          getMenuProps,
+          selectedItem,
+        }) => (
           <div
             className={[
               'algolia-autocomplete',
@@ -225,7 +310,7 @@ export class Autocomplete extends Component<
               placeholder={this.props.placeholder}
               query={this.state.query}
               onInputRef={ref => {
-                this.inputRef = ref;
+                this.inputRef = ref as HTMLInputElement;
               }}
               getInputProps={getInputProps}
               onFocus={() => {
@@ -235,9 +320,34 @@ export class Autocomplete extends Component<
                   });
                 }
 
+                if (this.props.minLength === 0) {
+                  this.performQuery('');
+                }
+
                 this.props.onFocus();
               }}
               onKeyDown={(event: KeyboardEvent) => {
+                // @TODO: find a way to get the internal item from the keyboard event
+
+                // const item = this.state.results.flat()[highlightedIndex];
+                // console.log('onKeyDown', highlightedIndex, item);
+                // if (item) {
+                //   const { suggestion, source, state, setState } = item;
+                //   this.props.onKeyDown({
+                //     event,
+                //     item: {
+                //       suggestion: suggestion,
+                //       suggestionValue: source.getSuggestionValue(
+                //         suggestion,
+                //         item
+                //       ),
+                //       source,
+                //       state,
+                //       setState,
+                //     },
+                //   });
+                // }
+
                 if (event.key === 'Escape') {
                   this.setState(
                     {
@@ -249,10 +359,6 @@ export class Autocomplete extends Component<
                       this.props.onInput({ query: this.state.query });
                     }
                   );
-                } else if (event.key === 'Tab') {
-                  // this.setState({
-                  //   query: this.state.results[highlightedIndex],
-                  // });
                 }
               }}
               onReset={() => {
@@ -267,85 +373,7 @@ export class Autocomplete extends Component<
                 );
               }}
               onChange={(event: KeyboardEvent) => {
-                if (this.setIsStalledId) {
-                  clearTimeout(this.setIsStalledId);
-                  this.setState({
-                    isStalled: false,
-                  });
-                }
-
-                const query = (event.target as any).value;
-
-                if (query.length < this.props.minLength) {
-                  this.setState(
-                    {
-                      isLoading: false,
-                      isOpen: false,
-                      query,
-                      results: [],
-                    },
-                    () => {
-                      this.props.onInput({ query });
-                    }
-                  );
-
-                  return;
-                }
-
-                this.setState(
-                  {
-                    isLoading: true,
-                    query,
-                  },
-                  () => {
-                    this.props.onInput({ query });
-                  }
-                );
-
-                if (typeof window !== 'undefined') {
-                  this.setIsStalledId = window.setTimeout(() => {
-                    this.setState({
-                      isStalled: true,
-                    });
-                  }, this.props.stalledDelay);
-                }
-
-                Promise.all(
-                  this.props.sources.map(source =>
-                    source.getSuggestions({
-                      query: this.state.query,
-                    })
-                  )
-                )
-                  .then(results => {
-                    if (this.setIsStalledId) {
-                      clearTimeout(this.setIsStalledId);
-                      this.setState({
-                        isStalled: false,
-                      });
-                    }
-
-                    this.setState({
-                      results,
-                      isLoading: false,
-                      isOpen: true,
-                    });
-                  })
-                  .catch(error => {
-                    if (this.setIsStalledId) {
-                      clearTimeout(this.setIsStalledId);
-                      this.setState({
-                        isStalled: false,
-                      });
-                    }
-
-                    this.setState({
-                      isLoading: false,
-                      isOpen: false,
-                    });
-
-                    throw error;
-                  });
+                this.performQuery((event.target as any).value);
               }}
             />
 
@@ -354,7 +382,10 @@ export class Autocomplete extends Component<
                 isLoading={this.state.isLoading}
                 results={this.state.results}
                 query={this.state.query}
+                internalState={this.state}
+                internalSetState={this.setState.bind(this)}
                 sources={this.props.sources}
+                onClick={this.props.onClick}
                 getMenuProps={getMenuProps}
                 getItemProps={getItemProps}
               />

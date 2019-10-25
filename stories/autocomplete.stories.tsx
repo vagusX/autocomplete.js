@@ -4,6 +4,7 @@ import { h } from 'preact';
 import { storiesOf } from '@storybook/html';
 import * as algoliasearch from 'algoliasearch';
 import instantsearch from 'instantsearch.js';
+import RecentSearches from 'recent-searches';
 import { connectAutocomplete } from 'instantsearch.js/es/connectors';
 import { configure } from 'instantsearch.js/es/widgets';
 
@@ -25,10 +26,8 @@ const searchClient = algoliasearch(
 
 const fruitSource = {
   getSuggestions({ query }) {
-    return Promise.resolve(
-      fruits.filter(fruit =>
-        fruit.value.toLocaleLowerCase().includes(query.toLocaleLowerCase())
-      )
+    return fruits.filter(fruit =>
+      fruit.value.toLocaleLowerCase().includes(query.toLocaleLowerCase())
     );
   },
   getSuggestionValue: suggestion => suggestion.value,
@@ -52,12 +51,10 @@ storiesOf('Autocomplete', module)
         fruitSource,
         {
           getSuggestions({ query }) {
-            return Promise.resolve(
-              people.filter(person =>
-                person.value
-                  .toLocaleLowerCase()
-                  .includes(query.toLocaleLowerCase())
-              )
+            return people.filter(person =>
+              person.value
+                .toLocaleLowerCase()
+                .includes(query.toLocaleLowerCase())
             );
           },
           getSuggestionValue: suggestion => suggestion.value,
@@ -83,6 +80,41 @@ storiesOf('Autocomplete', module)
         minLength: 3,
       },
       [fruitSource]
+    );
+
+    return container;
+  })
+  .add('with menu that opens by default', () => {
+    const container = document.createElement('div');
+
+    autocomplete(
+      {
+        container,
+        placeholder: 'Search for a fruit (e.g. "banana")',
+        minLength: 0,
+      },
+      [
+        {
+          getSuggestions({ query }) {
+            if (!query) {
+              return fruits;
+            }
+
+            return fruits.filter(fruit =>
+              fruit.value
+                .toLocaleLowerCase()
+                .includes(query.toLocaleLowerCase())
+            );
+          },
+          getSuggestionValue: suggestion => suggestion.value,
+          templates: {
+            header: () =>
+              '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
+            suggestion: fruit => fruit.value,
+            empty: ({ query }) => `No fruits found for "${query}".`,
+          },
+        },
+      ]
     );
 
     return container;
@@ -182,7 +214,7 @@ storiesOf('Autocomplete', module)
       {
         container,
         placeholder: 'Search (the loader spins right away)',
-        stalledSearchDelay: 0,
+        stalledDelay: 0,
       },
       [
         {
@@ -236,16 +268,93 @@ storiesOf('Autocomplete', module)
 
     return container;
   })
-  .add('with Algolia API client', () => {
+  .add('with Query Suggestions', () => {
     const container = document.createElement('div');
+
+    const searches = new RecentSearches({
+      limit: 3,
+      // ttl: number, // Optional: ttl of searches in milliseconds, default to 24h (1000 * 60 * 60 * 24)
+      // limit: number, // Optional: max number of entries that will be persisted, default is 50
+      // namespace: string, // Optional: custom localStorage namespace
+      // ranking: string // Optional: ranking strategy of recent searches, "PROXIMITY" | "TIME" | "PROXIMITY_AND_TIME", default is "PROXIMITY_AND_TIME"
+    });
 
     autocomplete(
       {
         container,
         placeholder: 'Search…',
+        onClick({ event, item }) {
+          if (
+            event.metaKey ||
+            event.ctrlKey ||
+            event.shiftKey ||
+            event.altKey
+          ) {
+            item.setState({
+              isOpen: true,
+            });
+          } else {
+            item.setState({
+              isOpen: false,
+            });
+          }
+        },
+        onKeyDown({ event, item }) {
+          console.log('onKeyDown', item);
+
+          if (event.key === 'Escape' && item.source.keys! === 'products') {
+            console.log('onKeyDown > add search history', item.state.query);
+            searches.setRecentSearch(item.state.query);
+            window.location.assign(item.suggestion.url);
+          }
+        },
+        onSelect({ item }) {
+          if (!item) {
+            return;
+          }
+
+          if (['history', 'suggestion'].includes(item.source.key!)) {
+            item.setState({
+              isOpen: true,
+              // query: item.state.query,
+              // results: [[{ query: 'transformed!!' }]],
+            });
+          } else {
+            console.log('onClick > add search history', item.state.query);
+            searches.setRecentSearch(item.state.query);
+          }
+        },
       },
       [
         {
+          key: 'history',
+          getSuggestionValue: (suggestion: any) => suggestion.query,
+          getSuggestions() {
+            return searches.getRecentSearches();
+            // return query ? [] : searches.getRecentSearches();
+          },
+          templates: {
+            suggestion(suggestion) {
+              return (
+                <div style={{ display: 'flex' }}>
+                  <img
+                    src="https://image.flaticon.com/icons/svg/61/61122.svg"
+                    width="16"
+                    height="16"
+                    style={{
+                      marginRight: '.6rem',
+                      opacity: 0.3,
+                    }}
+                  />
+
+                  {suggestion.query}
+                </div>
+              );
+            },
+          },
+        },
+        {
+          key: 'suggestion',
           getSuggestionValue: (suggestion: any) => suggestion.query,
           getSuggestions({ query }) {
             return searchClient
@@ -265,18 +374,43 @@ storiesOf('Autocomplete', module)
               });
           },
           templates: {
-            header: () =>
-              '<h5 class="algolia-autocomplete-item-header">Suggestions</h5>',
             suggestion(suggestion) {
-              return reverseHighlightAlgoliaHit({
-                hit: suggestion,
-                attribute: 'query',
-              });
+              return (
+                <div style={{ display: 'flex' }}>
+                  <svg
+                    viewBox="0 0 18 18"
+                    width={16}
+                    style={{
+                      marginRight: '.6rem',
+                      color: 'rgba(0, 0, 0, 0.3)',
+                    }}
+                  >
+                    <path
+                      d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
+                      stroke="currentColor"
+                      stroke-width="1.78"
+                      fill="none"
+                      fill-rule="evenodd"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                  </svg>
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: reverseHighlightAlgoliaHit({
+                        hit: suggestion,
+                        attribute: 'query',
+                      }),
+                    }}
+                  />
+                </div>
+              );
             },
           },
         },
         {
-          getSuggestionValue: () => '',
+          key: 'products',
+          getSuggestionValue: (_value, item) => item.state.query,
           getSuggestions({ query }) {
             return searchClient
               .search([
@@ -292,7 +426,11 @@ storiesOf('Autocomplete', module)
                 },
               ])
               .then(response => {
-                return response.results.map(result => result.hits).flat();
+                const results = response.results
+                  .map(result => result.hits)
+                  .flat();
+
+                return results;
               });
           },
           templates: {
@@ -400,7 +538,7 @@ storiesOf('Autocomplete', module)
               },
               getSuggestions({ query }) {
                 // refine(query);
-                return Promise.resolve(hits);
+                return hits;
               },
             },
           ]

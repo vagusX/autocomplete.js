@@ -314,7 +314,13 @@ export class Autocomplete extends Component<
           }
         }}
       >
-        {({ highlightedIndex, getInputProps, getItemProps, getMenuProps }) => (
+        {({
+          setHighlightedIndex,
+          highlightedIndex,
+          getInputProps,
+          getItemProps,
+          getMenuProps,
+        }) => (
           <div
             className={[
               'algolia-autocomplete',
@@ -389,7 +395,7 @@ export class Autocomplete extends Component<
                     source.getSuggestionValue(item, this.state)
                   );
 
-                  // @TODO: set highlightedIndex to -1
+                  setHighlightedIndex(0);
                 }
               }}
               onReset={() => {

@@ -294,15 +294,6 @@ export class Autocomplete extends Component<
             });
           }
         }}
-        onChange={(item: InternalItem) => {
-          if (!item) {
-            return;
-          }
-
-          // this.setState({
-          //   query: item.source.getSuggestionValue(item.suggestion, this.state),
-          // });
-        }}
         onOuterClick={() => {
           this.setState({
             isOpen: false,
@@ -391,11 +382,13 @@ export class Autocomplete extends Component<
                     highlightedIndex
                   );
 
-                  this.performQuery(
-                    source.getSuggestionValue(item, this.state)
-                  );
+                  const nextQuery = source.getSuggestionValue(item, this.state);
 
-                  setHighlightedIndex(0);
+                  if (this.state.query !== nextQuery) {
+                    this.performQuery(nextQuery);
+
+                    setHighlightedIndex(0);
+                  }
                 }
               }}
               onReset={() => {

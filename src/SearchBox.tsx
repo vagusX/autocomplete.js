@@ -37,6 +37,7 @@ export class SearchBox extends Component<SearchBoxProps> {
         role="search"
         noValidate
         className="algolia-autocomplete-form"
+        onSubmit={event => event.preventDefault()}
       >
         <label
           for={this.props.getInputProps().id}

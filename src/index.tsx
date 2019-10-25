@@ -2,7 +2,12 @@
 
 import { h, render } from 'preact';
 
-import { Autocomplete, Result, InternalItem } from './Autocomplete';
+import {
+  Autocomplete,
+  Result,
+  InternalItem,
+  AutocompleteState,
+} from './Autocomplete';
 import { Template } from './Template';
 
 export type AutocompleteTemplates = {
@@ -14,7 +19,7 @@ export type AutocompleteTemplates = {
 
 export interface AutocompleteSource {
   key?: string;
-  getSuggestionValue(value: unknown, item: InternalItem): string;
+  getSuggestionValue(value: unknown, state: AutocompleteState): string;
   getSuggestions({ query }: { query: string }): Result[] | Promise<Result[]>;
   templates?: AutocompleteTemplates;
 }

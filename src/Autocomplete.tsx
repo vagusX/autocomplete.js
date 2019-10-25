@@ -3,7 +3,7 @@
 import { h, Component } from 'preact';
 import Downshift from 'downshift/preact';
 
-import { AutocompleteSource, AutocompleteItem } from '.';
+import { AutocompleteSource } from '.';
 import { Dropdown } from './Dropdown';
 import { SearchBox } from './SearchBox';
 
@@ -153,6 +153,24 @@ export class Autocomplete extends Component<
     event.preventDefault();
   };
 
+  getSourceFromHighlightedIndex = (
+    highlightedIndex: number
+  ): AutocompleteSource => {
+    const resultsSizes = this.state.results.reduce<number[]>((acc, result) => {
+      acc.push(result.length + acc.reduce((a, b) => a + b, 0));
+      return acc;
+    }, []);
+    const sourceNumber = resultsSizes.reduce((acc, current) => {
+      if (current <= highlightedIndex) {
+        return acc + 1;
+      }
+
+      return acc;
+    }, 0);
+
+    return this.props.sources[sourceNumber];
+  };
+
   performQuery = (query: string) => {
     if (this.setIsStalledId) {
       clearTimeout(this.setIsStalledId);
@@ -250,7 +268,7 @@ export class Autocomplete extends Component<
         id={`autocomplete-${generateId()}`}
         itemToString={(item: InternalItem) => {
           return item
-            ? item.source.getSuggestionValue(item.suggestion, item)
+            ? item.source.getSuggestionValue(item.suggestion, this.state)
             : '';
         }}
         defaultHighlightedIndex={this.props.defaultHighlightedIndex}
@@ -258,10 +276,17 @@ export class Autocomplete extends Component<
           if (item) {
             const { suggestion, source, state, setState } = item;
 
+            this.performQuery(
+              source.getSuggestionValue(suggestion, this.state)
+            );
+
             this.props.onSelect({
               item: {
                 suggestion: suggestion,
-                suggestionValue: source.getSuggestionValue(suggestion, item),
+                suggestionValue: source.getSuggestionValue(
+                  suggestion,
+                  this.state
+                ),
                 source,
                 state,
                 setState,
@@ -274,9 +299,9 @@ export class Autocomplete extends Component<
             return;
           }
 
-          this.setState({
-            query: item.source.getSuggestionValue(item.suggestion, item),
-          });
+          // this.setState({
+          //   query: item.source.getSuggestionValue(item.suggestion, this.state),
+          // });
         }}
         onOuterClick={() => {
           this.setState({
@@ -289,13 +314,7 @@ export class Autocomplete extends Component<
           }
         }}
       >
-        {({
-          highlightedIndex,
-          getInputProps,
-          getItemProps,
-          getMenuProps,
-          selectedItem,
-        }) => (
+        {({ highlightedIndex, getInputProps, getItemProps, getMenuProps }) => (
           <div
             className={[
               'algolia-autocomplete',
@@ -328,18 +347,20 @@ export class Autocomplete extends Component<
               }}
               onKeyDown={(event: KeyboardEvent) => {
                 const item = this.state.results.flat()[highlightedIndex];
+                const source = this.getSourceFromHighlightedIndex(
+                  highlightedIndex
+                );
 
                 if (item) {
-                  // const { suggestion, source, state, setState } = item;
-
                   this.props.onKeyDown({
                     event,
                     item: {
                       suggestion: item,
-                      // @ts-ignore find a way to get the item
-                      suggestionValue: {},
-                      // @ts-ignore find a way to get the item
-                      source: {},
+                      suggestionValue: source.getSuggestionValue(
+                        item,
+                        this.state
+                      ),
+                      source,
                       state: this.state,
                       setState: this.setState.bind(this),
                     },
@@ -357,6 +378,18 @@ export class Autocomplete extends Component<
                       this.props.onInput({ query: this.state.query });
                     }
                   );
+                } else if (event.key === 'Tab') {
+                  event.preventDefault();
+
+                  const source = this.getSourceFromHighlightedIndex(
+                    highlightedIndex
+                  );
+
+                  this.performQuery(
+                    source.getSuggestionValue(item, this.state)
+                  );
+
+                  // @TODO: set highlightedIndex to -1
                 }
               }}
               onReset={() => {
@@ -375,19 +408,18 @@ export class Autocomplete extends Component<
               }}
             />
 
-            {isOpen && (
-              <Dropdown
-                isLoading={this.state.isLoading}
-                results={this.state.results}
-                query={this.state.query}
-                internalState={this.state}
-                internalSetState={this.setState.bind(this)}
-                sources={this.props.sources}
-                onClick={this.props.onClick}
-                getMenuProps={getMenuProps}
-                getItemProps={getItemProps}
-              />
-            )}
+            <Dropdown
+              hidden={!isOpen}
+              isLoading={this.state.isLoading}
+              results={this.state.results}
+              query={this.state.query}
+              internalState={this.state}
+              internalSetState={this.setState.bind(this)}
+              sources={this.props.sources}
+              onClick={this.props.onClick}
+              getMenuProps={getMenuProps}
+              getItemProps={getItemProps}
+            />
           </div>
         )}
       </Downshift>

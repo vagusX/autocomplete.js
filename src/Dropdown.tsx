@@ -12,6 +12,7 @@ import {
 } from './Autocomplete';
 
 interface DropdownProps {
+  hidden: boolean;
   isLoading: boolean;
   query: string;
   results: Result[];
@@ -24,6 +25,7 @@ interface DropdownProps {
 }
 
 export const Dropdown = ({
+  hidden,
   isLoading,
   query,
   results,
@@ -35,7 +37,7 @@ export const Dropdown = ({
   getMenuProps,
 }: DropdownProps) => {
   return (
-    <div className="algolia-autocomplete-dropdown">
+    <div className="algolia-autocomplete-dropdown" hidden={hidden}>
       <div className="algolia-autocomplete-dropdown-container">
         {results.map((suggestions, index) => {
           const source = sources[index];

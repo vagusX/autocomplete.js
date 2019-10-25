@@ -283,6 +283,7 @@ storiesOf('Autocomplete', module)
       {
         container,
         placeholder: 'Search…',
+        minLength: 0,
         onClick({ event, item }) {
           if (
             event.metaKey ||
@@ -343,7 +344,11 @@ storiesOf('Autocomplete', module)
         {
           key: 'history',
           getSuggestionValue: (suggestion: any) => suggestion.query,
-          getSuggestions() {
+          getSuggestions({ query }) {
+            if (query) {
+              return [];
+            }
+
             return searches.getRecentSearches();
           },
           templates: {
@@ -376,14 +381,18 @@ storiesOf('Autocomplete', module)
                   indexName: 'instant_search_demo_query_suggestions',
                   query,
                   params: {
-                    hitsPerPage: 3,
+                    hitsPerPage: 4,
                     highlightPreTag: '<mark>',
                     highlightPostTag: '</mark>',
                   },
                 },
               ])
               .then(response => {
-                return response.results.map(result => result.hits).flat();
+                return response.results
+                  .map(result => result.hits)
+                  .flat()
+                  .filter(suggestion => suggestion.query !== query)
+                  .slice(0, 3);
               });
           },
           templates: {
@@ -423,7 +432,7 @@ storiesOf('Autocomplete', module)
         },
         {
           key: 'products',
-          getSuggestionValue: (_value, item) => item.state.query,
+          getSuggestionValue: (_suggestion, state) => state.query,
           getSuggestions({ query }) {
             return searchClient
               .search([
@@ -514,27 +523,31 @@ storiesOf('Autocomplete', module)
       indexName: 'instant_search',
     });
 
-    const autocompleteWidget = connectAutocomplete(
-      (renderOptions, isFirstRender) => {
-        console.log(renderOptions);
+    const autocompleteWidget = connectAutocomplete(function(
+      renderOptions,
+      isFirstRender
+    ) {
+      console.log(renderOptions);
 
-        const {
-          currentRefinement,
-          indices,
-          refine,
-          widgetParams,
-        } = renderOptions;
+      const {
+        currentRefinement,
+        indices,
+        refine,
+        widgetParams,
+      } = renderOptions;
 
+      if (isFirstRender) {
         const hits = indices.map(index => index.hits).flat();
 
         autocomplete(
           {
             container: widgetParams.container,
             placeholder: 'Search…',
-            onInput: ({ query }) => {
-              console.log('onInput', query);
-              refine(query);
-            },
+            // onKeyDown: ({ event }) => {
+            //   console.log('onKeyDown', event.target.value);
+
+            //   refine(event.target.value);
+            // },
             onSelect: ({ suggestionValue }) => refine(suggestionValue),
           },
           [
@@ -543,21 +556,21 @@ storiesOf('Autocomplete', module)
                 suggestion(suggestion) {
                   return suggestion._highlightResult.name.value;
                 },
-                header: () =>
-                  '<h5 class="algolia-autocomplete-item-header">E-commerce</h5>',
               },
               getSuggestionValue(suggestion) {
                 return suggestion.name;
               },
               getSuggestions({ query }) {
-                // refine(query);
+                refine(query);
+
                 return hits;
               },
             },
           ]
         );
+        return;
       }
-    );
+    });
 
     search.addWidgets([
       configure({

@@ -300,12 +300,29 @@ storiesOf('Autocomplete', module)
           }
         },
         onKeyDown({ event, item }) {
-          console.log('onKeyDown', item);
+          if (!item.suggestion.url) {
+            return;
+          }
 
-          if (event.key === 'Escape' && item.source.keys! === 'products') {
-            console.log('onKeyDown > add search history', item.state.query);
+          if (event.key === 'Enter') {
             searches.setRecentSearch(item.state.query);
-            window.location.assign(item.suggestion.url);
+
+            if (event.metaKey || event.ctrlKey) {
+              item.setState({
+                isOpen: true,
+              });
+
+              const windowReference = window.open(
+                item.suggestion.url,
+                '_blank'
+              );
+              windowReference!.focus();
+            } else if (event.shiftKey) {
+              window.open(item.suggestion.url, '_blank');
+            } else if (event.altKey) {
+            } else {
+              window.location.assign(item.suggestion.url);
+            }
           }
         },
         onSelect({ item }) {
@@ -316,11 +333,8 @@ storiesOf('Autocomplete', module)
           if (['history', 'suggestion'].includes(item.source.key!)) {
             item.setState({
               isOpen: true,
-              // query: item.state.query,
-              // results: [[{ query: 'transformed!!' }]],
             });
           } else {
-            console.log('onClick > add search history', item.state.query);
             searches.setRecentSearch(item.state.query);
           }
         },
@@ -331,7 +345,6 @@ storiesOf('Autocomplete', module)
           getSuggestionValue: (suggestion: any) => suggestion.query,
           getSuggestions() {
             return searches.getRecentSearches();
-            // return query ? [] : searches.getRecentSearches();
           },
           templates: {
             suggestion(suggestion) {

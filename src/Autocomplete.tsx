@@ -327,26 +327,24 @@ export class Autocomplete extends Component<
                 this.props.onFocus();
               }}
               onKeyDown={(event: KeyboardEvent) => {
-                // @TODO: find a way to get the internal item from the keyboard event
+                const item = this.state.results.flat()[highlightedIndex];
 
-                // const item = this.state.results.flat()[highlightedIndex];
-                // console.log('onKeyDown', highlightedIndex, item);
-                // if (item) {
-                //   const { suggestion, source, state, setState } = item;
-                //   this.props.onKeyDown({
-                //     event,
-                //     item: {
-                //       suggestion: suggestion,
-                //       suggestionValue: source.getSuggestionValue(
-                //         suggestion,
-                //         item
-                //       ),
-                //       source,
-                //       state,
-                //       setState,
-                //     },
-                //   });
-                // }
+                if (item) {
+                  // const { suggestion, source, state, setState } = item;
+
+                  this.props.onKeyDown({
+                    event,
+                    item: {
+                      suggestion: item,
+                      // @ts-ignore find a way to get the item
+                      suggestionValue: {},
+                      // @ts-ignore find a way to get the item
+                      source: {},
+                      state: this.state,
+                      setState: this.setState.bind(this),
+                    },
+                  });
+                }
 
                 if (event.key === 'Escape') {
                   this.setState(

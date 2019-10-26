@@ -393,7 +393,7 @@ storiesOf('Autocomplete', module)
                   .map(result => result.hits)
                   .flat()
                   .filter(
-                    ({ suggestion }) =>
+                    suggestion =>
                       suggestion.query !== query.toLocaleLowerCase() &&
                       `${suggestion.query} ` !== query.toLocaleLowerCase()
                   )

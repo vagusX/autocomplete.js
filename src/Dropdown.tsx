@@ -45,13 +45,19 @@ export const Dropdown = ({
             <section className="algolia-autocomplete-results">
               <Template
                 tagName="header"
-                data={{ state: internalState }}
+                data={{
+                  state: internalState,
+                  setState: internalSetState,
+                }}
                 template={source.templates.header}
               />
 
               {!isLoading && suggestions.length === 0 ? (
                 <Template
-                  data={{ state: internalState }}
+                  data={{
+                    state: internalState,
+                    setState: internalSetState,
+                  }}
                   template={source.templates.empty}
                 />
               ) : (
@@ -93,7 +99,11 @@ export const Dropdown = ({
                               }),
                           }),
                         }}
-                        data={{ state: internalState, suggestion }}
+                        data={{
+                          suggestion,
+                          state: internalState,
+                          setState: internalSetState,
+                        }}
                         template={source.templates.suggestion}
                       />
                     );
@@ -103,7 +113,10 @@ export const Dropdown = ({
 
               <Template
                 tagName="footer"
-                data={{ state: internalState }}
+                data={{
+                  state: internalState,
+                  setState: internalSetState,
+                }}
                 template={source.templates.footer}
               />
             </section>

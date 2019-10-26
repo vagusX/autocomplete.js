@@ -5,6 +5,7 @@ import { AutocompleteState } from './Autocomplete';
 
 interface TemplateData {
   state: AutocompleteState;
+  setState(nextState: Partial<AutocompleteState>): void;
 }
 
 export type Template<TData = {}> = (

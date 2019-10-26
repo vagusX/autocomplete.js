@@ -15,7 +15,7 @@ interface DropdownProps {
   hidden: boolean;
   isLoading: boolean;
   query: string;
-  results: Suggestion[];
+  results: Array<Suggestion[]>;
   sources: AutocompleteSource[];
   internalState: AutocompleteState;
   internalSetState(nextState: Partial<AutocompleteState>): void;

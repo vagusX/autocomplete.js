@@ -3,10 +3,10 @@
 import { h } from 'preact';
 import { storiesOf } from '@storybook/html';
 import * as algoliasearch from 'algoliasearch';
-import instantsearch from 'instantsearch.js';
+// import instantsearch from 'instantsearch.js';
 import RecentSearches from 'recent-searches';
-import { connectAutocomplete } from 'instantsearch.js/es/connectors';
-import { configure } from 'instantsearch.js/es/widgets';
+// import { connectAutocomplete } from 'instantsearch.js/es/connectors';
+// import { configure } from 'instantsearch.js/es/widgets';
 
 import autocomplete, {
   highlightAlgoliaHit,
@@ -15,14 +15,21 @@ import autocomplete, {
 
 type FruitSource = Array<{ value: string }>;
 const fruits: FruitSource = [
-  { value: 'Orange' },
   { value: 'Apple' },
   { value: 'Banana' },
+  { value: 'Grape' },
+  { value: 'Orange' },
+  { value: 'Pear' },
+  { value: 'Pineapple' },
 ];
-const people = [
+const artists = [
+  { value: 'Crystal Lake' },
+  { value: 'Eric Clapton' },
+  { value: 'James Blake' },
   { value: 'John Frusciante' },
   { value: 'John Mayer' },
   { value: 'Justin Vernon' },
+  { value: 'Parkway Drive' },
 ];
 const searchClient = algoliasearch(
   'latency',
@@ -37,7 +44,6 @@ const fruitSource = {
   },
   getSuggestionValue: ({ suggestion }) => suggestion.value,
   templates: {
-    header: () => '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
     suggestion: ({ suggestion }) => suggestion.value,
     empty: ({ state }) => `No fruits found for "${state.query}".`,
   },
@@ -50,62 +56,24 @@ storiesOf('Autocomplete', module)
     autocomplete(
       {
         container,
-        placeholder: 'Search…',
-        showHint: true,
-      },
-      [
-        fruitSource,
-        {
-          getSuggestions({ query }) {
-            return people.filter(person =>
-              person.value
-                .toLocaleLowerCase()
-                .includes(query.toLocaleLowerCase())
-            );
-          },
-          getSuggestionValue: ({ suggestion }) => suggestion.value,
-          templates: {
-            header: () =>
-              '<h5 class="algolia-autocomplete-item-header">People</h5>',
-            suggestion: ({ suggestion }) => suggestion.value,
-            empty: ({ state }) => `No people found for "${state.query}".`,
-          },
-        },
-      ]
-    );
-
-    return container;
-  })
-  .add('with `minLength` set to 3', () => {
-    const container = document.createElement('div');
-
-    autocomplete(
-      {
-        container,
-        placeholder: 'Search for a fruit (e.g. "banana")',
-        minLength: 3,
+        placeholder: 'Search for fruits… (e.g. "apple")',
       },
       [fruitSource]
     );
 
     return container;
   })
-  .add('with menu that opens by default', () => {
+  .add('with multiple sources', () => {
     const container = document.createElement('div');
 
     autocomplete(
       {
         container,
-        placeholder: 'Search for a fruit (e.g. "banana")',
-        minLength: 0,
+        placeholder: 'Search for fruits or people… (e.g. "apple", "john")',
       },
       [
         {
           getSuggestions({ query }) {
-            if (!query) {
-              return fruits;
-            }
-
             return fruits.filter(fruit =>
               fruit.value
                 .toLocaleLowerCase()
@@ -120,26 +88,70 @@ storiesOf('Autocomplete', module)
             empty: ({ state }) => `No fruits found for "${state.query}".`,
           },
         },
+        {
+          getSuggestions({ query }) {
+            return artists.filter(artist =>
+              artist.value
+                .toLocaleLowerCase()
+                .includes(query.toLocaleLowerCase())
+            );
+          },
+          getSuggestionValue: ({ suggestion }) => suggestion.value,
+          templates: {
+            header: () =>
+              '<h5 class="algolia-autocomplete-item-header">Artists</h5>',
+            suggestion: ({ suggestion }) => suggestion.value,
+            empty: ({ state }) => `No artists found for "${state.query}".`,
+          },
+        },
       ]
     );
 
     return container;
   })
-  .add('with `keyboardShortcuts`', () => {
+  .add('with minimal query length', () => {
     const container = document.createElement('div');
 
     autocomplete(
       {
         container,
-        placeholder: 'Search… (focus by typing "s" or "/" in this iframe)',
-        keyboardShortcuts: ['/', 's'],
+        placeholder: 'Search for fruits (e.g. "apple")',
+        minLength: 3,
       },
       [fruitSource]
     );
 
     return container;
   })
-  .add('with `defaultHighlightedIndex`', () => {
+  .add('with menu opening by default', () => {
+    const container = document.createElement('div');
+
+    autocomplete(
+      {
+        container,
+        placeholder: 'Search for fruits (e.g. "banana")',
+        minLength: 0,
+      },
+      [fruitSource]
+    );
+
+    return container;
+  })
+  .add('with keyboard shortcuts', () => {
+    const container = document.createElement('div');
+
+    autocomplete(
+      {
+        container,
+        placeholder: 'Search… (focus the inner window and type "/" or "a")',
+        keyboardShortcuts: ['/', 'a'],
+      },
+      [fruitSource]
+    );
+
+    return container;
+  })
+  .add('without default selection', () => {
     const container = document.createElement('div');
 
     autocomplete(
@@ -147,6 +159,20 @@ storiesOf('Autocomplete', module)
         container,
         placeholder: 'Search… (first item is not selected by default)',
         defaultHighlightedIndex: -1,
+      },
+      [fruitSource]
+    );
+
+    return container;
+  })
+  .add('with hint', () => {
+    const container = document.createElement('div');
+
+    autocomplete(
+      {
+        container,
+        placeholder: 'Search…',
+        showHint: true,
       },
       [fruitSource]
     );
@@ -181,12 +207,10 @@ storiesOf('Autocomplete', module)
           },
           getSuggestionValue: ({ suggestion }) => suggestion.value,
           templates: {
-            header: ({ state }) =>
-              '<h5 class="algolia-autocomplete-item-header">Fruits</h5> ' +
-              state.error,
+            header: () =>
+              '<h5 class="algolia-autocomplete-item-header">Fruits</h5> ',
             suggestion: ({ suggestion }) => suggestion.value,
-            empty: ({ state }) =>
-              `No fruits found for "${state.query}". ${state.error}`,
+            empty: ({ state }) => `No fruits found for "${state.query}".`,
           },
         },
         {
@@ -195,8 +219,8 @@ storiesOf('Autocomplete', module)
               let wait = setTimeout(() => {
                 clearTimeout(wait);
                 resolve(
-                  people.filter(person =>
-                    person.value
+                  artists.filter(artist =>
+                    artist.value
                       .toLocaleLowerCase()
                       .includes(query.toLocaleLowerCase())
                   )
@@ -207,9 +231,9 @@ storiesOf('Autocomplete', module)
           getSuggestionValue: ({ suggestion }) => suggestion.value,
           templates: {
             header: () =>
-              '<h5 class="algolia-autocomplete-item-header">People</h5>',
+              '<h5 class="algolia-autocomplete-item-header">artists</h5>',
             suggestion: ({ suggestion }) => suggestion.value,
-            empty: ({ state }) => `No people found for "${state.query}".`,
+            empty: ({ state }) => `No artists found for "${state.query}".`,
           },
         },
       ]
@@ -256,8 +280,8 @@ storiesOf('Autocomplete', module)
               let wait = setTimeout(() => {
                 clearTimeout(wait);
                 resolve(
-                  people.filter(person =>
-                    person.value
+                  artists.filter(artist =>
+                    artist.value
                       .toLocaleLowerCase()
                       .includes(query.toLocaleLowerCase())
                   )
@@ -268,9 +292,9 @@ storiesOf('Autocomplete', module)
           getSuggestionValue: ({ suggestion }) => suggestion.value,
           templates: {
             header: () =>
-              '<h5 class="algolia-autocomplete-item-header">People</h5>',
+              '<h5 class="algolia-autocomplete-item-header">artists</h5>',
             suggestion: ({ suggestion }) => suggestion.value,
-            empty: ({ state }) => `No people found for "${state.query}".`,
+            empty: ({ state }) => `No artists found for "${state.query}".`,
           },
         },
       ]
@@ -281,7 +305,224 @@ storiesOf('Autocomplete', module)
   .add('with Query Suggestions', () => {
     const container = document.createElement('div');
 
-    const searches = new RecentSearches({
+    autocomplete(
+      {
+        container,
+        placeholder: 'Search…',
+        showHint: true,
+      },
+      [
+        {
+          key: 'suggestion',
+          getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
+          getSuggestions({ query }) {
+            return searchClient
+              .search([
+                {
+                  indexName: 'instant_search_demo_query_suggestions',
+                  query,
+                  params: {
+                    hitsPerPage: 4,
+                    highlightPreTag: '<mark>',
+                    highlightPostTag: '</mark>',
+                  },
+                },
+              ])
+              .then(response => {
+                return response.results
+                  .map(result => result.hits)
+                  .flat()
+                  .filter(
+                    suggestion =>
+                      suggestion.query !== query.toLocaleLowerCase() &&
+                      `${suggestion.query} ` !== query.toLocaleLowerCase()
+                  )
+                  .slice(0, 3);
+              });
+          },
+          templates: {
+            suggestion({ suggestion, state }) {
+              return (
+                <div style={{ display: 'flex' }}>
+                  <svg
+                    viewBox="0 0 18 18"
+                    width={16}
+                    style={{
+                      marginRight: '.6rem',
+                      color: 'rgba(0, 0, 0, 0.3)',
+                    }}
+                  >
+                    <path
+                      d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
+                      stroke="currentColor"
+                      stroke-width="1.78"
+                      fill="none"
+                      fill-rule="evenodd"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                  </svg>
+
+                  {state.query ? (
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: reverseHighlightAlgoliaHit({
+                          hit: suggestion,
+                          attribute: 'query',
+                          highlightPreTag: '<mark>',
+                          highlightPostTag: '</mark>',
+                        }),
+                      }}
+                    />
+                  ) : (
+                    <div>{suggestion.query}</div>
+                  )}
+                </div>
+              );
+            },
+          },
+        },
+      ]
+    );
+
+    return container;
+  })
+  .add('with recent searches', () => {
+    const container = document.createElement('div');
+
+    const recentSearches = new RecentSearches({
+      limit: 3,
+    });
+
+    autocomplete(
+      {
+        container,
+        placeholder: 'Search…',
+        showHint: true,
+        minLength: 0,
+        onSelect({ state }) {
+          recentSearches.setRecentSearch(state.query);
+        },
+      },
+      [
+        {
+          key: 'history',
+          getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
+          getSuggestions({ query }) {
+            if (query) {
+              return [];
+            }
+
+            // Also inject some fake searches for the demo
+            return [
+              ...recentSearches.getRecentSearches(),
+              { query: 'guitar' },
+              { query: 'amazon' },
+            ].slice(0, 3);
+          },
+          templates: {
+            suggestion({ suggestion }) {
+              return (
+                <div style={{ display: 'flex' }}>
+                  <img
+                    src="https://image.flaticon.com/icons/svg/61/61122.svg"
+                    width="16"
+                    height="16"
+                    style={{
+                      marginRight: '.6rem',
+                      opacity: 0.3,
+                    }}
+                  />
+
+                  {suggestion.query}
+                </div>
+              );
+            },
+          },
+        },
+        {
+          key: 'suggestion',
+          getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
+          getSuggestions({ query }) {
+            if (!query) {
+              return [];
+            }
+
+            return searchClient
+              .search([
+                {
+                  indexName: 'instant_search_demo_query_suggestions',
+                  query,
+                  params: {
+                    hitsPerPage: 4,
+                    highlightPreTag: '<mark>',
+                    highlightPostTag: '</mark>',
+                  },
+                },
+              ])
+              .then(response => {
+                return response.results
+                  .map(result => result.hits)
+                  .flat()
+                  .filter(
+                    suggestion =>
+                      suggestion.query !== query.toLocaleLowerCase() &&
+                      `${suggestion.query} ` !== query.toLocaleLowerCase()
+                  )
+                  .slice(0, 3);
+              });
+          },
+          templates: {
+            suggestion({ suggestion, state }) {
+              return (
+                <div style={{ display: 'flex' }}>
+                  <svg
+                    viewBox="0 0 18 18"
+                    width={16}
+                    style={{
+                      marginRight: '.6rem',
+                      color: 'rgba(0, 0, 0, 0.3)',
+                    }}
+                  >
+                    <path
+                      d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
+                      stroke="currentColor"
+                      stroke-width="1.78"
+                      fill="none"
+                      fill-rule="evenodd"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></path>
+                  </svg>
+
+                  {state.query ? (
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: reverseHighlightAlgoliaHit({
+                          hit: suggestion,
+                          attribute: 'query',
+                          highlightPreTag: '<mark>',
+                          highlightPostTag: '</mark>',
+                        }),
+                      }}
+                    />
+                  ) : (
+                    <div>{suggestion.query}</div>
+                  )}
+                </div>
+              );
+            },
+          },
+        },
+      ]
+    );
+
+    return container;
+  })
+  .add('with hits', () => {
+    const container = document.createElement('div');
+
+    const recentSearches = new RecentSearches({
       limit: 3,
     });
 
@@ -314,7 +555,7 @@ storiesOf('Autocomplete', module)
           }
 
           if (event.key === 'Enter') {
-            searches.setRecentSearch(state.query);
+            recentSearches.setRecentSearch(state.query);
 
             if (event.metaKey || event.ctrlKey) {
               setState({
@@ -337,7 +578,7 @@ storiesOf('Autocomplete', module)
               isOpen: true,
             });
           } else {
-            searches.setRecentSearch(state.query);
+            recentSearches.setRecentSearch(state.query);
           }
         },
       },
@@ -350,7 +591,7 @@ storiesOf('Autocomplete', module)
               return [];
             }
 
-            return searches.getRecentSearches();
+            return recentSearches.getRecentSearches();
           },
           templates: {
             suggestion({ suggestion }) {
@@ -523,71 +764,71 @@ storiesOf('Autocomplete', module)
     );
 
     return container;
-  })
-  .add('with InstantSearch', () => {
-    const container = document.createElement('div');
-    const autocompleteContainer = document.createElement('div');
-    const hitsContainer = document.createElement('div');
-
-    container.appendChild(autocompleteContainer);
-    container.appendChild(hitsContainer);
-
-    const search = instantsearch({
-      searchClient,
-      indexName: 'instant_search',
-    });
-
-    const autocompleteWidget = connectAutocomplete(
-      (renderOptions, isFirstRender) => {
-        console.log(renderOptions);
-
-        const {
-          currentRefinement,
-          indices,
-          refine,
-          widgetParams,
-        } = renderOptions;
-
-        const hits = indices.map(index => index.hits).flat();
-
-        autocomplete(
-          {
-            container: widgetParams.container,
-            placeholder: 'Search…',
-            onSelect: ({ suggestionValue }) => refine(suggestionValue),
-          },
-          [
-            {
-              templates: {
-                suggestion({ suggestion }) {
-                  return suggestion._highlightResult.name.value;
-                },
-                header: () =>
-                  '<h5 class="algolia-autocomplete-item-header">E-commerce</h5>',
-              },
-              getSuggestionValue(suggestion) {
-                return suggestion.name;
-              },
-              getSuggestions({ query }) {
-                // refine(query);
-                return hits;
-              },
-            },
-          ]
-        );
-      }
-    );
-
-    search.addWidgets([
-      configure({
-        hitsPerPage: 5,
-      }),
-      autocompleteWidget({
-        container: autocompleteContainer,
-      }),
-    ]);
-
-    search.start();
-
-    return container;
   });
+// .add('with InstantSearch', () => {
+//   const container = document.createElement('div');
+//   const autocompleteContainer = document.createElement('div');
+//   const hitsContainer = document.createElement('div');
+
+//   container.appendChild(autocompleteContainer);
+//   container.appendChild(hitsContainer);
+
+//   const search = instantsearch({
+//     searchClient,
+//     indexName: 'instant_search',
+//   });
+
+//   const autocompleteWidget = connectAutocomplete(
+//     (renderOptions, isFirstRender) => {
+//       console.log(renderOptions);
+
+//       const {
+//         currentRefinement,
+//         indices,
+//         refine,
+//         widgetParams,
+//       } = renderOptions;
+
+//       const hits = indices.map(index => index.hits).flat();
+
+//       autocomplete(
+//         {
+//           container: widgetParams.container,
+//           placeholder: 'Search…',
+//           onSelect: ({ suggestionValue }) => refine(suggestionValue),
+//         },
+//         [
+//           {
+//             templates: {
+//               suggestion({ suggestion }) {
+//                 return suggestion._highlightResult.name.value;
+//               },
+//               header: () =>
+//                 '<h5 class="algolia-autocomplete-item-header">E-commerce</h5>',
+//             },
+//             getSuggestionValue(suggestion) {
+//               return suggestion.name;
+//             },
+//             getSuggestions({ query }) {
+//               // refine(query);
+//               return hits;
+//             },
+//           },
+//         ]
+//       );
+//     }
+//   );
+
+//   search.addWidgets([
+//     configure({
+//       hitsPerPage: 5,
+//     }),
+//     autocompleteWidget({
+//       container: autocompleteContainer,
+//     }),
+//   ]);
+
+//   search.start();
+
+//   return container;
+// });

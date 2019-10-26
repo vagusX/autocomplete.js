@@ -220,7 +220,7 @@ export class Autocomplete extends Component<
     return this.props.sources[sourceNumber];
   };
 
-  performQuery = (query: string) => {
+  performQuery = (query: string, nextIsOpen: boolean = true) => {
     if (this.setIsStalledId) {
       clearTimeout(this.setIsStalledId);
       this.setState({
@@ -237,7 +237,7 @@ export class Autocomplete extends Component<
         error: null,
       });
 
-      return;
+      return Promise.resolve();
     }
 
     this.setState({
@@ -254,7 +254,7 @@ export class Autocomplete extends Component<
       }, this.props.stalledDelay);
     }
 
-    Promise.all(
+    return Promise.all(
       this.props.sources.map(source =>
         source.getSuggestions({
           query: this.state.query,
@@ -272,7 +272,7 @@ export class Autocomplete extends Component<
         this.setState({
           results,
           isLoading: false,
-          isOpen: true,
+          isOpen: nextIsOpen,
         });
       })
       .catch(error => {
@@ -340,7 +340,8 @@ export class Autocomplete extends Component<
       // However, we do want to leave the dropdown open when it's
       // already open because there are results displayed. Otherwise,
       // it would result in a flashy behavior.
-      canOpen;
+      canOpen &&
+      this.state.results.some((result: Suggestion[]) => result.length > 0);
 
     return (
       <Downshift
@@ -355,13 +356,16 @@ export class Autocomplete extends Component<
         }}
         defaultHighlightedIndex={this.props.defaultHighlightedIndex}
         onSelect={(item: AutocompleteItem) => {
-          if (item) {
-            const { suggestion, source } = item;
+          if (!item) {
+            return;
+          }
 
-            this.performQuery(
-              source.getSuggestionValue({ suggestion, state: this.state })
-            );
+          const { suggestion, source } = item;
 
+          this.performQuery(
+            source.getSuggestionValue({ suggestion, state: this.state }),
+            false
+          ).then(() => {
             this.props.onSelect({
               suggestion: suggestion,
               suggestionValue: source.getSuggestionValue({
@@ -372,7 +376,7 @@ export class Autocomplete extends Component<
               state: this.state,
               setState: this.setState.bind(this),
             });
-          }
+          });
         }}
         onOuterClick={() => {
           this.setState({
@@ -397,6 +401,7 @@ export class Autocomplete extends Component<
               className={[
                 'algolia-autocomplete',
                 this.state.isStalled && 'algolia-autocomplete--stalled',
+                this.state.error && 'algolia-autocomplete--errored',
               ]
                 .filter(Boolean)
                 .join(' ')}

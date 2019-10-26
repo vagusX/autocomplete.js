@@ -35,8 +35,9 @@ export class SearchBox extends Component<SearchBoxProps> {
   private inputRef: null | HTMLInputElement = null;
 
   render() {
-    const showHint =
-      this.props.isOpen && !this.props.isStalled && this.props.hint;
+    const showHint = Boolean(
+      this.props.isOpen && !this.props.isStalled && this.props.hint
+    );
 
     return (
       <form
@@ -86,7 +87,7 @@ export class SearchBox extends Component<SearchBoxProps> {
         <div style={{ width: '100%' }}>
           {showHint && (
             <span
-              className="algolia-autocomplete-input algolia-autocomplete-input--hint"
+              className="algolia-autocomplete-input algolia-autocomplete-hint"
               aria-live={'assertive'}
               aria-suggest={`Press tab to select ${this.props.hint}`}
             >

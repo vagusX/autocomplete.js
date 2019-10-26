@@ -75,6 +75,7 @@ function generateId(): string {
 const defaultProps: AutocompleteOptions = {
   placeholder: '',
   minLength: 1,
+  showHint: false,
   defaultHighlightedIndex: 0,
   stalledDelay: 300,
   keyboardShortcuts: [],
@@ -252,6 +253,38 @@ export class Autocomplete extends Component<
       });
   };
 
+  getHint = (highlightedIndex: number) => {
+    if (!this.props.showHint) {
+      return '';
+    }
+
+    const item = this.state.results.flat()[Math.max(0, highlightedIndex)];
+    const source = this.getSourceFromHighlightedIndex(
+      Math.max(0, highlightedIndex)
+    );
+
+    if (!item || !source) {
+      return '';
+    }
+
+    const currentSuggestion = source.getSuggestionValue(item, this.state);
+
+    if (
+      // @TODO: do we want to show hints without query?
+      (!this.state.query && highlightedIndex >= 0) ||
+      (this.state.query &&
+        currentSuggestion
+          .toLocaleLowerCase()
+          .indexOf(this.state.query.toLocaleLowerCase()) === 0)
+    ) {
+      return (
+        this.state.query + currentSuggestion.slice(this.state.query.length)
+      );
+    }
+
+    return '';
+  };
+
   render() {
     const canOpen = this.state.query.length >= this.props.minLength;
     const isOpen =
@@ -313,24 +346,6 @@ export class Autocomplete extends Component<
           getItemProps,
           getMenuProps,
         }) => {
-          let hint = '';
-
-          const item = this.state.results.flat()[highlightedIndex];
-          const source = this.getSourceFromHighlightedIndex(highlightedIndex);
-          const currentQuery = this.state.query;
-          const currentSuggestion =
-            item && source ? source.getSuggestionValue(item, this.state) : '';
-
-          if (
-            currentSuggestion
-              .toLocaleLowerCase()
-              .indexOf(currentQuery.toLocaleLowerCase()) === 0
-          ) {
-            hint =
-              this.state.query +
-              currentSuggestion.slice(this.state.query.length);
-          }
-
           return (
             <div
               className={[
@@ -345,7 +360,7 @@ export class Autocomplete extends Component<
               <SearchBox
                 placeholder={this.props.placeholder}
                 query={this.state.query}
-                hint={hint}
+                hint={this.getHint(highlightedIndex)}
                 isOpen={this.state.isOpen}
                 isStalled={this.state.isStalled}
                 onInputRef={ref => {
@@ -366,9 +381,11 @@ export class Autocomplete extends Component<
                   this.props.onFocus();
                 }}
                 onKeyDown={(event: KeyboardEvent) => {
-                  const item = this.state.results.flat()[highlightedIndex];
+                  const item = this.state.results.flat()[
+                    Math.max(0, highlightedIndex)
+                  ];
                   const source = this.getSourceFromHighlightedIndex(
-                    highlightedIndex
+                    Math.max(0, highlightedIndex)
                   );
 
                   if (item) {
@@ -408,16 +425,13 @@ export class Autocomplete extends Component<
                         }
                       );
                     }
-                  } else if (event.key === 'Tab') {
-                    if (highlightedIndex < 0) {
-                      return;
-                    }
-
+                  } else if (
+                    event.key === 'Tab' ||
+                    (event.key === 'ArrowRight' &&
+                      (event.target! as HTMLInputElement).selectionStart ===
+                        this.state.query.length)
+                  ) {
                     event.preventDefault();
-
-                    const source = this.getSourceFromHighlightedIndex(
-                      highlightedIndex
-                    );
 
                     const nextQuery = source.getSuggestionValue(
                       item,
@@ -427,7 +441,7 @@ export class Autocomplete extends Component<
                     if (this.state.query !== nextQuery) {
                       this.performQuery(nextQuery);
 
-                      setHighlightedIndex(0);
+                      setHighlightedIndex(this.props.defaultHighlightedIndex);
                     }
                   }
                 }}

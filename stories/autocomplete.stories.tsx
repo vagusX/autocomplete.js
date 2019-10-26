@@ -284,6 +284,7 @@ storiesOf('Autocomplete', module)
         container,
         placeholder: 'Search…',
         minLength: 0,
+        showHint: true,
         defaultHighlightedIndex: -1,
         onClick({ event, item }) {
           if (

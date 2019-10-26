@@ -65,7 +65,7 @@ body {
 
 .algolia-autocomplete-input--hint {
   position: absolute;
-  opacity: 0.5;
+  opacity: 0.4;
   z-index: -1;
 }
 

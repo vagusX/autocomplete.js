@@ -42,7 +42,8 @@ body {
   position: relative;
 }
 
-.algolia-autocomplete-input {
+.algolia-autocomplete-input,
+.algolia-autocomplete-input--hint {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -60,6 +61,12 @@ body {
 .algolia-autocomplete-input::-webkit-search-results-button,
 .algolia-autocomplete-input::-webkit-search-results-decoration {
   display: none;
+}
+
+.algolia-autocomplete-input--hint {
+  position: absolute;
+  opacity: 0.5;
+  z-index: -1;
 }
 
 .algolia-autocomplete-loadingIndicator,

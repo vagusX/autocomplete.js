@@ -13,6 +13,9 @@ declare global {
 export type SearchBoxProps = {
   placeholder: string;
   query: string;
+  hint: string;
+  isStalled: boolean;
+  isOpen: boolean;
   onChange: (event: any) => void;
   onFocus: () => void;
   onKeyDown: (event: KeyboardEvent) => void;
@@ -76,27 +79,45 @@ export class SearchBox extends Component<SearchBoxProps> {
           </svg>
         </div>
 
-        <input
-          {...this.props.getInputProps({
-            placeholder: this.props.placeholder,
-            ref: (ref: HTMLElement) => {
-              this.inputRef = ref as HTMLInputElement;
+        <div style={{ width: '100%' }}>
+          {this.props.isOpen &&
+            !this.props.isStalled &&
+            this.props.query.length > 0 &&
+            this.props.hint && (
+              <span
+                className="algolia-autocomplete-input algolia-autocomplete-input--hint"
+                aria-live={'assertive'}
+                aria-suggest={`Press tab to select ${this.props.hint}`}
+              >
+                {this.props.hint}
+              </span>
+            )}
 
-              this.props.onInputRef(this.inputRef);
-            },
-            type: 'search',
-            autoComplete: 'off',
-            autoCorrect: 'off',
-            autoCapitalize: 'off',
-            spellCheck: 'false',
-            maxLength: '512',
-            value: this.props.query,
-            onChange: this.props.onChange,
-            onFocus: this.props.onFocus,
-            onKeyDown: this.props.onKeyDown,
-          })}
-          className="algolia-autocomplete-input"
-        />
+          <input
+            {...this.props.getInputProps({
+              placeholder: this.props.placeholder,
+              ref: (ref: HTMLElement) => {
+                this.inputRef = ref as HTMLInputElement;
+
+                this.props.onInputRef(this.inputRef);
+              },
+              type: 'search',
+              autoComplete: 'off',
+              autoCorrect: 'off',
+              autoCapitalize: 'off',
+              spellCheck: 'false',
+              maxLength: '512',
+              value: this.props.query,
+              onChange: this.props.onChange,
+              onFocus: this.props.onFocus,
+              // When you're focusing the input but click on the cursor,
+              // the menu should open.
+              onClick: this.props.onFocus,
+              onKeyDown: this.props.onKeyDown,
+            })}
+            className="algolia-autocomplete-input"
+          />
+        </div>
 
         <button
           type="reset"

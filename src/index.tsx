@@ -62,6 +62,10 @@ export interface AutocompleteOptions {
    * The minimum number of characters long the autocomplete opens.
    */
   minLength?: number;
+  /**
+   * Whether to show the highlighted suggestion as hint in the input.
+   */
+  showHint?: boolean;
   onInput?({ query }: { query: string }): void;
   onSelect?: ({ item }: { item: InternalItem }) => void;
   onClick?({ event, item }: { event: MouseEvent; item: InternalItem }): void;
@@ -74,6 +78,8 @@ export interface AutocompleteOptions {
   }): void;
 }
 
+// @TODO: add generics
+// function autocomplete<TItem>()
 function autocomplete(
   options: AutocompleteOptions,
   sources: AutocompleteSource[]
@@ -85,6 +91,7 @@ function autocomplete(
     defaultHighlightedIndex,
     keyboardShortcuts,
     minLength,
+    showHint,
     onInput,
     onSelect,
     onClick,
@@ -105,6 +112,7 @@ function autocomplete(
       defaultHighlightedIndex={defaultHighlightedIndex}
       keyboardShortcuts={keyboardShortcuts}
       minLength={minLength}
+      showHint={showHint}
       sources={sanitizedSources}
       onInput={onInput}
       onSelect={onSelect}

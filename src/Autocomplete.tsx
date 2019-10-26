@@ -30,6 +30,7 @@ type AutocompleteOptions = {
    */
   defaultHighlightedIndex?: number;
   minLength?: number;
+  showHint?: boolean;
   stalledDelay: number;
   keyboardShortcuts?: string[];
   /**
@@ -311,116 +312,156 @@ export class Autocomplete extends Component<
           getInputProps,
           getItemProps,
           getMenuProps,
-        }) => (
-          <div
-            className={[
-              'algolia-autocomplete',
-              this.state.isStalled && 'algolia-autocomplete--stalled',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-          >
-            {/*
+        }) => {
+          let hint = '';
+
+          const item = this.state.results.flat()[highlightedIndex];
+          const source = this.getSourceFromHighlightedIndex(highlightedIndex);
+          const currentQuery = this.state.query;
+          const currentSuggestion =
+            item && source ? source.getSuggestionValue(item, this.state) : '';
+
+          if (
+            currentSuggestion
+              .toLocaleLowerCase()
+              .indexOf(currentQuery.toLocaleLowerCase()) === 0
+          ) {
+            hint =
+              this.state.query +
+              currentSuggestion.slice(this.state.query.length);
+          }
+
+          return (
+            <div
+              className={[
+                'algolia-autocomplete',
+                this.state.isStalled && 'algolia-autocomplete--stalled',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
+              {/*
           // @ts-ignore @TODO: fix refs error */}
-            <SearchBox
-              placeholder={this.props.placeholder}
-              query={this.state.query}
-              onInputRef={ref => {
-                this.inputRef = ref as HTMLInputElement;
-              }}
-              getInputProps={getInputProps}
-              onFocus={() => {
-                if (canOpen) {
-                  this.setState({
-                    isOpen: true,
-                  });
-                }
+              <SearchBox
+                placeholder={this.props.placeholder}
+                query={this.state.query}
+                hint={hint}
+                isOpen={this.state.isOpen}
+                isStalled={this.state.isStalled}
+                onInputRef={ref => {
+                  this.inputRef = ref as HTMLInputElement;
+                }}
+                getInputProps={getInputProps}
+                onFocus={() => {
+                  if (canOpen) {
+                    this.setState({
+                      isOpen: true,
+                    });
+                  }
 
-                if (this.props.minLength === 0) {
-                  this.performQuery('');
-                }
+                  if (this.props.minLength === 0 && !this.state.query) {
+                    this.performQuery('');
+                  }
 
-                this.props.onFocus();
-              }}
-              onKeyDown={(event: KeyboardEvent) => {
-                const item = this.state.results.flat()[highlightedIndex];
-                const source = this.getSourceFromHighlightedIndex(
-                  highlightedIndex
-                );
-
-                if (item) {
-                  this.props.onKeyDown({
-                    event,
-                    item: {
-                      suggestion: item,
-                      suggestionValue: source.getSuggestionValue(
-                        item,
-                        this.state
-                      ),
-                      source,
-                      state: this.state,
-                      setState: this.setState.bind(this),
-                    },
-                  });
-                }
-
-                if (event.key === 'Escape') {
-                  this.setState(
-                    {
-                      // @TODO: should the query become empty?
-                      query: '',
-                      isOpen: false,
-                    },
-                    () => {
-                      this.props.onInput({ query: this.state.query });
-                    }
-                  );
-                } else if (event.key === 'Tab') {
-                  event.preventDefault();
-
+                  this.props.onFocus();
+                }}
+                onKeyDown={(event: KeyboardEvent) => {
+                  const item = this.state.results.flat()[highlightedIndex];
                   const source = this.getSourceFromHighlightedIndex(
                     highlightedIndex
                   );
 
-                  const nextQuery = source.getSuggestionValue(item, this.state);
-
-                  if (this.state.query !== nextQuery) {
-                    this.performQuery(nextQuery);
-
-                    setHighlightedIndex(0);
+                  if (item) {
+                    this.props.onKeyDown({
+                      event,
+                      item: {
+                        suggestion: item,
+                        suggestionValue: source.getSuggestionValue(
+                          item,
+                          this.state
+                        ),
+                        source,
+                        state: this.state,
+                        setState: this.setState.bind(this),
+                      },
+                    });
                   }
-                }
-              }}
-              onReset={() => {
-                this.setState(
-                  {
-                    query: '',
-                  },
-                  () => {
-                    // this.props.onSelect(undefined);
-                    this.props.onInput({ query: this.state.query });
-                  }
-                );
-              }}
-              onChange={(event: KeyboardEvent) => {
-                this.performQuery((event.target as any).value);
-              }}
-            />
 
-            <Dropdown
-              hidden={!isOpen}
-              isLoading={this.state.isLoading}
-              results={this.state.results}
-              query={this.state.query}
-              internalState={this.state}
-              internalSetState={this.setState.bind(this)}
-              sources={this.props.sources}
-              onClick={this.props.onClick}
-              getMenuProps={getMenuProps}
-              getItemProps={getItemProps}
-            />
-          </div>
-        )}
+                  if (event.key === 'Escape') {
+                    if (this.state.isOpen) {
+                      this.setState(
+                        {
+                          isOpen: false,
+                        },
+                        () => {
+                          this.props.onInput({ query: this.state.query });
+                        }
+                      );
+                    } else {
+                      this.setState(
+                        {
+                          query: '',
+                          isOpen: false,
+                        },
+                        () => {
+                          this.props.onInput({ query: this.state.query });
+                        }
+                      );
+                    }
+                  } else if (event.key === 'Tab') {
+                    if (highlightedIndex < 0) {
+                      return;
+                    }
+
+                    event.preventDefault();
+
+                    const source = this.getSourceFromHighlightedIndex(
+                      highlightedIndex
+                    );
+
+                    const nextQuery = source.getSuggestionValue(
+                      item,
+                      this.state
+                    );
+
+                    if (this.state.query !== nextQuery) {
+                      this.performQuery(nextQuery);
+
+                      setHighlightedIndex(0);
+                    }
+                  }
+                }}
+                onReset={() => {
+                  this.setState(
+                    {
+                      query: '',
+                    },
+                    () => {
+                      // this.props.onSelect(undefined);
+                      this.props.onInput({ query: this.state.query });
+                    }
+                  );
+                }}
+                onChange={(event: KeyboardEvent) => {
+                  this.performQuery((event.target as any).value);
+                }}
+              />
+
+              <Dropdown
+                hidden={!isOpen}
+                isLoading={this.state.isLoading}
+                results={this.state.results}
+                query={this.state.query}
+                internalState={this.state}
+                internalSetState={this.setState.bind(this)}
+                sources={this.props.sources}
+                onClick={this.props.onClick}
+                getMenuProps={getMenuProps}
+                getItemProps={getItemProps}
+              />
+            </div>
+          );
+        }}
       </Downshift>
     );
   }

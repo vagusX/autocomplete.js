@@ -284,6 +284,7 @@ storiesOf('Autocomplete', module)
         container,
         placeholder: 'Search…',
         minLength: 0,
+        defaultHighlightedIndex: -1,
         onClick({ event, item }) {
           if (
             event.metaKey ||
@@ -343,7 +344,7 @@ storiesOf('Autocomplete', module)
       [
         {
           key: 'history',
-          getSuggestionValue: (suggestion: any) => suggestion.query,
+          getSuggestionValue: (suggestion: any) => suggestion.query + ' ',
           getSuggestions({ query }) {
             if (query) {
               return [];
@@ -373,7 +374,7 @@ storiesOf('Autocomplete', module)
         },
         {
           key: 'suggestion',
-          getSuggestionValue: (suggestion: any) => suggestion.query,
+          getSuggestionValue: (suggestion: any) => suggestion.query + ' ',
           getSuggestions({ query }) {
             return searchClient
               .search([
@@ -391,7 +392,11 @@ storiesOf('Autocomplete', module)
                 return response.results
                   .map(result => result.hits)
                   .flat()
-                  .filter(suggestion => suggestion.query !== query)
+                  .filter(
+                    suggestion =>
+                      suggestion.query !== query.toLocaleLowerCase() &&
+                      `${suggestion.query} ` !== query.toLocaleLowerCase()
+                  )
                   .slice(0, 3);
               });
           },

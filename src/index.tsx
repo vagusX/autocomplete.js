@@ -4,85 +4,20 @@ import { h, render } from 'preact';
 
 import {
   Autocomplete,
-  Result,
-  InternalItem,
-  AutocompleteState,
+  OptionalAutocompleteOptions,
+  AutocompleteSource,
 } from './Autocomplete';
-import { Template } from './Template';
 
-export type AutocompleteTemplates = {
-  empty?: Template;
-  suggestion?: Template;
-  header?: Template;
-  footer?: Template;
-};
-
-export interface AutocompleteSource {
-  key?: string;
-  getSuggestionValue(value: unknown, state: AutocompleteState): string;
-  getSuggestions({ query }: { query: string }): Result[] | Promise<Result[]>;
-  templates?: AutocompleteTemplates;
-}
-
-/**
- * Item exposed to the lifecycle hooks.
- */
-export type AutocompleteItem = {
-  suggestion: unknown;
-  suggestionValue: ReturnType<AutocompleteSource['getSuggestionValue']>;
-};
-
-export interface AutocompleteOptions {
+export interface AutocompleteOptions extends OptionalAutocompleteOptions {
   /**
    * The input container to insert the search box.
    */
   container: HTMLElement;
-  /**
-   * The text that appears in the search box input when there is no query.
-   */
-  placeholder?: string;
-  /**
-   * The number of milliseconds before the autocomplete is considered as
-   * stalled.
-   *
-   * @default 300
-   */
-  stalledDelay?: number;
-  /**
-   * The default item index to pre-select.
-   *
-   * @default 0
-   */
-  defaultHighlightedIndex?: number;
-  /**
-   * The keyboard shortcuts keys to focus the input.
-   */
-  keyboardShortcuts?: string[];
-  /**
-   * The minimum number of characters long the autocomplete opens.
-   */
-  minLength?: number;
-  /**
-   * Whether to show the highlighted suggestion as hint in the input.
-   */
-  showHint?: boolean;
-  onInput?({ query }: { query: string }): void;
-  onSelect?: ({ item }: { item: InternalItem }) => void;
-  onClick?({ event, item }: { event: MouseEvent; item: InternalItem }): void;
-  onKeyDown?({
-    event,
-    item,
-  }: {
-    event: KeyboardEvent;
-    item: InternalItem;
-  }): void;
 }
 
-// @TODO: add generics
-// function autocomplete<TItem>()
 function autocomplete(
   options: AutocompleteOptions,
-  sources: AutocompleteSource[]
+  sources: Array<AutocompleteSource>
 ) {
   const {
     container,
@@ -92,14 +27,14 @@ function autocomplete(
     keyboardShortcuts,
     minLength,
     showHint,
-    onInput,
     onSelect,
     onClick,
     onKeyDown,
+    onError,
   } = options || {};
 
   const sanitizedSources = sources.map(source => ({
-    // @TODO: set `getSuggestionValue` as `() => ''` by default
+    // @TODO: set `getSuggestionValue` as `() => ''` by default?
     templates: {},
     ...source,
   }));
@@ -114,9 +49,9 @@ function autocomplete(
       minLength={minLength}
       showHint={showHint}
       sources={sanitizedSources}
-      onInput={onInput}
       onSelect={onSelect}
       onClick={onClick}
+      onError={onError}
       onKeyDown={onKeyDown}
     />,
     container,

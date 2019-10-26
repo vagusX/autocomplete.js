@@ -13,7 +13,12 @@ import autocomplete, {
   reverseHighlightAlgoliaHit,
 } from '../src';
 
-const fruits = [{ value: 'Orange' }, { value: 'Apple' }, { value: 'Banana' }];
+type FruitSource = Array<{ value: string }>;
+const fruits: FruitSource = [
+  { value: 'Orange' },
+  { value: 'Apple' },
+  { value: 'Banana' },
+];
 const people = [
   { value: 'John Frusciante' },
   { value: 'John Mayer' },
@@ -30,11 +35,11 @@ const fruitSource = {
       fruit.value.toLocaleLowerCase().includes(query.toLocaleLowerCase())
     );
   },
-  getSuggestionValue: suggestion => suggestion.value,
+  getSuggestionValue: ({ suggestion }) => suggestion.value,
   templates: {
     header: () => '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
-    suggestion: fruit => fruit.value,
-    empty: ({ query }) => `No fruits found for "${query}".`,
+    suggestion: ({ suggestion }) => suggestion.value,
+    empty: ({ state }) => `No fruits found for "${state.query}".`,
   },
 };
 
@@ -58,12 +63,12 @@ storiesOf('Autocomplete', module)
                 .includes(query.toLocaleLowerCase())
             );
           },
-          getSuggestionValue: suggestion => suggestion.value,
+          getSuggestionValue: ({ suggestion }) => suggestion.value,
           templates: {
             header: () =>
               '<h5 class="algolia-autocomplete-item-header">People</h5>',
-            suggestion: person => person.value,
-            empty: ({ query }) => `No people found for "${query}".`,
+            suggestion: ({ suggestion }) => suggestion.value,
+            empty: ({ state }) => `No people found for "${state.query}".`,
           },
         },
       ]
@@ -107,12 +112,12 @@ storiesOf('Autocomplete', module)
                 .includes(query.toLocaleLowerCase())
             );
           },
-          getSuggestionValue: suggestion => suggestion.value,
+          getSuggestionValue: ({ suggestion }) => suggestion.value,
           templates: {
             header: () =>
               '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
-            suggestion: fruit => fruit.value,
-            empty: ({ query }) => `No fruits found for "${query}".`,
+            suggestion: ({ suggestion }) => suggestion.value,
+            empty: ({ state }) => `No fruits found for "${state.query}".`,
           },
         },
       ]
@@ -160,9 +165,10 @@ storiesOf('Autocomplete', module)
       [
         {
           getSuggestions({ query }) {
-            return new Promise((resolve, reject) => {
+            return new Promise(resolve => {
               let wait = setTimeout(() => {
                 clearTimeout(wait);
+
                 resolve(
                   fruits.filter(fruit =>
                     fruit.value
@@ -173,17 +179,19 @@ storiesOf('Autocomplete', module)
               }, 400);
             });
           },
-          getSuggestionValue: suggestion => suggestion.value,
+          getSuggestionValue: ({ suggestion }) => suggestion.value,
           templates: {
-            header: () =>
-              '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
-            suggestion: fruit => fruit.value,
-            empty: ({ query }) => `No fruits found for "${query}".`,
+            header: ({ state }) =>
+              '<h5 class="algolia-autocomplete-item-header">Fruits</h5> ' +
+              state.error,
+            suggestion: ({ suggestion }) => suggestion.value,
+            empty: ({ state }) =>
+              `No fruits found for "${state.query}". ${state.error}`,
           },
         },
         {
           getSuggestions({ query }) {
-            return new Promise((resolve, reject) => {
+            return new Promise(resolve => {
               let wait = setTimeout(() => {
                 clearTimeout(wait);
                 resolve(
@@ -196,12 +204,12 @@ storiesOf('Autocomplete', module)
               }, 600);
             });
           },
-          getSuggestionValue: suggestion => suggestion.value,
+          getSuggestionValue: ({ suggestion }) => suggestion.value,
           templates: {
             header: () =>
               '<h5 class="algolia-autocomplete-item-header">People</h5>',
-            suggestion: person => person.value,
-            empty: ({ query }) => `No people found for "${query}".`,
+            suggestion: ({ suggestion }) => suggestion.value,
+            empty: ({ state }) => `No people found for "${state.query}".`,
           },
         },
       ]
@@ -221,7 +229,7 @@ storiesOf('Autocomplete', module)
       [
         {
           getSuggestions({ query }) {
-            return new Promise((resolve, reject) => {
+            return new Promise(resolve => {
               let wait = setTimeout(() => {
                 clearTimeout(wait);
                 resolve(
@@ -234,17 +242,17 @@ storiesOf('Autocomplete', module)
               }, 400);
             });
           },
-          getSuggestionValue: suggestion => suggestion.value,
+          getSuggestionValue: ({ suggestion }) => suggestion.value,
           templates: {
             header: () =>
               '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
-            suggestion: fruit => fruit.value,
-            empty: ({ query }) => `No fruits found for "${query}".`,
+            suggestion: ({ suggestion }) => suggestion.value,
+            empty: ({ state }) => `No fruits found for "${state.query}".`,
           },
         },
         {
           getSuggestions({ query }) {
-            return new Promise((resolve, reject) => {
+            return new Promise(resolve => {
               let wait = setTimeout(() => {
                 clearTimeout(wait);
                 resolve(
@@ -257,12 +265,12 @@ storiesOf('Autocomplete', module)
               }, 600);
             });
           },
-          getSuggestionValue: suggestion => suggestion.value,
+          getSuggestionValue: ({ suggestion }) => suggestion.value,
           templates: {
             header: () =>
               '<h5 class="algolia-autocomplete-item-header">People</h5>',
-            suggestion: person => person.value,
-            empty: ({ query }) => `No people found for "${query}".`,
+            suggestion: ({ suggestion }) => suggestion.value,
+            empty: ({ state }) => `No people found for "${state.query}".`,
           },
         },
       ]
@@ -275,10 +283,6 @@ storiesOf('Autocomplete', module)
 
     const searches = new RecentSearches({
       limit: 3,
-      // ttl: number, // Optional: ttl of searches in milliseconds, default to 24h (1000 * 60 * 60 * 24)
-      // limit: number, // Optional: max number of entries that will be persisted, default is 50
-      // namespace: string, // Optional: custom localStorage namespace
-      // ranking: string // Optional: ranking strategy of recent searches, "PROXIMITY" | "TIME" | "PROXIMITY_AND_TIME", default is "PROXIMITY_AND_TIME"
     });
 
     autocomplete(
@@ -288,66 +292,59 @@ storiesOf('Autocomplete', module)
         minLength: 0,
         showHint: true,
         defaultHighlightedIndex: -1,
-        onClick({ event, item }) {
+        onClick({ event, setState }) {
           if (
             event.metaKey ||
             event.ctrlKey ||
             event.shiftKey ||
             event.altKey
           ) {
-            item.setState({
+            setState({
               isOpen: true,
             });
           } else {
-            item.setState({
+            setState({
               isOpen: false,
             });
           }
         },
-        onKeyDown({ event, item }) {
-          if (!item.suggestion.url) {
+        onKeyDown({ event, suggestion, state, setState }) {
+          if (!suggestion.url) {
             return;
           }
 
           if (event.key === 'Enter') {
-            searches.setRecentSearch(item.state.query);
+            searches.setRecentSearch(state.query);
 
             if (event.metaKey || event.ctrlKey) {
-              item.setState({
+              setState({
                 isOpen: true,
               });
 
-              const windowReference = window.open(
-                item.suggestion.url,
-                '_blank'
-              );
+              const windowReference = window.open(suggestion.url, '_blank');
               windowReference!.focus();
             } else if (event.shiftKey) {
-              window.open(item.suggestion.url, '_blank');
+              window.open(suggestion.url, '_blank');
             } else if (event.altKey) {
             } else {
-              window.location.assign(item.suggestion.url);
+              window.location.assign(suggestion.url);
             }
           }
         },
-        onSelect({ item }) {
-          if (!item) {
-            return;
-          }
-
-          if (['history', 'suggestion'].includes(item.source.key!)) {
-            item.setState({
+        onSelect({ source, state, setState }) {
+          if (['history', 'suggestion'].includes(source.key!)) {
+            setState({
               isOpen: true,
             });
           } else {
-            searches.setRecentSearch(item.state.query);
+            searches.setRecentSearch(state.query);
           }
         },
       },
       [
         {
           key: 'history',
-          getSuggestionValue: (suggestion: any) => suggestion.query + ' ',
+          getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
           getSuggestions({ query }) {
             if (query) {
               return [];
@@ -356,7 +353,7 @@ storiesOf('Autocomplete', module)
             return searches.getRecentSearches();
           },
           templates: {
-            suggestion(suggestion) {
+            suggestion({ suggestion }) {
               return (
                 <div style={{ display: 'flex' }}>
                   <img
@@ -377,7 +374,7 @@ storiesOf('Autocomplete', module)
         },
         {
           key: 'suggestion',
-          getSuggestionValue: (suggestion: any) => suggestion.query + ' ',
+          getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
           getSuggestions({ query }) {
             return searchClient
               .search([
@@ -396,7 +393,7 @@ storiesOf('Autocomplete', module)
                   .map(result => result.hits)
                   .flat()
                   .filter(
-                    suggestion =>
+                    ({ suggestion }) =>
                       suggestion.query !== query.toLocaleLowerCase() &&
                       `${suggestion.query} ` !== query.toLocaleLowerCase()
                   )
@@ -404,7 +401,7 @@ storiesOf('Autocomplete', module)
               });
           },
           templates: {
-            suggestion(suggestion) {
+            suggestion({ suggestion, state }) {
               return (
                 <div style={{ display: 'flex' }}>
                   <svg
@@ -425,14 +422,19 @@ storiesOf('Autocomplete', module)
                       stroke-linejoin="round"
                     ></path>
                   </svg>
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: reverseHighlightAlgoliaHit({
-                        hit: suggestion,
-                        attribute: 'query',
-                      }),
-                    }}
-                  />
+
+                  {state.query ? (
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: reverseHighlightAlgoliaHit({
+                          hit: suggestion,
+                          attribute: 'query',
+                        }),
+                      }}
+                    />
+                  ) : (
+                    <div>{suggestion.query}</div>
+                  )}
                 </div>
               );
             },
@@ -440,7 +442,7 @@ storiesOf('Autocomplete', module)
         },
         {
           key: 'products',
-          getSuggestionValue: (_suggestion, state) => state.query,
+          getSuggestionValue: ({ state }) => state.query,
           getSuggestions({ query }) {
             return searchClient
               .search([
@@ -466,7 +468,7 @@ storiesOf('Autocomplete', module)
           templates: {
             header: () =>
               '<h5 class="algolia-autocomplete-item-header">Products</h5>',
-            suggestion(suggestion) {
+            suggestion({ suggestion }) {
               return (
                 <a
                   href={suggestion.url}
@@ -548,16 +550,12 @@ storiesOf('Autocomplete', module)
           {
             container: widgetParams.container,
             placeholder: 'Search…',
-            onInput: ({ query }) => {
-              console.log('onInput', query);
-              refine(query);
-            },
             onSelect: ({ suggestionValue }) => refine(suggestionValue),
           },
           [
             {
               templates: {
-                suggestion(suggestion) {
+                suggestion({ suggestion }) {
                   return suggestion._highlightResult.name.value;
                 },
                 header: () =>

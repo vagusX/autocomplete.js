@@ -3,65 +3,111 @@
 import { h, Component } from 'preact';
 import Downshift from 'downshift/preact';
 
-import { AutocompleteSource } from '.';
 import { Dropdown } from './Dropdown';
 import { SearchBox } from './SearchBox';
+import { Template } from './Template';
 
-export type Result = any;
+export type Suggestion = any;
 
-/**
- * Item used internally.
- */
-export type InternalItem = {
-  suggestion: unknown;
-  suggestionValue: ReturnType<AutocompleteSource['getSuggestionValue']>;
-  source: AutocompleteSource;
-  state: AutocompleteState;
-  setState(nextState: Partial<AutocompleteState>): void;
+type AutocompleteSourceTemplates = {
+  empty?: Template;
+  suggestion: Template<{ suggestion: Suggestion }>;
+  header?: Template;
+  footer?: Template;
 };
 
-type AutocompleteOptions = {
+export interface AutocompleteSource {
+  key?: string;
+  getSuggestionValue({
+    suggestion,
+    state,
+  }: {
+    suggestion: Suggestion;
+    state: AutocompleteState;
+  }): string;
+  getSuggestions({
+    query,
+  }: {
+    query: string;
+  }): Suggestion[] | Promise<Suggestion[]>;
+  templates: AutocompleteSourceTemplates;
+}
+
+export type AutocompleteItem = {
+  suggestion: Suggestion;
+  suggestionValue: ReturnType<AutocompleteSource['getSuggestionValue']>;
+  source: AutocompleteSource;
+};
+
+interface EventHandlerOptions {
+  state: AutocompleteState;
+  setState(nextState: Partial<AutocompleteState>): void;
+}
+
+interface ItemEventHandlerOptions extends EventHandlerOptions {
+  suggestion: Suggestion;
+  suggestionValue: ReturnType<AutocompleteSource['getSuggestionValue']>;
+  source: AutocompleteSource;
+}
+
+interface EventItemEventHandlerOptions<TEvent = Event>
+  extends ItemEventHandlerOptions {
+  event: TEvent;
+}
+
+export interface OptionalAutocompleteOptions {
   /**
    * The text that appears in the search box input when there is no query.
    */
-  placeholder: string;
+  placeholder?: string;
   /**
-   * The number of milliseconds before the search is considered as stalled.
+   * The number of milliseconds before the autocomplete experience is considered
+   * as stalled.
+   *
+   * @default 300
+   */
+  stalledDelay?: number;
+  /**
+   * The default item index to pre-select.
+   *
+   * @default 0
    */
   defaultHighlightedIndex?: number;
-  minLength?: number;
-  showHint?: boolean;
-  stalledDelay: number;
+  /**
+   * The keyboard shortcuts keys to focus the input.
+   */
   keyboardShortcuts?: string[];
   /**
-   * The sources to get the suggestions.
+   * The minimum number of characters long the autocomplete opens.
+   *
+   * @default 1
    */
-  sources: AutocompleteSource[];
-  // @TODO: call whenever state.isOpen is true
-  // onOpen: () => void;
-  // @TODO: call whenever state.isOpen is false
-  // onClose: () => void;
-  // onHover: (item: InternalItem) => void;
-  onFocus: () => void;
-  onSelect: ({ item }: { item: InternalItem }) => void;
-  onInput?: ({ query }: { query: string }) => void;
-  onClick?({ event, item }: { event: MouseEvent; item: InternalItem }): void;
-  onKeyDown?({
-    event,
-    item,
-  }: {
-    event: KeyboardEvent;
-    item: InternalItem;
-  }): void;
-};
+  minLength?: number;
+  /**
+   * Whether to show the highlighted suggestion as hint in the input.
+   *
+   * @default false
+   */
+  showHint?: boolean;
+  /**
+   * The sources to get the suggestions from.
+   */
+  sources?: AutocompleteSource[];
+  onFocus?: (options: EventHandlerOptions) => void;
+  onSelect?: (options: ItemEventHandlerOptions) => void;
+  onClick?: (options: EventItemEventHandlerOptions<MouseEvent>) => void;
+  onKeyDown?: (options: EventItemEventHandlerOptions<KeyboardEvent>) => void;
+  onError?: (options: EventHandlerOptions) => void;
+}
 
-export type AutocompleteState = {
+export interface AutocompleteState {
   query: string;
-  results: Result[];
+  results: Suggestion[][];
   isOpen: boolean;
   isLoading: boolean;
   isStalled: boolean;
-};
+  error: Error | null;
+}
 
 let autocompleteIdCounter = 0;
 
@@ -72,7 +118,7 @@ function generateId(): string {
   return String(autocompleteIdCounter++);
 }
 
-const defaultProps: AutocompleteOptions = {
+const defaultProps: OptionalAutocompleteOptions = {
   placeholder: '',
   minLength: 1,
   showHint: false,
@@ -80,18 +126,20 @@ const defaultProps: AutocompleteOptions = {
   stalledDelay: 300,
   keyboardShortcuts: [],
   sources: [],
-  onSelect: ({ item }) => {
-    item.setState({
+  onSelect: ({ setState }) => {
+    setState({
       isOpen: false,
     });
   },
-  onInput: () => {},
   onFocus: () => {},
   onClick: () => {},
   onKeyDown: () => {},
+  onError: ({ state }) => {
+    throw state.error;
+  },
 };
 
-export type AutocompleteProps = Required<AutocompleteOptions>;
+export type AutocompleteProps = Required<OptionalAutocompleteOptions>;
 
 export class Autocomplete extends Component<
   AutocompleteProps,
@@ -107,12 +155,8 @@ export class Autocomplete extends Component<
     isOpen: false,
     isLoading: false,
     isStalled: false,
+    error: null,
   };
-
-  // @TODO: see how we can use this
-  // setInternalState = (newState: Partial<AutocompleteState>) => {
-  //   return this.setState(() => newState);
-  // };
 
   componentDidMount() {
     if (this.props.keyboardShortcuts.length > 1) {
@@ -158,10 +202,13 @@ export class Autocomplete extends Component<
   getSourceFromHighlightedIndex = (
     highlightedIndex: number
   ): AutocompleteSource => {
-    const resultsSizes = this.state.results.reduce<number[]>((acc, result) => {
-      acc.push(result.length + acc.reduce((a, b) => a + b, 0));
-      return acc;
-    }, []);
+    const resultsSizes = this.state.results.reduce<number[]>(
+      (acc, result: number[]) => {
+        acc.push(result.length + acc.reduce((a, b) => a + b, 0));
+        return acc;
+      },
+      []
+    );
     const sourceNumber = resultsSizes.reduce((acc, current) => {
       if (current <= highlightedIndex) {
         return acc + 1;
@@ -182,30 +229,22 @@ export class Autocomplete extends Component<
     }
 
     if (query.length < this.props.minLength) {
-      this.setState(
-        {
-          isLoading: false,
-          isOpen: false,
-          query,
-          results: [],
-        },
-        () => {
-          this.props.onInput({ query });
-        }
-      );
+      this.setState({
+        isLoading: false,
+        isOpen: false,
+        query,
+        results: [],
+        error: null,
+      });
 
       return;
     }
 
-    this.setState(
-      {
-        isLoading: true,
-        query,
-      },
-      () => {
-        this.props.onInput({ query });
-      }
-    );
+    this.setState({
+      isLoading: true,
+      error: null,
+      query,
+    });
 
     if (typeof window !== 'undefined') {
       this.setIsStalledId = window.setTimeout(() => {
@@ -246,10 +285,13 @@ export class Autocomplete extends Component<
 
         this.setState({
           isLoading: false,
-          isOpen: false,
+          error,
         });
 
-        throw error;
+        this.props.onError({
+          state: this.state,
+          setState: this.setState.bind(this),
+        });
       });
   };
 
@@ -258,16 +300,19 @@ export class Autocomplete extends Component<
       return '';
     }
 
-    const item = this.state.results.flat()[Math.max(0, highlightedIndex)];
+    const suggestion = this.state.results.flat()[Math.max(0, highlightedIndex)];
     const source = this.getSourceFromHighlightedIndex(
       Math.max(0, highlightedIndex)
     );
 
-    if (!item || !source) {
+    if (!suggestion || !source) {
       return '';
     }
 
-    const currentSuggestion = source.getSuggestionValue(item, this.state);
+    const currentSuggestion = source.getSuggestionValue({
+      suggestion,
+      state: this.state,
+    });
 
     if (
       // @TODO: do we want to show hints without query?
@@ -300,31 +345,32 @@ export class Autocomplete extends Component<
     return (
       <Downshift
         id={`autocomplete-${generateId()}`}
-        itemToString={(item: InternalItem) => {
+        itemToString={(item: AutocompleteItem) => {
           return item
-            ? item.source.getSuggestionValue(item.suggestion, this.state)
+            ? item.source.getSuggestionValue({
+                suggestion: item.suggestion,
+                state: this.state,
+              })
             : '';
         }}
         defaultHighlightedIndex={this.props.defaultHighlightedIndex}
-        onSelect={(item: InternalItem) => {
+        onSelect={(item: AutocompleteItem) => {
           if (item) {
-            const { suggestion, source, state, setState } = item;
+            const { suggestion, source } = item;
 
             this.performQuery(
-              source.getSuggestionValue(suggestion, this.state)
+              source.getSuggestionValue({ suggestion, state: this.state })
             );
 
             this.props.onSelect({
-              item: {
-                suggestion: suggestion,
-                suggestionValue: source.getSuggestionValue(
-                  suggestion,
-                  this.state
-                ),
-                source,
-                state,
-                setState,
-              },
+              suggestion: suggestion,
+              suggestionValue: source.getSuggestionValue({
+                suggestion,
+                state: this.state,
+              }),
+              source,
+              state: this.state,
+              setState: this.setState.bind(this),
             });
           }
         }}
@@ -378,52 +424,43 @@ export class Autocomplete extends Component<
                     this.performQuery('');
                   }
 
-                  this.props.onFocus();
+                  this.props.onFocus({
+                    state: this.state,
+                    setState: this.setState.bind(this),
+                  });
                 }}
                 onKeyDown={(event: KeyboardEvent) => {
-                  const item = this.state.results.flat()[
+                  const suggestion: any = this.state.results.flat()[
                     Math.max(0, highlightedIndex)
                   ];
                   const source = this.getSourceFromHighlightedIndex(
                     Math.max(0, highlightedIndex)
                   );
 
-                  if (item) {
+                  if (suggestion) {
                     this.props.onKeyDown({
                       event,
-                      item: {
-                        suggestion: item,
-                        suggestionValue: source.getSuggestionValue(
-                          item,
-                          this.state
-                        ),
-                        source,
+                      suggestion,
+                      suggestionValue: source.getSuggestionValue({
+                        suggestion,
                         state: this.state,
-                        setState: this.setState.bind(this),
-                      },
+                      }),
+                      source,
+                      state: this.state,
+                      setState: this.setState.bind(this),
                     });
                   }
 
                   if (event.key === 'Escape') {
                     if (this.state.isOpen) {
-                      this.setState(
-                        {
-                          isOpen: false,
-                        },
-                        () => {
-                          this.props.onInput({ query: this.state.query });
-                        }
-                      );
+                      this.setState({
+                        isOpen: false,
+                      });
                     } else {
-                      this.setState(
-                        {
-                          query: '',
-                          isOpen: false,
-                        },
-                        () => {
-                          this.props.onInput({ query: this.state.query });
-                        }
-                      );
+                      this.setState({
+                        query: '',
+                        isOpen: false,
+                      });
                     }
                   } else if (
                     event.key === 'Tab' ||
@@ -433,10 +470,10 @@ export class Autocomplete extends Component<
                   ) {
                     event.preventDefault();
 
-                    const nextQuery = source.getSuggestionValue(
-                      item,
-                      this.state
-                    );
+                    const nextQuery = source.getSuggestionValue({
+                      suggestion,
+                      state: this.state,
+                    });
 
                     if (this.state.query !== nextQuery) {
                       this.performQuery(nextQuery);
@@ -446,15 +483,9 @@ export class Autocomplete extends Component<
                   }
                 }}
                 onReset={() => {
-                  this.setState(
-                    {
-                      query: '',
-                    },
-                    () => {
-                      // this.props.onSelect(undefined);
-                      this.props.onInput({ query: this.state.query });
-                    }
-                  );
+                  this.setState({
+                    query: '',
+                  });
                 }}
                 onChange={(event: KeyboardEvent) => {
                   this.performQuery((event.target as any).value);

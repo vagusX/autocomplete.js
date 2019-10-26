@@ -2,20 +2,20 @@
 
 import { h } from 'preact';
 
-import { AutocompleteSource } from '.';
-import { Template } from './Template';
 import {
-  Result,
-  AutocompleteState,
-  InternalItem,
+  AutocompleteItem,
+  AutocompleteSource,
   AutocompleteProps,
+  AutocompleteState,
+  Suggestion,
 } from './Autocomplete';
+import { Template } from './Template';
 
 interface DropdownProps {
   hidden: boolean;
   isLoading: boolean;
   query: string;
-  results: Result[];
+  results: Suggestion[];
   sources: AutocompleteSource[];
   internalState: AutocompleteState;
   internalSetState(nextState: Partial<AutocompleteState>): void;
@@ -27,7 +27,6 @@ interface DropdownProps {
 export const Dropdown = ({
   hidden,
   isLoading,
-  query,
   results,
   sources,
   internalState,
@@ -44,32 +43,35 @@ export const Dropdown = ({
 
           return (
             <section className="algolia-autocomplete-results">
-              <Template tagName="header" template={source.templates.header} />
+              <Template
+                tagName="header"
+                data={{ state: internalState }}
+                template={source.templates.header}
+              />
 
               {!isLoading && suggestions.length === 0 ? (
-                <Template data={{ query }} template={source.templates.empty} />
+                <Template
+                  data={{ state: internalState }}
+                  template={source.templates.empty}
+                />
               ) : (
                 <ul
                   {...getMenuProps(
                     {},
                     // @TODO: remove `suppressRefError`
+                    // @ts-ignore
                     // See https://github.com/downshift-js/downshift#getmenuprops
                     { suppressRefError: true }
                   )}
                 >
                   {suggestions.map(suggestion => {
-                    const item: InternalItem = {
-                      suggestionValue: source.getSuggestionValue(suggestion, {
-                        item: {},
+                    const item: AutocompleteItem = {
+                      suggestionValue: source.getSuggestionValue({
                         suggestion,
-                        source,
                         state: internalState,
-                        setState: internalSetState,
                       }),
                       suggestion,
                       source,
-                      state: internalState,
-                      setState: internalSetState,
                     };
 
                     return (
@@ -77,24 +79,33 @@ export const Dropdown = ({
                         tagName="li"
                         rootProps={{
                           className: 'algolia-autocomplete-item',
-                          // tabIndex: 0,
                           ...getItemProps({
                             item,
                             tabIndex: 0,
                             onClick: (event: MouseEvent) =>
-                              onClick({ event, item }),
+                              onClick({
+                                event,
+                                suggestion: item.suggestion,
+                                suggestionValue: item.suggestionValue,
+                                source: item.source,
+                                state: internalState,
+                                setState: internalSetState,
+                              }),
                           }),
                         }}
-                        data={suggestion}
+                        data={{ state: internalState, suggestion }}
                         template={source.templates.suggestion}
-                        defaultTemplate={suggestion => suggestion}
                       />
                     );
                   })}
                 </ul>
               )}
 
-              <Template tagName="footer" template={source.templates.footer} />
+              <Template
+                tagName="footer"
+                data={{ state: internalState }}
+                template={source.templates.footer}
+              />
             </section>
           );
         })}

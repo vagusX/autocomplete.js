@@ -401,7 +401,7 @@ storiesOf('Autocomplete', module)
         showHint: true,
         minLength: 0,
         onSelect({ state }) {
-          recentSearches.setRecentSearch(state.query);
+          recentSearches.setRecentSearch(state.query.trim());
         },
       },
       [

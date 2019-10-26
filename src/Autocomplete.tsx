@@ -9,12 +9,17 @@ import { Template } from './Template';
 
 export type Suggestion = any;
 
-type AutocompleteSourceTemplates = {
+interface AutocompleteTemplates {
+  header?: Template;
+  footer?: Template;
+}
+
+interface AutocompleteSourceTemplates {
   empty?: Template;
   suggestion: Template<{ suggestion: Suggestion }>;
   header?: Template;
   footer?: Template;
-};
+}
 
 export interface AutocompleteSource {
   key?: string;
@@ -33,11 +38,11 @@ export interface AutocompleteSource {
   templates: AutocompleteSourceTemplates;
 }
 
-export type AutocompleteItem = {
+export interface AutocompleteItem {
   suggestion: Suggestion;
   suggestionValue: ReturnType<AutocompleteSource['getSuggestionValue']>;
   source: AutocompleteSource;
-};
+}
 
 interface EventHandlerOptions {
   state: AutocompleteState;
@@ -93,6 +98,7 @@ export interface OptionalAutocompleteOptions {
    * The sources to get the suggestions from.
    */
   sources?: AutocompleteSource[];
+  templates?: AutocompleteTemplates;
   onFocus?: (options: EventHandlerOptions) => void;
   onSelect?: (options: ItemEventHandlerOptions) => void;
   onClick?: (options: EventItemEventHandlerOptions<MouseEvent>) => void;
@@ -126,6 +132,7 @@ const defaultProps: OptionalAutocompleteOptions = {
   stalledDelay: 300,
   keyboardShortcuts: [],
   sources: [],
+  templates: {},
   onSelect: ({ setState }) => {
     setState({
       isOpen: false,
@@ -514,6 +521,7 @@ export class Autocomplete extends Component<
                 internalState={this.state}
                 internalSetState={this.setState.bind(this)}
                 sources={this.props.sources}
+                templates={this.props.templates}
                 onClick={this.props.onClick}
                 getMenuProps={getMenuProps}
                 getItemProps={getItemProps}

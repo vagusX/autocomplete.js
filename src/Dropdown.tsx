@@ -4,7 +4,6 @@ import { h } from 'preact';
 
 import {
   AutocompleteItem,
-  AutocompleteSource,
   AutocompleteProps,
   AutocompleteState,
   Suggestion,
@@ -16,10 +15,11 @@ interface DropdownProps {
   isLoading: boolean;
   query: string;
   results: Array<Suggestion[]>;
-  sources: AutocompleteSource[];
+  templates: AutocompleteProps['templates'];
+  sources: AutocompleteProps['sources'];
+  onClick: AutocompleteProps['onClick'];
   internalState: AutocompleteState;
   internalSetState(nextState: Partial<AutocompleteState>): void;
-  onClick: AutocompleteProps['onClick'];
   getItemProps(options?: object): any;
   getMenuProps(options?: object): any;
 }
@@ -29,6 +29,7 @@ export const Dropdown = ({
   isLoading,
   results,
   sources,
+  templates,
   internalState,
   internalSetState,
   onClick,
@@ -37,6 +38,18 @@ export const Dropdown = ({
 }: DropdownProps) => {
   return (
     <div className="algolia-autocomplete-dropdown" hidden={hidden}>
+      <Template
+        tagName="header"
+        data={{
+          state: internalState,
+          setState: internalSetState,
+        }}
+        template={templates.header}
+        rootProps={{
+          className: 'algolia-autocomplete-header',
+        }}
+      />
+
       <div className="algolia-autocomplete-dropdown-container">
         {results.map((suggestions, index) => {
           const source = sources[index];
@@ -122,6 +135,18 @@ export const Dropdown = ({
             </section>
           );
         })}
+
+        <Template
+          tagName="footer"
+          data={{
+            state: internalState,
+            setState: internalSetState,
+          }}
+          template={templates.footer}
+          rootProps={{
+            className: 'algolia-autocomplete-footer',
+          }}
+        />
       </div>
     </div>
   );

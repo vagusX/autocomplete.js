@@ -27,6 +27,7 @@ function autocomplete(
     keyboardShortcuts,
     minLength,
     showHint,
+    templates,
     onSelect,
     onClick,
     onKeyDown,
@@ -49,6 +50,7 @@ function autocomplete(
       minLength={minLength}
       showHint={showHint}
       sources={sanitizedSources}
+      templates={templates}
       onSelect={onSelect}
       onClick={onClick}
       onError={onError}

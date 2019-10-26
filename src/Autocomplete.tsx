@@ -459,6 +459,15 @@ export class Autocomplete extends Component<
                 onChange={(event: KeyboardEvent) => {
                   this.performQuery((event.target as any).value);
                 }}
+                onSubmit={(event: Event) => {
+                  event.preventDefault();
+
+                  this.inputRef && this.inputRef.blur();
+
+                  this.setState({
+                    isOpen: false,
+                  });
+                }}
               />
 
               <Dropdown

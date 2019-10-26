@@ -20,6 +20,7 @@ export type SearchBoxProps = {
   onFocus: () => void;
   onKeyDown: (event: KeyboardEvent) => void;
   onReset: (event: MouseEvent) => void;
+  onSubmit: (event: Event) => void;
   onInputRef: (ref: HTMLInputElement) => void;
   getInputProps?(options?: object): any;
 } & typeof defaultProps;
@@ -43,7 +44,7 @@ export class SearchBox extends Component<SearchBoxProps> {
         role="search"
         noValidate
         className="algolia-autocomplete-form"
-        onSubmit={event => event.preventDefault()}
+        onSubmit={this.props.onSubmit}
       >
         <label
           for={this.props.getInputProps().id}

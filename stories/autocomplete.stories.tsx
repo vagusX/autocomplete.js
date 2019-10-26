@@ -46,6 +46,7 @@ storiesOf('Autocomplete', module)
       {
         container,
         placeholder: 'Search…',
+        showHint: true,
       },
       [
         fruitSource,
@@ -154,6 +155,7 @@ storiesOf('Autocomplete', module)
       {
         container,
         placeholder: 'Search…',
+        showHint: true,
       },
       [
         {

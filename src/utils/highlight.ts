@@ -1,3 +1,20 @@
+const htmlEscapes = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
+
+const unescapedHtml = /[&<>"']/g;
+const hasUnescapedHtml = RegExp(unescapedHtml.source);
+
+function escape(value: string): string {
+  return value && hasUnescapedHtml.test(value)
+    ? value.replace(unescapedHtml, char => htmlEscapes[char])
+    : value;
+}
+
 export function parseHighlightedAttribute({
   highlightPreTag,
   highlightPostTag,
@@ -45,8 +62,8 @@ function getPropertyByPath(object: object, path: string): any {
 export function highlightAlgoliaHit({
   hit,
   attribute,
-  highlightPreTag = '<mark>',
-  highlightPostTag = '</mark>',
+  highlightPreTag = '<em>',
+  highlightPostTag = '</em>',
 }): string {
   const highlightedValue =
     (getPropertyByPath(hit, `_highlightResult.${attribute}.value`) as string) ||
@@ -58,9 +75,11 @@ export function highlightAlgoliaHit({
     highlightedValue,
   })
     .map(part => {
+      const escapedValue = escape(part.value);
+
       return part.isHighlighted
-        ? `${highlightPreTag}${part.value}${highlightPostTag}`
-        : part.value;
+        ? `${highlightPreTag}${escapedValue}${highlightPostTag}`
+        : escapedValue;
     })
     .join('');
 }
@@ -68,8 +87,8 @@ export function highlightAlgoliaHit({
 export function reverseHighlightAlgoliaHit({
   hit,
   attribute,
-  highlightPreTag = '<mark>',
-  highlightPostTag = '</mark>',
+  highlightPreTag = '<em>',
+  highlightPostTag = '</em>',
 }): string {
   const highlightedValue =
     (getPropertyByPath(hit, `_highlightResult.${attribute}.value`) as string) ||
@@ -81,9 +100,11 @@ export function reverseHighlightAlgoliaHit({
     highlightedValue,
   })
     .map(part => {
+      const escapedValue = escape(part.value);
+
       return part.isHighlighted
-        ? part.value
-        : `${highlightPreTag}${part.value}${highlightPostTag}`;
+        ? escapedValue
+        : `${highlightPreTag}${escapedValue}${highlightPostTag}`;
     })
     .join('');
 }

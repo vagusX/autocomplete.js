@@ -429,6 +429,8 @@ storiesOf('Autocomplete', module)
                         __html: reverseHighlightAlgoliaHit({
                           hit: suggestion,
                           attribute: 'query',
+                          highlightPreTag: '<mark>',
+                          highlightPostTag: '</mark>',
                         }),
                       }}
                     />
@@ -496,6 +498,8 @@ storiesOf('Autocomplete', module)
                         __html: highlightAlgoliaHit({
                           hit: suggestion,
                           attribute: 'name',
+                          highlightPreTag: '<mark>',
+                          highlightPostTag: '</mark>',
                         }),
                       }}
                     />

@@ -166,13 +166,19 @@ export class Autocomplete extends Component<
   };
 
   componentDidMount() {
-    if (this.props.keyboardShortcuts.length > 1) {
+    if (
+      typeof window !== 'undefined' &&
+      this.props.keyboardShortcuts.length > 1
+    ) {
       window.addEventListener('keydown', this.onGlobalKeyDown);
     }
   }
 
   componentWillUnmount() {
-    if (this.props.keyboardShortcuts.length > 1) {
+    if (
+      typeof window !== 'undefined' &&
+      this.props.keyboardShortcuts.length > 1
+    ) {
       window.removeEventListener('keydown', this.onGlobalKeyDown);
     }
   }
@@ -182,7 +188,7 @@ export class Autocomplete extends Component<
       return;
     }
 
-    const element = (event.target || event.srcElement) as HTMLElement;
+    const element = event.target as HTMLElement;
     const tagName = element.tagName;
 
     // Do not trigger the focus if we're already editing text.

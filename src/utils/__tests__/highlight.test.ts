@@ -38,5 +38,14 @@ describe('highlight', () => {
         hit: { _highlightResult: { title: { value: '<mark>Hell</mark>o' } } },
       })
     ).toEqual('Hell<mark>o</mark>');
+
+    expect(
+      reverseHighlightAlgoliaHit({
+        highlightPreTag: '<mark>',
+        highlightPostTag: '</mark>',
+        attribute: 'title',
+        hit: { _highlightResult: { title: { value: 'Hello' } } },
+      })
+    ).toEqual('Hello');
   });
 });

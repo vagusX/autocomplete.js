@@ -73,14 +73,12 @@ const querySuggestionsSource = {
 
           <div
             dangerouslySetInnerHTML={{
-              __html: state.query
-                ? reverseHighlightAlgoliaHit({
-                    hit: suggestion,
-                    attribute: 'query',
-                    highlightPreTag: '<mark>',
-                    highlightPostTag: '</mark>',
-                  })
-                : suggestion.query,
+              __html: reverseHighlightAlgoliaHit({
+                hit: suggestion,
+                attribute: 'query',
+                highlightPreTag: '<mark>',
+                highlightPostTag: '</mark>',
+              }),
             }}
           />
         </div>

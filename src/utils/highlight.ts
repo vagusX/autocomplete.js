@@ -93,14 +93,23 @@ export function reverseHighlightAlgoliaHit({
   const highlightedValue =
     (getPropertyByPath(hit, `_highlightResult.${attribute}.value`) as string) ||
     '';
-
-  return parseHighlightedAttribute({
+  const parsedHighlightedAttribute = parseHighlightedAttribute({
     highlightPreTag,
     highlightPostTag,
     highlightedValue,
-  })
+  });
+  const noPartsMatch = !parsedHighlightedAttribute.some(
+    part => part.isHighlighted
+  );
+
+  return parsedHighlightedAttribute
     .map(part => {
       const escapedValue = escape(part.value);
+
+      // We don't want to highlight the whole word when no parts match.
+      if (noPartsMatch) {
+        return escapedValue;
+      }
 
       return part.isHighlighted
         ? escapedValue

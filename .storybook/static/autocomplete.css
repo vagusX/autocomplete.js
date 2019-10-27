@@ -3,8 +3,8 @@ body {
     'San Francisco', BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica,
     Arial, sans-serif;
   margin: auto;
-  padding: 2rem 1rem;
   max-width: 600px;
+  padding: 2rem 1rem;
 }
 
 :root {
@@ -106,13 +106,19 @@ body {
 }
 
 .algolia-autocomplete-reset {
+  align-items: center;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   background: none;
   border: none;
+  border-radius: 50%;
   cursor: pointer;
+  display: flex;
+  height: 32px;
+  justify-content: center;
   right: 0;
+  width: 32px;
 }
 
 .algolia-autocomplete-reset[hidden] {
@@ -120,6 +126,7 @@ body {
 }
 
 .algolia-autocomplete-reset:focus {
+  background: var(--algolia-autocomplete-background-start-color);
   color: #5468ff;
   color: var(--algolia-autocomplete-highlight-color);
   outline: none;

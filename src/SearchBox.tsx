@@ -12,7 +12,8 @@ declare global {
 }
 
 export type SearchBoxProps = {
-  placeholder: string;
+  placeholder: AutocompleteProps['placeholder'];
+  autofocus: AutocompleteProps['autofocus'];
   hint: string;
   internalState: AutocompleteState;
   internalSetState(nextState: Partial<AutocompleteState>): void;
@@ -106,6 +107,7 @@ export class SearchBox extends Component<SearchBoxProps> {
 
                 this.props.onInputRef(this.inputRef);
               },
+              autofocus: this.props.autofocus,
               type: 'search',
               autoComplete: 'off',
               autoCorrect: 'off',

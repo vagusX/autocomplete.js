@@ -96,13 +96,19 @@ export interface OptionalAutocompleteOptions {
    */
   minLength?: number;
   /**
+   * Focus the search box when the page is loaded.
+   *
+   * @default false
+   */
+  autofocus?: boolean;
+  /**
    * Whether to show the highlighted suggestion as hint in the input.
    *
    * @default false
    */
   showHint?: boolean;
   /**
-   * The initial state to apply on first load.
+   * The initial state to apply when the page is loaded.
    */
   initialState?: Partial<AutocompleteState>;
   /**
@@ -140,6 +146,7 @@ const defaultProps: OptionalAutocompleteOptions = {
   placeholder: '',
   minLength: 1,
   showHint: false,
+  autofocus: false,
   initialState: {},
   defaultHighlightedIndex: 0,
   stalledDelay: 300,
@@ -436,6 +443,7 @@ export class Autocomplete extends Component<
           // @ts-ignore @TODO: fix refs error */}
               <SearchBox
                 placeholder={this.props.placeholder}
+                autofocus={this.props.autofocus}
                 hint={this.getHint(highlightedIndex)}
                 internalState={this.state}
                 internalSetState={this.setState.bind(this)}

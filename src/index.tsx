@@ -27,6 +27,7 @@ function autocomplete(
     keyboardShortcuts,
     minLength,
     showHint,
+    autofocus,
     initialState,
     templates,
     onSelect,
@@ -49,6 +50,7 @@ function autocomplete(
       defaultHighlightedIndex={defaultHighlightedIndex}
       keyboardShortcuts={keyboardShortcuts}
       minLength={minLength}
+      autofocus={autofocus}
       showHint={showHint}
       initialState={initialState}
       sources={sanitizedSources}

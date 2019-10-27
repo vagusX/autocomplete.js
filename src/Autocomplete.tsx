@@ -102,6 +102,10 @@ export interface OptionalAutocompleteOptions {
    */
   showHint?: boolean;
   /**
+   * The initial state to apply on first load.
+   */
+  initialState?: Partial<AutocompleteState>;
+  /**
    * The sources to get the suggestions from.
    */
   sources?: AutocompleteSource[];
@@ -136,6 +140,7 @@ const defaultProps: OptionalAutocompleteOptions = {
   placeholder: '',
   minLength: 1,
   showHint: false,
+  initialState: {},
   defaultHighlightedIndex: 0,
   stalledDelay: 300,
   keyboardShortcuts: [],
@@ -172,11 +177,17 @@ export class Autocomplete extends Component<
     isLoading: false,
     isStalled: false,
     error: null,
+    ...this.props.initialState,
   };
 
   componentDidMount() {
     if (this.props.keyboardShortcuts.length > 1) {
       this.props.environment.addEventListener('keydown', this.onGlobalKeyDown);
+    }
+
+    // Perform the query if coming from the initial state.
+    if (this.state.query) {
+      this.performQuery(this.state.query, this.state.isOpen);
     }
   }
 

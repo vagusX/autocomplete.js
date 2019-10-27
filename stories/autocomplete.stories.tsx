@@ -116,6 +116,22 @@ storiesOf('Autocomplete', module)
 
     return container;
   })
+  .add('with initial state', () => {
+    const container = document.createElement('div');
+
+    autocomplete(
+      {
+        container,
+        placeholder: 'Search for U.S. states… (e.g. "Carolina")',
+        initialState: {
+          query: 'Carolina',
+        },
+      },
+      [createSource(states)]
+    );
+
+    return container;
+  })
   .add('with multiple sources', () => {
     const container = document.createElement('div');
 

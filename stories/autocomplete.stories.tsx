@@ -12,42 +12,98 @@ import autocomplete, {
   highlightAlgoliaHit,
   reverseHighlightAlgoliaHit,
 } from '../src';
+import { states, fruits, artists } from './data';
 
-type FruitSource = Array<{ value: string }>;
-const fruits: FruitSource = [
-  { value: 'Apple' },
-  { value: 'Banana' },
-  { value: 'Grape' },
-  { value: 'Orange' },
-  { value: 'Pear' },
-  { value: 'Pineapple' },
-];
-const artists = [
-  { value: 'Crystal Lake' },
-  { value: 'Eric Clapton' },
-  { value: 'James Blake' },
-  { value: 'John Frusciante' },
-  { value: 'John Mayer' },
-  { value: 'Justin Vernon' },
-  { value: 'Parkway Drive' },
-];
 const searchClient = algoliasearch(
   'latency',
   '6be0576ff61c053d5f9a3225e2a90f76'
 );
 
-const fruitSource = {
+const querySuggestionsSource = {
+  key: 'suggestion',
+  getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
   getSuggestions({ query }) {
-    return fruits.filter(fruit =>
-      fruit.value.toLocaleLowerCase().includes(query.toLocaleLowerCase())
-    );
+    return searchClient
+      .search([
+        {
+          indexName: 'instant_search_demo_query_suggestions',
+          query,
+          params: {
+            hitsPerPage: 4,
+            highlightPreTag: '<mark>',
+            highlightPostTag: '</mark>',
+          },
+        },
+      ])
+      .then(response => {
+        return response.results
+          .map(result => result.hits)
+          .flat()
+          .filter(
+            suggestion =>
+              suggestion.query !== query.toLocaleLowerCase() &&
+              `${suggestion.query} ` !== query.toLocaleLowerCase()
+          )
+          .slice(0, 3);
+      });
+  },
+  templates: {
+    suggestion({ suggestion, state }) {
+      return (
+        <div style={{ display: 'flex' }}>
+          <div style={{ width: 28 }}>
+            <svg
+              viewBox="0 0 18 18"
+              width={16}
+              style={{
+                color: 'rgba(0, 0, 0, 0.3)',
+              }}
+            >
+              <path
+                d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
+                stroke="currentColor"
+                stroke-width="1.78"
+                fill="none"
+                fill-rule="evenodd"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </svg>
+          </div>
+
+          <div
+            dangerouslySetInnerHTML={{
+              __html: state.query
+                ? reverseHighlightAlgoliaHit({
+                    hit: suggestion,
+                    attribute: 'query',
+                    highlightPreTag: '<mark>',
+                    highlightPostTag: '</mark>',
+                  })
+                : suggestion.query,
+            }}
+          />
+        </div>
+      );
+    },
+  },
+};
+
+const createSource = (items: any[], { templates = {}, limit = 10 } = {}) => ({
+  getSuggestions({ query }) {
+    return items
+      .filter(item =>
+        item.value.toLocaleLowerCase().includes(query.toLocaleLowerCase())
+      )
+      .slice(0, limit);
   },
   getSuggestionValue: ({ suggestion }) => suggestion.value,
   templates: {
     suggestion: ({ suggestion }) => suggestion.value,
-    empty: ({ state }) => `No fruits found for "${state.query}".`,
+    // empty: ({ state }) => `No results found for "${state.query}".`,
+    ...templates,
   },
-};
+});
 
 storiesOf('Autocomplete', module)
   .add('with static values', () => {
@@ -56,9 +112,9 @@ storiesOf('Autocomplete', module)
     autocomplete(
       {
         container,
-        placeholder: 'Search for fruits… (e.g. "apple")',
+        placeholder: 'Search for U.S. states… (e.g. "Carolina")',
       },
-      [fruitSource]
+      [createSource(states)]
     );
 
     return container;
@@ -69,41 +125,37 @@ storiesOf('Autocomplete', module)
     autocomplete(
       {
         container,
-        placeholder: 'Search for fruits or people… (e.g. "apple", "john")',
+        placeholder:
+          'Search for states, fruits, artists… (e.g. "Carolina", "Apple", "John")',
       },
       [
-        {
-          getSuggestions({ query }) {
-            return fruits.filter(fruit =>
-              fruit.value
-                .toLocaleLowerCase()
-                .includes(query.toLocaleLowerCase())
-            );
-          },
-          getSuggestionValue: ({ suggestion }) => suggestion.value,
+        createSource(fruits, {
+          limit: 5,
           templates: {
-            header: () =>
-              '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
-            suggestion: ({ suggestion }) => suggestion.value,
-            empty: ({ state }) => `No fruits found for "${state.query}".`,
+            header: ({ state }) =>
+              state.results[0].length === 0
+                ? ''
+                : '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
           },
-        },
-        {
-          getSuggestions({ query }) {
-            return artists.filter(artist =>
-              artist.value
-                .toLocaleLowerCase()
-                .includes(query.toLocaleLowerCase())
-            );
-          },
-          getSuggestionValue: ({ suggestion }) => suggestion.value,
+        }),
+        createSource(artists, {
+          limit: 5,
           templates: {
-            header: () =>
-              '<h5 class="algolia-autocomplete-item-header">Artists</h5>',
-            suggestion: ({ suggestion }) => suggestion.value,
-            empty: ({ state }) => `No artists found for "${state.query}".`,
+            header: ({ state }) =>
+              state.results[1].length === 0
+                ? ''
+                : '<h5 class="algolia-autocomplete-item-header">Artists</h5>',
           },
-        },
+        }),
+        createSource(states, {
+          limit: 5,
+          templates: {
+            header: ({ state }) =>
+              state.results[2].length === 0
+                ? ''
+                : '<h5 class="algolia-autocomplete-item-header">States</h5>',
+          },
+        }),
       ]
     );
 
@@ -118,7 +170,7 @@ storiesOf('Autocomplete', module)
         placeholder: 'Search for fruits (e.g. "apple")',
         minLength: 3,
       },
-      [fruitSource]
+      [createSource(fruits)]
     );
 
     return container;
@@ -132,7 +184,7 @@ storiesOf('Autocomplete', module)
         placeholder: 'Search for fruits (e.g. "banana")',
         minLength: 0,
       },
-      [fruitSource]
+      [createSource(fruits)]
     );
 
     return container;
@@ -146,7 +198,7 @@ storiesOf('Autocomplete', module)
         placeholder: 'Search… (focus the inner window and type "/" or "a")',
         keyboardShortcuts: ['/', 'a'],
       },
-      [fruitSource]
+      [createSource(fruits)]
     );
 
     return container;
@@ -160,7 +212,7 @@ storiesOf('Autocomplete', module)
         placeholder: 'Search… (first item is not selected by default)',
         defaultHighlightedIndex: -1,
       },
-      [fruitSource]
+      [createSource(fruits)]
     );
 
     return container;
@@ -174,7 +226,7 @@ storiesOf('Autocomplete', module)
         placeholder: 'Search…',
         showHint: true,
       },
-      [fruitSource]
+      [createSource(fruits)]
     );
 
     return container;
@@ -311,78 +363,21 @@ storiesOf('Autocomplete', module)
         placeholder: 'Search…',
         showHint: true,
       },
-      [
-        {
-          key: 'suggestion',
-          getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
-          getSuggestions({ query }) {
-            return searchClient
-              .search([
-                {
-                  indexName: 'instant_search_demo_query_suggestions',
-                  query,
-                  params: {
-                    hitsPerPage: 4,
-                    highlightPreTag: '<mark>',
-                    highlightPostTag: '</mark>',
-                  },
-                },
-              ])
-              .then(response => {
-                return response.results
-                  .map(result => result.hits)
-                  .flat()
-                  .filter(
-                    suggestion =>
-                      suggestion.query !== query.toLocaleLowerCase() &&
-                      `${suggestion.query} ` !== query.toLocaleLowerCase()
-                  )
-                  .slice(0, 3);
-              });
-          },
-          templates: {
-            suggestion({ suggestion, state }) {
-              return (
-                <div style={{ display: 'flex' }}>
-                  <svg
-                    viewBox="0 0 18 18"
-                    width={16}
-                    style={{
-                      marginRight: '.6rem',
-                      color: 'rgba(0, 0, 0, 0.3)',
-                    }}
-                  >
-                    <path
-                      d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
-                      stroke="currentColor"
-                      stroke-width="1.78"
-                      fill="none"
-                      fill-rule="evenodd"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    ></path>
-                  </svg>
+      [querySuggestionsSource]
+    );
 
-                  {state.query ? (
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: reverseHighlightAlgoliaHit({
-                          hit: suggestion,
-                          attribute: 'query',
-                          highlightPreTag: '<mark>',
-                          highlightPostTag: '</mark>',
-                        }),
-                      }}
-                    />
-                  ) : (
-                    <div>{suggestion.query}</div>
-                  )}
-                </div>
-              );
-            },
-          },
-        },
-      ]
+    return container;
+  })
+  .add('with RTL', () => {
+    const container = document.createElement('div');
+    container.dir = 'rtl';
+
+    autocomplete(
+      {
+        container,
+        placeholder: 'Search…',
+      },
+      [querySuggestionsSource]
     );
 
     return container;
@@ -424,15 +419,16 @@ storiesOf('Autocomplete', module)
             suggestion({ suggestion }) {
               return (
                 <div style={{ display: 'flex' }}>
-                  <img
-                    src="https://image.flaticon.com/icons/svg/61/61122.svg"
-                    width="16"
-                    height="16"
-                    style={{
-                      marginRight: '.6rem',
-                      opacity: 0.3,
-                    }}
-                  />
+                  <div style={{ width: 28 }}>
+                    <img
+                      src="https://image.flaticon.com/icons/svg/61/61122.svg"
+                      width="16"
+                      height="16"
+                      style={{
+                        opacity: 0.3,
+                      }}
+                    />
+                  </div>
 
                   {suggestion.query}
                 </div>
@@ -440,80 +436,7 @@ storiesOf('Autocomplete', module)
             },
           },
         },
-        {
-          key: 'suggestion',
-          getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
-          getSuggestions({ query }) {
-            if (!query) {
-              return [];
-            }
-
-            return searchClient
-              .search([
-                {
-                  indexName: 'instant_search_demo_query_suggestions',
-                  query,
-                  params: {
-                    hitsPerPage: 4,
-                    highlightPreTag: '<mark>',
-                    highlightPostTag: '</mark>',
-                  },
-                },
-              ])
-              .then(response => {
-                return response.results
-                  .map(result => result.hits)
-                  .flat()
-                  .filter(
-                    suggestion =>
-                      suggestion.query !== query.toLocaleLowerCase() &&
-                      `${suggestion.query} ` !== query.toLocaleLowerCase()
-                  )
-                  .slice(0, 3);
-              });
-          },
-          templates: {
-            suggestion({ suggestion, state }) {
-              return (
-                <div style={{ display: 'flex' }}>
-                  <svg
-                    viewBox="0 0 18 18"
-                    width={16}
-                    style={{
-                      marginRight: '.6rem',
-                      color: 'rgba(0, 0, 0, 0.3)',
-                    }}
-                  >
-                    <path
-                      d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
-                      stroke="currentColor"
-                      stroke-width="1.78"
-                      fill="none"
-                      fill-rule="evenodd"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    ></path>
-                  </svg>
-
-                  {state.query ? (
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: reverseHighlightAlgoliaHit({
-                          hit: suggestion,
-                          attribute: 'query',
-                          highlightPreTag: '<mark>',
-                          highlightPostTag: '</mark>',
-                        }),
-                      }}
-                    />
-                  ) : (
-                    <div>{suggestion.query}</div>
-                  )}
-                </div>
-              );
-            },
-          },
-        },
+        querySuggestionsSource,
       ]
     );
 
@@ -597,15 +520,16 @@ storiesOf('Autocomplete', module)
             suggestion({ suggestion }) {
               return (
                 <div style={{ display: 'flex' }}>
-                  <img
-                    src="https://image.flaticon.com/icons/svg/61/61122.svg"
-                    width="16"
-                    height="16"
-                    style={{
-                      marginRight: '.6rem',
-                      opacity: 0.3,
-                    }}
-                  />
+                  <div style={{ width: 28 }}>
+                    <img
+                      src="https://image.flaticon.com/icons/svg/61/61122.svg"
+                      width="16"
+                      height="16"
+                      style={{
+                        opacity: 0.3,
+                      }}
+                    />
+                  </div>
 
                   {suggestion.query}
                 </div>
@@ -613,76 +537,7 @@ storiesOf('Autocomplete', module)
             },
           },
         },
-        {
-          key: 'suggestion',
-          getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
-          getSuggestions({ query }) {
-            return searchClient
-              .search([
-                {
-                  indexName: 'instant_search_demo_query_suggestions',
-                  query,
-                  params: {
-                    hitsPerPage: 4,
-                    highlightPreTag: '<mark>',
-                    highlightPostTag: '</mark>',
-                  },
-                },
-              ])
-              .then(response => {
-                return response.results
-                  .map(result => result.hits)
-                  .flat()
-                  .filter(
-                    suggestion =>
-                      suggestion.query !== query.toLocaleLowerCase() &&
-                      `${suggestion.query} ` !== query.toLocaleLowerCase()
-                  )
-                  .slice(0, 3);
-              });
-          },
-          templates: {
-            suggestion({ suggestion, state }) {
-              return (
-                <div style={{ display: 'flex' }}>
-                  <svg
-                    viewBox="0 0 18 18"
-                    width={16}
-                    style={{
-                      marginRight: '.6rem',
-                      color: 'rgba(0, 0, 0, 0.3)',
-                    }}
-                  >
-                    <path
-                      d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
-                      stroke="currentColor"
-                      stroke-width="1.78"
-                      fill="none"
-                      fill-rule="evenodd"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    ></path>
-                  </svg>
-
-                  {state.query ? (
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: reverseHighlightAlgoliaHit({
-                          hit: suggestion,
-                          attribute: 'query',
-                          highlightPreTag: '<mark>',
-                          highlightPostTag: '</mark>',
-                        }),
-                      }}
-                    />
-                  ) : (
-                    <div>{suggestion.query}</div>
-                  )}
-                </div>
-              );
-            },
-          },
-        },
+        querySuggestionsSource,
         {
           key: 'products',
           getSuggestionValue: ({ state }) => state.query,

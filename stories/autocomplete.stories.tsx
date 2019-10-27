@@ -100,7 +100,6 @@ const createSource = (items: any[], { templates = {}, limit = 10 } = {}) => ({
   getSuggestionValue: ({ suggestion }) => suggestion.value,
   templates: {
     suggestion: ({ suggestion }) => suggestion.value,
-    // empty: ({ state }) => `No results found for "${state.query}".`,
     ...templates,
   },
 });
@@ -211,20 +210,6 @@ storiesOf('Autocomplete', module)
         container,
         placeholder: 'Search… (first item is not selected by default)',
         defaultHighlightedIndex: -1,
-      },
-      [createSource(fruits)]
-    );
-
-    return container;
-  })
-  .add('with hint', () => {
-    const container = document.createElement('div');
-
-    autocomplete(
-      {
-        container,
-        placeholder: 'Search…',
-        showHint: true,
       },
       [createSource(fruits)]
     );
@@ -354,7 +339,7 @@ storiesOf('Autocomplete', module)
 
     return container;
   })
-  .add('with Query Suggestions', () => {
+  .add('with hint', () => {
     const container = document.createElement('div');
 
     autocomplete(

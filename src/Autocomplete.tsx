@@ -332,12 +332,10 @@ export class Autocomplete extends Component<
     });
 
     if (
-      // @TODO: do we want to show hints without query?
-      (!this.state.query && highlightedIndex >= 0) ||
-      (this.state.query &&
-        currentSuggestion
-          .toLocaleLowerCase()
-          .indexOf(this.state.query.toLocaleLowerCase()) === 0)
+      this.state.query &&
+      currentSuggestion
+        .toLocaleLowerCase()
+        .indexOf(this.state.query.toLocaleLowerCase()) === 0
     ) {
       return (
         this.state.query + currentSuggestion.slice(this.state.query.length)

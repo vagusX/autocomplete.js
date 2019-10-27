@@ -6,15 +6,11 @@ import {
   AutocompleteItem,
   AutocompleteProps,
   AutocompleteState,
-  Suggestion,
 } from './Autocomplete';
 import { Template } from './Template';
 
 interface DropdownProps {
   hidden: boolean;
-  isLoading: boolean;
-  query: string;
-  results: Array<Suggestion[]>;
   templates: AutocompleteProps['templates'];
   sources: AutocompleteProps['sources'];
   onClick: AutocompleteProps['onClick'];
@@ -26,8 +22,6 @@ interface DropdownProps {
 
 export const Dropdown = ({
   hidden,
-  isLoading,
-  results,
   sources,
   templates,
   internalState,
@@ -51,7 +45,7 @@ export const Dropdown = ({
       />
 
       <div className="algolia-autocomplete-dropdown-container">
-        {results.map((suggestions, index) => {
+        {internalState.results.map((suggestions, index) => {
           const source = sources[index];
 
           return (
@@ -65,7 +59,7 @@ export const Dropdown = ({
                 template={source.templates.header}
               />
 
-              {!isLoading && suggestions.length === 0 ? (
+              {!internalState.isLoading && suggestions.length === 0 ? (
                 <Template
                   data={{
                     state: internalState,

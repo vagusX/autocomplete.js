@@ -427,10 +427,9 @@ export class Autocomplete extends Component<
           // @ts-ignore @TODO: fix refs error */}
               <SearchBox
                 placeholder={this.props.placeholder}
-                query={this.state.query}
                 hint={this.getHint(highlightedIndex)}
-                isOpen={this.state.isOpen}
-                isStalled={this.state.isStalled}
+                internalState={this.state}
+                internalSetState={this.setState.bind(this)}
                 onInputRef={ref => {
                   this.inputRef = ref as HTMLInputElement;
                 }}
@@ -459,7 +458,7 @@ export class Autocomplete extends Component<
                     Math.max(0, highlightedIndex)
                   );
 
-                  if (suggestion) {
+                  if (suggestion && source) {
                     this.props.onKeyDown({
                       event,
                       suggestion,
@@ -490,17 +489,19 @@ export class Autocomplete extends Component<
                       (event.target! as HTMLInputElement).selectionStart ===
                         this.state.query.length)
                   ) {
-                    event.preventDefault();
+                    if (this.state.isOpen && suggestion && source) {
+                      event.preventDefault();
 
-                    const nextQuery = source.getSuggestionValue({
-                      suggestion,
-                      state: this.state,
-                    });
+                      const nextQuery = source.getSuggestionValue({
+                        suggestion,
+                        state: this.state,
+                      });
 
-                    if (this.state.query !== nextQuery) {
-                      this.performQuery(nextQuery);
+                      if (this.state.query !== nextQuery) {
+                        this.performQuery(nextQuery);
 
-                      setHighlightedIndex(this.props.defaultHighlightedIndex);
+                        setHighlightedIndex(this.props.defaultHighlightedIndex);
+                      }
                     }
                   }
                 }}
@@ -525,9 +526,6 @@ export class Autocomplete extends Component<
 
               <Dropdown
                 hidden={!isOpen}
-                isLoading={this.state.isLoading}
-                results={this.state.results}
-                query={this.state.query}
                 internalState={this.state}
                 internalSetState={this.setState.bind(this)}
                 sources={this.props.sources}

@@ -1,6 +1,7 @@
 /** @jsx h */
 
 import { h, Component } from 'preact';
+import { AutocompleteState, AutocompleteProps } from './Autocomplete';
 
 declare global {
   namespace JSX {
@@ -12,12 +13,11 @@ declare global {
 
 export type SearchBoxProps = {
   placeholder: string;
-  query: string;
   hint: string;
-  isStalled: boolean;
-  isOpen: boolean;
+  internalState: AutocompleteState;
+  internalSetState(nextState: Partial<AutocompleteState>): void;
   onChange: (event: any) => void;
-  onFocus: () => void;
+  onFocus: AutocompleteProps['onFocus'];
   onKeyDown: (event: KeyboardEvent) => void;
   onReset: (event: MouseEvent) => void;
   onSubmit: (event: Event) => void;
@@ -36,7 +36,9 @@ export class SearchBox extends Component<SearchBoxProps> {
 
   render() {
     const showHint = Boolean(
-      this.props.isOpen && !this.props.isStalled && this.props.hint
+      this.props.internalState.isOpen &&
+        !this.props.internalState.isStalled &&
+        this.props.hint
     );
 
     return (
@@ -109,12 +111,21 @@ export class SearchBox extends Component<SearchBoxProps> {
               autoCapitalize: 'off',
               spellCheck: 'false',
               maxLength: '512',
-              value: this.props.query,
+              value: this.props.internalState.query,
               onChange: this.props.onChange,
               onFocus: this.props.onFocus,
-              // When you're focusing the input but click on the cursor,
-              // the menu should open.
-              onClick: this.props.onFocus,
+              // When the dropdown is closed and you click on the input while
+              // the input is focused, the `onFocus` event is not triggered.
+              // We mimic this event by catching the `onClick` event which
+              // triggers the `onFocus` for the dropdown to open.
+              onClick: () => {
+                if (!this.props.internalState.isOpen) {
+                  this.props.onFocus({
+                    state: this.props.internalState,
+                    setState: this.props.internalSetState,
+                  });
+                }
+              },
               onKeyDown: this.props.onKeyDown,
             })}
             className="algolia-autocomplete-input"
@@ -125,7 +136,7 @@ export class SearchBox extends Component<SearchBoxProps> {
           type="reset"
           title="Clear the query"
           className="algolia-autocomplete-reset"
-          hidden={this.props.query.length === 0}
+          hidden={this.props.internalState.query.length === 0}
           onClick={(event: MouseEvent) => {
             this.props.onReset(event);
 

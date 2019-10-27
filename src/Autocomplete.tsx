@@ -60,6 +60,13 @@ interface EventItemEventHandlerOptions<TEvent = Event>
   event: TEvent;
 }
 
+interface Environment {
+  [prop: string]: unknown;
+  addEventListener: Window['addEventListener'];
+  removeEventListener: Window['removeEventListener'];
+  setTimeout: Window['setTimeout'];
+}
+
 export interface OptionalAutocompleteOptions {
   /**
    * The text that appears in the search box input when there is no query.
@@ -99,6 +106,7 @@ export interface OptionalAutocompleteOptions {
    */
   sources?: AutocompleteSource[];
   templates?: AutocompleteTemplates;
+  environment?: Environment;
   onFocus?: (options: EventHandlerOptions) => void;
   onSelect?: (options: ItemEventHandlerOptions) => void;
   onClick?: (options: EventItemEventHandlerOptions<MouseEvent>) => void;
@@ -133,6 +141,7 @@ const defaultProps: OptionalAutocompleteOptions = {
   keyboardShortcuts: [],
   sources: [],
   templates: {},
+  environment: typeof window === 'undefined' ? ({} as Environment) : window,
   onSelect: ({ setState }) => {
     setState({
       isOpen: false,
@@ -166,20 +175,17 @@ export class Autocomplete extends Component<
   };
 
   componentDidMount() {
-    if (
-      typeof window !== 'undefined' &&
-      this.props.keyboardShortcuts.length > 1
-    ) {
-      window.addEventListener('keydown', this.onGlobalKeyDown);
+    if (this.props.keyboardShortcuts.length > 1) {
+      this.props.environment.addEventListener('keydown', this.onGlobalKeyDown);
     }
   }
 
   componentWillUnmount() {
-    if (
-      typeof window !== 'undefined' &&
-      this.props.keyboardShortcuts.length > 1
-    ) {
-      window.removeEventListener('keydown', this.onGlobalKeyDown);
+    if (this.props.keyboardShortcuts.length > 1) {
+      this.props.environment.removeEventListener(
+        'keydown',
+        this.onGlobalKeyDown
+      );
     }
   }
 
@@ -259,13 +265,11 @@ export class Autocomplete extends Component<
       query,
     });
 
-    if (typeof window !== 'undefined') {
-      this.setIsStalledId = window.setTimeout(() => {
-        this.setState({
-          isStalled: true,
-        });
-      }, this.props.stalledDelay);
-    }
+    this.setIsStalledId = this.props.environment.setTimeout(() => {
+      this.setState({
+        isStalled: true,
+      });
+    }, this.props.stalledDelay);
 
     return Promise.all(
       this.props.sources.map(source =>

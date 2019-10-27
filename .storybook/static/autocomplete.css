@@ -50,6 +50,11 @@ body {
   position: relative;
 }
 
+.algolia-autocomplete-searchbox {
+  display: flex;
+  flex: 1;
+}
+
 .algolia-autocomplete-input,
 .algolia-autocomplete-hint {
   -webkit-appearance: none;
@@ -80,18 +85,14 @@ body {
 .algolia-autocomplete-loadingIndicator,
 .algolia-autocomplete-magnifierLabel,
 .algolia-autocomplete-reset {
-  color: #5d6494;
   color: var(--algolia-autocomplete-input-color);
-  height: 100%;
-}
-
-.algolia-autocomplete-loadingIndicator,
-.algolia-autocomplete-magnifierLabel {
   width: 2rem;
+  height: 2rem;
 }
 
 .algolia-autocomplete--stalled .algolia-autocomplete-loadingIndicator,
-.algolia-autocomplete-magnifierLabel {
+.algolia-autocomplete-magnifierLabel,
+.algolia-autocomplete-reset {
   align-items: center;
   -webkit-box-align: center;
   -webkit-box-pack: center;
@@ -106,7 +107,6 @@ body {
 }
 
 .algolia-autocomplete-reset {
-  align-items: center;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -114,11 +114,7 @@ body {
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  display: flex;
-  height: 32px;
-  justify-content: center;
   right: 0;
-  width: 32px;
 }
 
 .algolia-autocomplete-reset[hidden] {

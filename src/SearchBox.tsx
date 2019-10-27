@@ -86,10 +86,10 @@ export class SearchBox extends Component<SearchBoxProps> {
           </svg>
         </div>
 
-        <div style={{ width: '100%' }}>
+        <div className="algolia-autocomplete-searchbox">
           {showHint && (
             <span
-              className="algolia-autocomplete-input algolia-autocomplete-hint"
+              className="algolia-autocomplete-hint"
               aria-live={'assertive'}
               aria-suggest={`Press tab to select ${this.props.hint}`}
             >
@@ -98,6 +98,7 @@ export class SearchBox extends Component<SearchBoxProps> {
           )}
 
           <input
+            className="algolia-autocomplete-input"
             {...this.props.getInputProps({
               placeholder: showHint ? '' : this.props.placeholder,
               ref: (ref: HTMLElement) => {
@@ -113,6 +114,7 @@ export class SearchBox extends Component<SearchBoxProps> {
               maxLength: '512',
               value: this.props.internalState.query,
               onChange: this.props.onChange,
+              onKeyDown: this.props.onKeyDown,
               onFocus: this.props.onFocus,
               // When the dropdown is closed and you click on the input while
               // the input is focused, the `onFocus` event is not triggered.
@@ -126,9 +128,7 @@ export class SearchBox extends Component<SearchBoxProps> {
                   });
                 }
               },
-              onKeyDown: this.props.onKeyDown,
             })}
-            className="algolia-autocomplete-input"
           />
         </div>
 

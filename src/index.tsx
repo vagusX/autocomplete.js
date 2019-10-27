@@ -4,11 +4,11 @@ import { h, render } from 'preact';
 
 import {
   Autocomplete,
-  OptionalAutocompleteOptions,
+  AutocompleteProps,
   AutocompleteSource,
 } from './Autocomplete';
 
-export interface AutocompleteOptions extends OptionalAutocompleteOptions {
+export interface AutocompleteOptions extends AutocompleteProps {
   /**
    * The input container to insert the search box.
    */
@@ -43,7 +43,6 @@ function autocomplete(
   }));
 
   render(
-    // @ts-ignore @TODO: fix refs error
     <Autocomplete
       placeholder={placeholder}
       stalledDelay={stalledDelay}

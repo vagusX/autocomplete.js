@@ -36,8 +36,8 @@
     "website:build": "yarn run build && yarn run storybook:build"
   },
   "dependencies": {
-    "downshift": "3.0.0 - 3.2.14",
-    "preact": "8.0.0 - 8.4.2"
+    "downshift": "^3.4.0",
+    "preact": "^10.0.0"
   },
   "devDependencies": {
     "@babel/cli": "7.6.4",

@@ -4,16 +4,16 @@ import { h } from 'preact';
 
 import {
   AutocompleteItem,
-  AutocompleteProps,
   AutocompleteState,
+  RequiredAutocompleteProps,
 } from './Autocomplete';
 import { Template } from './Template';
 
 interface DropdownProps {
   hidden: boolean;
-  templates: AutocompleteProps['templates'];
-  sources: AutocompleteProps['sources'];
-  onClick: AutocompleteProps['onClick'];
+  templates: RequiredAutocompleteProps['templates'];
+  sources: RequiredAutocompleteProps['sources'];
+  onClick: RequiredAutocompleteProps['onClick'];
   internalState: AutocompleteState;
   internalSetState(nextState: Partial<AutocompleteState>): void;
   getItemProps(options?: object): any;

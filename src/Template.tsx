@@ -1,6 +1,7 @@
 /** @jsx h */
 
-import { h } from 'preact';
+import { createElement } from 'preact';
+
 import { AutocompleteState } from './Autocomplete';
 
 interface TemplateData {
@@ -24,8 +25,8 @@ export const Template = <TData extends {}>({
   template,
   defaultTemplate = () => '',
   data,
-  tagName: TagName = 'div',
-  rootProps,
+  tagName = 'div',
+  rootProps = {},
 }: TemplateProps<TData & TemplateData>) => {
   const renderTemplate = template || defaultTemplate;
   const content = renderTemplate(data);
@@ -35,13 +36,11 @@ export const Template = <TData extends {}>({
   }
 
   if (typeof content === 'string') {
-    return (
-      // @ts-ignore
-      // TypeScript isn't aware that `TagName` is an element.
-      <TagName {...rootProps} dangerouslySetInnerHTML={{ __html: content }} />
-    );
+    return createElement(tagName, {
+      ...rootProps,
+      dangerouslySetInnerHTML: { __html: content },
+    });
   }
 
-  // @ts-ignore
-  return <TagName {...rootProps}>{content}</TagName>;
+  return createElement(tagName, rootProps, content);
 };

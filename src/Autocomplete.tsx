@@ -1,6 +1,7 @@
 /** @jsx h */
 
-import { h, Component } from 'preact';
+import { h } from 'preact';
+import { useState, useEffect, useRef } from 'preact/hooks';
 import Downshift from 'downshift/preact';
 
 import { Dropdown } from './Dropdown';
@@ -67,7 +68,7 @@ interface Environment {
   setTimeout: Window['setTimeout'];
 }
 
-export interface OptionalAutocompleteOptions {
+export interface AutocompleteProps {
   /**
    * The text that appears in the search box input when there is no query.
    */
@@ -124,6 +125,8 @@ export interface OptionalAutocompleteOptions {
   onError?: (options: EventHandlerOptions) => void;
 }
 
+export type RequiredAutocompleteProps = Required<AutocompleteProps>;
+
 export interface AutocompleteState {
   query: string;
   results: Suggestion[][];
@@ -142,73 +145,87 @@ function generateId(): string {
   return String(autocompleteIdCounter++);
 }
 
-const defaultProps: OptionalAutocompleteOptions = {
-  placeholder: '',
-  minLength: 1,
-  showHint: false,
-  autofocus: false,
-  initialState: {},
-  defaultHighlightedIndex: 0,
-  stalledDelay: 300,
-  keyboardShortcuts: [],
-  sources: [],
-  templates: {},
-  environment: typeof window === 'undefined' ? ({} as Environment) : window,
-  onSelect: ({ setState }) => {
-    setState({
-      isOpen: false,
-    });
-  },
-  onFocus: () => {},
-  onClick: () => {},
-  onKeyDown: () => {},
-  onError: ({ state }) => {
-    throw state.error;
-  },
-};
+export function Autocomplete(props: AutocompleteProps) {
+  const {
+    placeholder = '',
+    minLength = 1,
+    showHint = false,
+    autofocus = false,
+    initialState = {},
+    defaultHighlightedIndex = 0,
+    stalledDelay = 300,
+    keyboardShortcuts = [],
+    sources = [],
+    templates = {},
+    environment = typeof window === 'undefined' ? ({} as Environment) : window,
+    onSelect = ({ setState }) => {
+      setState({
+        isOpen: false,
+      });
+    },
+    onFocus = () => {},
+    onClick = () => {},
+    onKeyDown = () => {},
+    onError = ({ state }) => {
+      throw state.error;
+    },
+  } = props;
 
-export type AutocompleteProps = Required<OptionalAutocompleteOptions>;
+  let setIsStalledId: number | null = null;
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-export class Autocomplete extends Component<
-  AutocompleteProps,
-  AutocompleteState
-> {
-  static defaultProps = defaultProps;
-  setIsStalledId: number | null = null;
-  inputRef: HTMLInputElement | null = null;
+  const [query, setQuery] = useState<string>(initialState.query || '');
+  const [results, setResults] = useState<Suggestion[]>([]);
+  const [isOpen, setIsOpen] = useState<boolean>(initialState.isOpen || false);
+  const [isLoading, setIsLoading] = useState<boolean>(
+    initialState.isLoading || false
+  );
+  const [isStalled, setIsStalled] = useState<boolean>(
+    initialState.isStalled || false
+  );
+  const [error, setError] = useState<Error | null>(initialState.error || null);
 
-  state = {
-    query: '',
-    results: [],
-    isOpen: false,
-    isLoading: false,
-    isStalled: false,
-    error: null,
-    ...this.props.initialState,
-  };
-
-  componentDidMount() {
-    if (this.props.keyboardShortcuts.length > 1) {
-      this.props.environment.addEventListener('keydown', this.onGlobalKeyDown);
-    }
-
+  useEffect(() => {
     // Perform the query if coming from the initial state.
-    if (this.state.query) {
-      this.performQuery(this.state.query, this.state.isOpen);
+    if (initialState.query) {
+      performQuery(initialState.query, isOpen);
     }
+  }, []);
+
+  useEffect(() => {
+    if (keyboardShortcuts.length > 1) {
+      environment.addEventListener('keydown', onGlobalKeyDown);
+    }
+
+    return () => {
+      if (keyboardShortcuts.length > 1) {
+        environment.removeEventListener('keydown', onGlobalKeyDown);
+      }
+    };
+  }, [environment, keyboardShortcuts]);
+
+  function getState(): AutocompleteState {
+    return {
+      query,
+      results,
+      isOpen,
+      isLoading,
+      isStalled,
+      error,
+    };
   }
 
-  componentWillUnmount() {
-    if (this.props.keyboardShortcuts.length > 1) {
-      this.props.environment.removeEventListener(
-        'keydown',
-        this.onGlobalKeyDown
-      );
-    }
+  function setState(nextState: Partial<AutocompleteState>): void {
+    if (nextState.query) setQuery(nextState.query);
+    if (nextState.results) setResults(nextState.results);
+    if (nextState.isOpen) setIsOpen(nextState.isOpen);
+    if (nextState.isLoading) setIsLoading(nextState.isLoading);
+    if (nextState.isStalled) setIsStalled(nextState.isStalled);
+    if (nextState.error) setError(nextState.error);
   }
 
-  onGlobalKeyDown = (event: KeyboardEvent) => {
-    if (!this.inputRef) {
+  function onGlobalKeyDown(event: KeyboardEvent) {
+    if (!inputRef.current) {
       return;
     }
 
@@ -226,26 +243,79 @@ export class Autocomplete extends Component<
     }
 
     // Do not trigger the focus if the shortcut is not correct.
-    if (this.props.keyboardShortcuts.indexOf(event.key) === -1) {
+    if (keyboardShortcuts.indexOf(event.key) === -1) {
       return;
     }
 
-    this.inputRef.focus();
+    inputRef.current.focus();
 
     event.stopPropagation();
     event.preventDefault();
-  };
+  }
 
-  getSourceFromHighlightedIndex = (
+  function performQuery(query: string, nextIsOpen: boolean = true) {
+    if (setIsStalledId) {
+      clearTimeout(setIsStalledId);
+      setIsStalled(false);
+    }
+
+    setError(null);
+    setQuery(query);
+
+    if (query.length < minLength) {
+      setIsLoading(false);
+      setIsOpen(false);
+      setResults([]);
+
+      return Promise.resolve();
+    }
+
+    setIsLoading(true);
+
+    setIsStalledId = environment.setTimeout(() => {
+      setIsStalled(true);
+    }, stalledDelay);
+
+    return Promise.all(
+      sources.map(source =>
+        source.getSuggestions({
+          query,
+        })
+      )
+    )
+      .then(results => {
+        if (setIsStalledId) {
+          clearTimeout(setIsStalledId);
+          setIsStalled(false);
+        }
+
+        setResults(results);
+        setIsLoading(false);
+        setIsOpen(nextIsOpen);
+      })
+      .catch(error => {
+        if (setIsStalledId) {
+          clearTimeout(setIsStalledId);
+          setIsStalled(false);
+        }
+
+        setIsLoading(false);
+        setError(error);
+
+        onError({
+          state: getState(),
+          setState,
+        });
+      });
+  }
+
+  function getSourceFromHighlightedIndex(
     highlightedIndex: number
-  ): AutocompleteSource => {
-    const resultsSizes = this.state.results.reduce<number[]>(
-      (acc, result: number[]) => {
-        acc.push(result.length + acc.reduce((a, b) => a + b, 0));
-        return acc;
-      },
-      []
-    );
+  ): AutocompleteSource {
+    const resultsSizes = results.reduce<number[]>((acc, result: number[]) => {
+      acc.push(result.length + acc.reduce((a, b) => a + b, 0));
+      return acc;
+    }, []);
     const sourceNumber = resultsSizes.reduce((acc, current) => {
       if (current <= highlightedIndex) {
         return acc + 1;
@@ -254,91 +324,16 @@ export class Autocomplete extends Component<
       return acc;
     }, 0);
 
-    return this.props.sources[sourceNumber];
-  };
+    return sources[sourceNumber];
+  }
 
-  performQuery = (query: string, nextIsOpen: boolean = true) => {
-    if (this.setIsStalledId) {
-      clearTimeout(this.setIsStalledId);
-      this.setState({
-        isStalled: false,
-      });
-    }
-
-    if (query.length < this.props.minLength) {
-      this.setState({
-        isLoading: false,
-        isOpen: false,
-        query,
-        results: [],
-        error: null,
-      });
-
-      return Promise.resolve();
-    }
-
-    this.setState({
-      isLoading: true,
-      error: null,
-      query,
-    });
-
-    this.setIsStalledId = this.props.environment.setTimeout(() => {
-      this.setState({
-        isStalled: true,
-      });
-    }, this.props.stalledDelay);
-
-    return Promise.all(
-      this.props.sources.map(source =>
-        source.getSuggestions({
-          query: this.state.query,
-        })
-      )
-    )
-      .then(results => {
-        if (this.setIsStalledId) {
-          clearTimeout(this.setIsStalledId);
-          this.setState({
-            isStalled: false,
-          });
-        }
-
-        this.setState({
-          results,
-          isLoading: false,
-          isOpen: nextIsOpen,
-        });
-      })
-      .catch(error => {
-        if (this.setIsStalledId) {
-          clearTimeout(this.setIsStalledId);
-          this.setState({
-            isStalled: false,
-          });
-        }
-
-        this.setState({
-          isLoading: false,
-          error,
-        });
-
-        this.props.onError({
-          state: this.state,
-          setState: this.setState.bind(this),
-        });
-      });
-  };
-
-  getHint = (highlightedIndex: number) => {
-    if (!this.props.showHint) {
+  function getHint(highlightedIndex: number) {
+    if (!showHint) {
       return '';
     }
 
-    const suggestion = this.state.results.flat()[Math.max(0, highlightedIndex)];
-    const source = this.getSourceFromHighlightedIndex(
-      Math.max(0, highlightedIndex)
-    );
+    const suggestion = results.flat()[Math.max(0, highlightedIndex)];
+    const source = getSourceFromHighlightedIndex(Math.max(0, highlightedIndex));
 
     if (!suggestion || !source) {
       return '';
@@ -346,215 +341,204 @@ export class Autocomplete extends Component<
 
     const currentSuggestion = source.getSuggestionValue({
       suggestion,
-      state: this.state,
+      state: getState(),
     });
 
     if (
-      this.state.query &&
+      query &&
       currentSuggestion
         .toLocaleLowerCase()
-        .indexOf(this.state.query.toLocaleLowerCase()) === 0
+        .indexOf(query.toLocaleLowerCase()) === 0
     ) {
-      return (
-        this.state.query + currentSuggestion.slice(this.state.query.length)
-      );
+      return query + currentSuggestion.slice(query.length);
     }
 
     return '';
-  };
-
-  render() {
-    const canOpen = this.state.query.length >= this.props.minLength;
-    const isOpen =
-      this.state.isOpen &&
-      // We don't want to open the dropdown when the results
-      // are loading coming from an empty input.
-      // !this.state.isStalled &&
-      // However, we do want to leave the dropdown open when it's
-      // already open because there are results displayed. Otherwise,
-      // it would result in a flashy behavior.
-      canOpen &&
-      this.state.results.some((result: Suggestion[]) => result.length > 0);
-
-    return (
-      <Downshift
-        id={`autocomplete-${generateId()}`}
-        itemToString={(item: AutocompleteItem) => {
-          return item
-            ? item.source.getSuggestionValue({
-                suggestion: item.suggestion,
-                state: this.state,
-              })
-            : '';
-        }}
-        defaultHighlightedIndex={this.props.defaultHighlightedIndex}
-        onSelect={(item: AutocompleteItem) => {
-          if (!item) {
-            return;
-          }
-
-          const { suggestion, source } = item;
-
-          this.performQuery(
-            source.getSuggestionValue({ suggestion, state: this.state }),
-            false
-          ).then(() => {
-            this.props.onSelect({
-              suggestion: suggestion,
-              suggestionValue: source.getSuggestionValue({
-                suggestion,
-                state: this.state,
-              }),
-              source,
-              state: this.state,
-              setState: this.setState.bind(this),
-            });
-          });
-        }}
-        onOuterClick={() => {
-          this.setState({
-            isOpen: false,
-          });
-        }}
-        scrollIntoView={(itemNode: HTMLElement) => {
-          if (itemNode) {
-            itemNode.scrollIntoView(false);
-          }
-        }}
-      >
-        {({
-          highlightedIndex,
-          setHighlightedIndex,
-          getInputProps,
-          getItemProps,
-          getMenuProps,
-        }) => {
-          return (
-            <div
-              className={[
-                'algolia-autocomplete',
-                this.state.isStalled && 'algolia-autocomplete--stalled',
-                this.state.error && 'algolia-autocomplete--errored',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              {/*
-          // @ts-ignore @TODO: fix refs error */}
-              <SearchBox
-                placeholder={this.props.placeholder}
-                autofocus={this.props.autofocus}
-                hint={this.getHint(highlightedIndex)}
-                internalState={this.state}
-                internalSetState={this.setState.bind(this)}
-                onInputRef={ref => {
-                  this.inputRef = ref as HTMLInputElement;
-                }}
-                getInputProps={getInputProps}
-                onFocus={() => {
-                  if (canOpen) {
-                    this.setState({
-                      isOpen: true,
-                    });
-                  }
-
-                  if (this.props.minLength === 0 && !this.state.query) {
-                    this.performQuery('');
-                  }
-
-                  this.props.onFocus({
-                    state: this.state,
-                    setState: this.setState.bind(this),
-                  });
-                }}
-                onKeyDown={(event: KeyboardEvent) => {
-                  const suggestion: any = this.state.results.flat()[
-                    Math.max(0, highlightedIndex)
-                  ];
-                  const source = this.getSourceFromHighlightedIndex(
-                    Math.max(0, highlightedIndex)
-                  );
-
-                  if (suggestion && source) {
-                    this.props.onKeyDown({
-                      event,
-                      suggestion,
-                      suggestionValue: source.getSuggestionValue({
-                        suggestion,
-                        state: this.state,
-                      }),
-                      source,
-                      state: this.state,
-                      setState: this.setState.bind(this),
-                    });
-                  }
-
-                  if (event.key === 'Escape') {
-                    if (this.state.isOpen) {
-                      this.setState({
-                        isOpen: false,
-                      });
-                    } else {
-                      this.setState({
-                        query: '',
-                        isOpen: false,
-                      });
-                    }
-                  } else if (
-                    event.key === 'Tab' ||
-                    (event.key === 'ArrowRight' &&
-                      (event.target! as HTMLInputElement).selectionStart ===
-                        this.state.query.length)
-                  ) {
-                    if (this.state.isOpen && suggestion && source) {
-                      event.preventDefault();
-
-                      const nextQuery = source.getSuggestionValue({
-                        suggestion,
-                        state: this.state,
-                      });
-
-                      if (this.state.query !== nextQuery) {
-                        this.performQuery(nextQuery);
-
-                        setHighlightedIndex(this.props.defaultHighlightedIndex);
-                      }
-                    }
-                  }
-                }}
-                onReset={() => {
-                  this.setState({
-                    query: '',
-                  });
-                }}
-                onChange={(event: KeyboardEvent) => {
-                  this.performQuery((event.target as any).value);
-                }}
-                onSubmit={(event: Event) => {
-                  event.preventDefault();
-
-                  this.inputRef && this.inputRef.blur();
-
-                  this.setState({
-                    isOpen: false,
-                  });
-                }}
-              />
-
-              <Dropdown
-                hidden={!isOpen}
-                internalState={this.state}
-                internalSetState={this.setState.bind(this)}
-                sources={this.props.sources}
-                templates={this.props.templates}
-                onClick={this.props.onClick}
-                getMenuProps={getMenuProps}
-                getItemProps={getItemProps}
-              />
-            </div>
-          );
-        }}
-      </Downshift>
-    );
   }
+
+  const canOpen = query.length >= minLength;
+  const shouldOpen =
+    isOpen &&
+    // We don't want to open the dropdown when the results
+    // are loading coming from an empty input.
+    // !isStalled &&
+    // However, we do want to leave the dropdown open when it's
+    // already open because there are results displayed. Otherwise,
+    // it would result in a flashy behavior.
+    canOpen &&
+    results.some((result: Suggestion[]) => result.length > 0);
+
+  return (
+    <Downshift
+      id={`autocomplete-${generateId()}`}
+      itemToString={(item: AutocompleteItem) => {
+        return item
+          ? item.source.getSuggestionValue({
+              suggestion: item.suggestion,
+              state: getState(),
+            })
+          : '';
+      }}
+      defaultHighlightedIndex={defaultHighlightedIndex}
+      onSelect={(item: AutocompleteItem) => {
+        if (!item) {
+          return;
+        }
+
+        const { suggestion, source } = item;
+
+        performQuery(
+          source.getSuggestionValue({ suggestion, state: getState() }),
+          false
+        ).then(() => {
+          const currentState = getState();
+
+          onSelect({
+            suggestion: suggestion,
+            suggestionValue: source.getSuggestionValue({
+              suggestion,
+              state: currentState,
+            }),
+            source,
+            state: currentState,
+            setState,
+          });
+        });
+      }}
+      onOuterClick={() => {
+        setIsOpen(false);
+      }}
+      scrollIntoView={(itemNode: HTMLElement) => {
+        if (itemNode) {
+          itemNode.scrollIntoView(false);
+        }
+      }}
+    >
+      {({
+        highlightedIndex,
+        setHighlightedIndex,
+        getInputProps,
+        getItemProps,
+        getMenuProps,
+      }) => {
+        return (
+          <div
+            className={[
+              'algolia-autocomplete',
+              isStalled && 'algolia-autocomplete--stalled',
+              error && 'algolia-autocomplete--errored',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
+            <SearchBox
+              placeholder={placeholder}
+              autofocus={autofocus}
+              hint={getHint(highlightedIndex)}
+              internalState={getState()}
+              internalSetState={setState}
+              onInputRef={inputRef}
+              getInputProps={getInputProps}
+              onFocus={() => {
+                if (canOpen) {
+                  setIsOpen(true);
+                }
+
+                if (minLength === 0 && !query) {
+                  performQuery('');
+                }
+
+                onFocus({
+                  state: getState(),
+                  setState,
+                });
+              }}
+              onKeyDown={(event: KeyboardEvent) => {
+                const suggestion: any = results.flat()[
+                  Math.max(0, highlightedIndex)
+                ];
+                const source = getSourceFromHighlightedIndex(
+                  Math.max(0, highlightedIndex)
+                );
+
+                if (suggestion && source) {
+                  const currentState = getState();
+
+                  onKeyDown({
+                    event,
+                    suggestion,
+                    suggestionValue: source.getSuggestionValue({
+                      suggestion,
+                      state: currentState,
+                    }),
+                    source,
+                    state: currentState,
+                    setState,
+                  });
+                }
+
+                if (event.key === 'Escape') {
+                  if (shouldOpen) {
+                    setIsOpen(false);
+                  } else {
+                    setQuery('');
+                    setIsOpen(false);
+                  }
+                } else if (
+                  event.key === 'Tab' ||
+                  (event.key === 'ArrowRight' &&
+                    (event.target! as HTMLInputElement).selectionStart ===
+                      query.length)
+                ) {
+                  if (shouldOpen && suggestion && source) {
+                    event.preventDefault();
+
+                    const nextQuery = source.getSuggestionValue({
+                      suggestion,
+                      state: getState(),
+                    });
+
+                    if (query !== nextQuery) {
+                      performQuery(nextQuery);
+
+                      setHighlightedIndex(defaultHighlightedIndex);
+                    }
+                  }
+                }
+              }}
+              onInput={(event: KeyboardEvent) => {
+                performQuery((event.target as any).value);
+              }}
+              onReset={event => {
+                event.preventDefault();
+                setQuery('');
+
+                if (minLength === 0) {
+                  performQuery('', isOpen);
+                }
+
+                inputRef.current && inputRef.current.focus();
+              }}
+              onSubmit={(event: Event) => {
+                event.preventDefault();
+                setIsOpen(false);
+                inputRef.current && inputRef.current.blur();
+              }}
+            />
+
+            <Dropdown
+              hidden={!shouldOpen}
+              internalState={getState()}
+              internalSetState={setState}
+              sources={sources}
+              templates={templates}
+              onClick={onClick}
+              getMenuProps={getMenuProps}
+              getItemProps={getItemProps}
+            />
+          </div>
+        );
+      }}
+    </Downshift>
+  );
 }

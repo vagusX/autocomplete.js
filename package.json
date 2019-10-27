@@ -36,7 +36,7 @@
     "website:build": "yarn run build && yarn run storybook:build"
   },
   "dependencies": {
-    "downshift": "^3.4.0",
+    "downshift": "francoischalifour/downshift#preact-build",
     "preact": "^10.0.0"
   },
   "devDependencies": {

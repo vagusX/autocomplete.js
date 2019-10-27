@@ -11,8 +11,8 @@ import pkg from './package.json';
 const version =
   process.env.VERSION || `UNRELEASED (${new Date().toUTCString()})`;
 const algolia = '© Algolia, Inc. and contributors; MIT License';
-const link = 'https://github.com/algolia/docsearch';
-const banner = `/*! DocSearch DownShift Renderer ${version} | ${algolia} | ${link} */`;
+const link = 'https://github.com/algolia/autocomplete.js';
+const banner = `/*! Autocomplete.js ${version} | ${algolia} | ${link} */`;
 
 const plugins = [
   resolve({
@@ -27,7 +27,6 @@ const plugins = [
   }),
   replace({
     'process.env.NODE_ENV': JSON.stringify('production'),
-    'process.env.RESET_APP_DATA_TIMER': JSON.stringify(undefined),
   }),
   babel({
     exclude: 'node_modules/**',
@@ -48,7 +47,7 @@ const configuration = {
   input: pkg.source,
   output: {
     file: pkg['umd:main'],
-    name: 'docsearchDownshiftRenderer',
+    name: 'autocomplete',
     format: 'umd',
     sourcemap: true,
   },

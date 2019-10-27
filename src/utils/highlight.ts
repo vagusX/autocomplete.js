@@ -59,12 +59,21 @@ function getPropertyByPath(object: object, path: string): any {
   return parts.reduce((current, key) => current && current[key], object);
 }
 
+interface HighlightOptions {
+  hit: any;
+  attribute: string;
+  highlightPreTag?: string;
+  highlightPostTag?: string;
+  ignoreEscape?: string[];
+}
+
 export function highlightAlgoliaHit({
   hit,
   attribute,
-  highlightPreTag = '<em>',
-  highlightPostTag = '</em>',
-}): string {
+  highlightPreTag = '<mark>',
+  highlightPostTag = '</mark>',
+  ignoreEscape = [],
+}: HighlightOptions): string {
   const highlightedValue =
     (getPropertyByPath(hit, `_highlightResult.${attribute}.value`) as string) ||
     '';
@@ -75,7 +84,10 @@ export function highlightAlgoliaHit({
     highlightedValue,
   })
     .map(part => {
-      const escapedValue = escape(part.value);
+      const escapedValue =
+        ignoreEscape.indexOf(part.value) === -1
+          ? part.value
+          : escape(part.value);
 
       return part.isHighlighted
         ? `${highlightPreTag}${escapedValue}${highlightPostTag}`
@@ -87,9 +99,10 @@ export function highlightAlgoliaHit({
 export function reverseHighlightAlgoliaHit({
   hit,
   attribute,
-  highlightPreTag = '<em>',
-  highlightPostTag = '</em>',
-}): string {
+  highlightPreTag = '<mark>',
+  highlightPostTag = '</mark>',
+  ignoreEscape = [],
+}: HighlightOptions): string {
   const highlightedValue =
     (getPropertyByPath(hit, `_highlightResult.${attribute}.value`) as string) ||
     '';
@@ -104,7 +117,10 @@ export function reverseHighlightAlgoliaHit({
 
   return parsedHighlightedAttribute
     .map(part => {
-      const escapedValue = escape(part.value);
+      const escapedValue =
+        ignoreEscape.indexOf(part.value) === -1
+          ? part.value
+          : escape(part.value);
 
       // We don't want to highlight the whole word when no parts match.
       if (noPartsMatch) {

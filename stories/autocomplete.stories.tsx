@@ -3,8 +3,8 @@
 import { h } from 'preact';
 import { storiesOf } from '@storybook/html';
 import * as algoliasearch from 'algoliasearch';
-// import instantsearch from 'instantsearch.js';
 import RecentSearches from 'recent-searches';
+// import instantsearch from 'instantsearch.js';
 // import { connectAutocomplete } from 'instantsearch.js/es/connectors';
 // import { configure } from 'instantsearch.js/es/widgets';
 
@@ -76,8 +76,6 @@ const querySuggestionsSource = {
               __html: reverseHighlightAlgoliaHit({
                 hit: suggestion,
                 attribute: 'query',
-                highlightPreTag: '<mark>',
-                highlightPostTag: '</mark>',
               }),
             }}
           />
@@ -593,8 +591,6 @@ storiesOf('Autocomplete', module)
                         __html: highlightAlgoliaHit({
                           hit: suggestion,
                           attribute: 'name',
-                          highlightPreTag: '<mark>',
-                          highlightPostTag: '</mark>',
                         }),
                       }}
                     />
@@ -605,6 +601,7 @@ storiesOf('Autocomplete', module)
                         color: 'rgba(0, 0, 0, 0.5)',
                       }}
                       dangerouslySetInnerHTML={{
+                        // @TODO: add same highlight function for snippets
                         __html: suggestion._snippetResult.description.value,
                       }}
                     />
@@ -631,45 +628,51 @@ storiesOf('Autocomplete', module)
 //     searchClient,
 //     indexName: 'instant_search',
 //   });
+//   const autocompleteState = {};
 
 //   const autocompleteWidget = connectAutocomplete(
 //     (renderOptions, isFirstRender) => {
-//       console.log(renderOptions);
-
 //       const {
-//         currentRefinement,
 //         indices,
 //         refine,
 //         widgetParams,
+//         instantSearchInstance,
 //       } = renderOptions;
 
-//       const hits = indices.map(index => index.hits).flat();
+//       console.log(instantSearchInstance);
 
-//       autocomplete(
-//         {
-//           container: widgetParams.container,
-//           placeholder: 'Search…',
-//           onSelect: ({ suggestionValue }) => refine(suggestionValue),
-//         },
-//         [
+//       autocompleteState.hits = indices.map(index => index.hits).flat();
+
+//       if (isFirstRender) {
+//         autocomplete(
 //           {
-//             templates: {
-//               suggestion({ suggestion }) {
-//                 return suggestion._highlightResult.name.value;
-//               },
-//               header: () =>
-//                 '<h5 class="algolia-autocomplete-item-header">E-commerce</h5>',
-//             },
-//             getSuggestionValue(suggestion) {
-//               return suggestion.name;
-//             },
-//             getSuggestions({ query }) {
-//               // refine(query);
-//               return hits;
-//             },
+//             container: widgetParams.container,
+//             placeholder: 'Search…',
+//             onSelect: ({ suggestionValue }) => refine(suggestionValue),
 //           },
-//         ]
-//       );
+//           [
+//             {
+//               getSuggestionValue: ({ suggestion }) => suggestion.name,
+//               getSuggestions({ query }) {
+//                 refine(query);
+
+//                 // @TODO: this value is coming from the previous state
+//                 return autocompleteState.hits;
+//               },
+//               templates: {
+//                 header: () =>
+//                   '<h5 class="algolia-autocomplete-item-header">E-commerce</h5>',
+//                 suggestion({ suggestion }) {
+//                   return highlightAlgoliaHit({
+//                     hit: suggestion,
+//                     attribute: 'name',
+//                   });
+//                 },
+//               },
+//             },
+//           ]
+//         );
+//       }
 //     }
 //   );
 

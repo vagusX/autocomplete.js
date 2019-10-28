@@ -5,10 +5,10 @@ import { useState, useEffect, useRef } from 'preact/hooks';
 import { createPortal } from 'preact/compat';
 import Downshift from 'downshift/preact';
 
+import { Environment, defaultEnvironment } from '.';
 import { Dropdown } from './Dropdown';
 import { SearchBox } from './SearchBox';
 import { Template } from './Template';
-import { Environment } from '.';
 
 export type Suggestion = any;
 
@@ -108,7 +108,7 @@ export interface AutocompleteProps {
    *
    * @default environment.document.body
    */
-  dropdownContainer?: string | HTMLElement;
+  dropdownContainer?: HTMLElement;
   /**
    * The initial state to apply when the page is loaded.
    */
@@ -158,7 +158,7 @@ export function Autocomplete(props: AutocompleteProps) {
     keyboardShortcuts = [],
     sources = [],
     templates = {},
-    environment,
+    environment = defaultEnvironment,
     dropdownContainer = environment.document.body,
     onSelect = ({ setState }) => {
       setState({

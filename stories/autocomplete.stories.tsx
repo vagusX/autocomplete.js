@@ -48,7 +48,7 @@ const querySuggestionsSource = {
       });
   },
   templates: {
-    suggestion({ suggestion, state }) {
+    suggestion({ suggestion }) {
       return (
         <div style={{ display: 'flex' }}>
           <div style={{ width: 28 }}>
@@ -114,42 +114,36 @@ storiesOf('Autocomplete', module)
   .add('with static values', () => {
     const container = document.createElement('div');
 
-    autocomplete(
-      {
-        container,
-        placeholder: 'Search for U.S. states… (e.g. "Carolina")',
-      },
-      [createSource(states)]
-    );
+    autocomplete({
+      container,
+      placeholder: 'Search for U.S. states… (e.g. "Carolina")',
+      sources: [createSource(states)],
+    });
 
     return container;
   })
   .add('with initial state', () => {
     const container = document.createElement('div');
 
-    autocomplete(
-      {
-        container,
-        placeholder: 'Search for U.S. states… (e.g. "Carolina")',
-        initialState: {
-          query: 'Carolina',
-        },
+    autocomplete({
+      container,
+      placeholder: 'Search for U.S. states… (e.g. "Carolina")',
+      initialState: {
+        query: 'Carolina',
       },
-      [createSource(states)]
-    );
+      sources: [createSource(states)],
+    });
 
     return container;
   })
   .add('with multiple sources', () => {
     const container = document.createElement('div');
 
-    autocomplete(
-      {
-        container,
-        placeholder:
-          'Search for states, fruits, artists… (e.g. "Carolina", "Apple", "John")',
-      },
-      [
+    autocomplete({
+      container,
+      placeholder:
+        'Search for states, fruits, artists… (e.g. "Carolina", "Apple", "John")',
+      sources: [
         createSource(fruits, {
           limit: 5,
           templates: {
@@ -177,77 +171,67 @@ storiesOf('Autocomplete', module)
                 : '<h5 class="algolia-autocomplete-item-header">States</h5>',
           },
         }),
-      ]
-    );
+      ],
+    });
 
     return container;
   })
   .add('with minimal query length', () => {
     const container = document.createElement('div');
 
-    autocomplete(
-      {
-        container,
-        placeholder: 'Search for fruits (e.g. "apple")',
-        minLength: 3,
-      },
-      [createSource(fruits)]
-    );
+    autocomplete({
+      container,
+      placeholder: 'Search for fruits (e.g. "apple")',
+      minLength: 3,
+      sources: [createSource(fruits)],
+    });
 
     return container;
   })
   .add('with menu opening by default', () => {
     const container = document.createElement('div');
 
-    autocomplete(
-      {
-        container,
-        placeholder: 'Search for fruits (e.g. "banana")',
-        minLength: 0,
-      },
-      [createSource(fruits)]
-    );
+    autocomplete({
+      container,
+      placeholder: 'Search for fruits (e.g. "banana")',
+      minLength: 0,
+      sources: [createSource(fruits)],
+    });
 
     return container;
   })
   .add('with keyboard shortcuts', () => {
     const container = document.createElement('div');
 
-    autocomplete(
-      {
-        container,
-        placeholder: 'Search… (focus the inner window and type "/" or "a")',
-        keyboardShortcuts: ['/', 'a'],
-      },
-      [createSource(fruits)]
-    );
+    autocomplete({
+      container,
+      placeholder: 'Search… (focus the inner window and type "/" or "a")',
+      keyboardShortcuts: ['/', 'a'],
+      sources: [createSource(fruits)],
+    });
 
     return container;
   })
   .add('without default selection', () => {
     const container = document.createElement('div');
 
-    autocomplete(
-      {
-        container,
-        placeholder: 'Search… (first item is not selected by default)',
-        defaultHighlightedIndex: -1,
-      },
-      [createSource(fruits)]
-    );
+    autocomplete({
+      container,
+      placeholder: 'Search… (first item is not selected by default)',
+      defaultHighlightedIndex: -1,
+      sources: [createSource(fruits)],
+    });
 
     return container;
   })
   .add('with deferred values', () => {
     const container = document.createElement('div');
 
-    autocomplete(
-      {
-        container,
-        placeholder: 'Search…',
-        showHint: true,
-      },
-      [
+    autocomplete({
+      container,
+      placeholder: 'Search…',
+      showHint: true,
+      sources: [
         {
           getSuggestions({ query }) {
             return new Promise(resolve => {
@@ -295,21 +279,19 @@ storiesOf('Autocomplete', module)
             empty: ({ state }) => `No artists found for "${state.query}".`,
           },
         },
-      ]
-    );
+      ],
+    });
 
     return container;
   })
   .add('with deferred values but no `stalledDelay`', () => {
     const container = document.createElement('div');
 
-    autocomplete(
-      {
-        container,
-        placeholder: 'Search (the loader spins right away)',
-        stalledDelay: 0,
-      },
-      [
+    autocomplete({
+      container,
+      placeholder: 'Search (the loader spins right away)',
+      stalledDelay: 0,
+      sources: [
         {
           getSuggestions({ query }) {
             return new Promise(resolve => {
@@ -356,22 +338,20 @@ storiesOf('Autocomplete', module)
             empty: ({ state }) => `No artists found for "${state.query}".`,
           },
         },
-      ]
-    );
+      ],
+    });
 
     return container;
   })
   .add('with hint', () => {
     const container = document.createElement('div');
 
-    autocomplete(
-      {
-        container,
-        placeholder: 'Search…',
-        showHint: true,
-      },
-      [querySuggestionsSource]
-    );
+    autocomplete({
+      container,
+      placeholder: 'Search…',
+      showHint: true,
+      sources: [querySuggestionsSource],
+    });
 
     return container;
   })
@@ -379,13 +359,11 @@ storiesOf('Autocomplete', module)
     const container = document.createElement('div');
     container.dir = 'rtl';
 
-    autocomplete(
-      {
-        container,
-        placeholder: 'Search…',
-      },
-      [querySuggestionsSource]
-    );
+    autocomplete({
+      container,
+      placeholder: 'Search…',
+      sources: [querySuggestionsSource],
+    });
 
     return container;
   })
@@ -396,17 +374,15 @@ storiesOf('Autocomplete', module)
       limit: 3,
     });
 
-    autocomplete(
-      {
-        container,
-        placeholder: 'Search…',
-        showHint: true,
-        minLength: 0,
-        onSelect({ state }) {
-          recentSearches.setRecentSearch(state.query.trim());
-        },
+    autocomplete({
+      container,
+      placeholder: 'Search…',
+      showHint: true,
+      minLength: 0,
+      onSelect({ state }) {
+        recentSearches.setRecentSearch(state.query.trim());
       },
-      [
+      sources: [
         {
           key: 'history',
           getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
@@ -444,8 +420,8 @@ storiesOf('Autocomplete', module)
           },
         },
         querySuggestionsSource,
-      ]
-    );
+      ],
+    });
 
     return container;
   })
@@ -456,63 +432,56 @@ storiesOf('Autocomplete', module)
       limit: 3,
     });
 
-    autocomplete(
-      {
-        container,
-        placeholder: 'Search…',
-        minLength: 0,
-        showHint: true,
-        defaultHighlightedIndex: -1,
-        onClick({ event, setState }) {
-          if (
-            event.metaKey ||
-            event.ctrlKey ||
-            event.shiftKey ||
-            event.altKey
-          ) {
-            setState({
-              isOpen: true,
-            });
-          } else {
-            setState({
-              isOpen: false,
-            });
-          }
-        },
-        onKeyDown({ event, suggestion, state, setState }) {
-          if (!suggestion.url) {
-            return;
-          }
-
-          if (event.key === 'Enter') {
-            recentSearches.setRecentSearch(state.query);
-
-            if (event.metaKey || event.ctrlKey) {
-              setState({
-                isOpen: true,
-              });
-
-              const windowReference = window.open(suggestion.url, '_blank');
-              windowReference!.focus();
-            } else if (event.shiftKey) {
-              window.open(suggestion.url, '_blank');
-            } else if (event.altKey) {
-            } else {
-              window.location.assign(suggestion.url);
-            }
-          }
-        },
-        onSelect({ source, state, setState }) {
-          if (['history', 'suggestion'].includes(source.key!)) {
-            setState({
-              isOpen: true,
-            });
-          } else {
-            recentSearches.setRecentSearch(state.query);
-          }
-        },
+    autocomplete({
+      container,
+      placeholder: 'Search…',
+      minLength: 0,
+      showHint: true,
+      defaultHighlightedIndex: -1,
+      onClick({ event, setState }) {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+          setState({
+            isOpen: true,
+          });
+        } else {
+          setState({
+            isOpen: false,
+          });
+        }
       },
-      [
+      onKeyDown({ event, suggestion, state, setState }) {
+        if (!suggestion.url) {
+          return;
+        }
+
+        if (event.key === 'Enter') {
+          recentSearches.setRecentSearch(state.query);
+
+          if (event.metaKey || event.ctrlKey) {
+            setState({
+              isOpen: true,
+            });
+
+            const windowReference = window.open(suggestion.url, '_blank');
+            windowReference!.focus();
+          } else if (event.shiftKey) {
+            window.open(suggestion.url, '_blank');
+          } else if (event.altKey) {
+          } else {
+            window.location.assign(suggestion.url);
+          }
+        }
+      },
+      onSelect({ source, state, setState }) {
+        if (['history', 'suggestion'].includes(source.key!)) {
+          setState({
+            isOpen: true,
+          });
+        } else {
+          recentSearches.setRecentSearch(state.query);
+        }
+      },
+      sources: [
         {
           key: 'history',
           getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
@@ -621,8 +590,8 @@ storiesOf('Autocomplete', module)
             },
           },
         },
-      ]
-    );
+      ],
+    });
 
     return container;
   });
@@ -654,13 +623,11 @@ storiesOf('Autocomplete', module)
 //       autocompleteState.hits = indices.map(index => index.hits).flat();
 
 //       if (isFirstRender) {
-//         autocomplete(
-//           {
-//             container: widgetParams.container,
-//             placeholder: 'Search…',
-//             onSelect: ({ suggestionValue }) => refine(suggestionValue),
-//           },
-//           [
+//         autocomplete({
+//           container: widgetParams.container,
+//           placeholder: 'Search…',
+//           onSelect: ({ suggestionValue }) => refine(suggestionValue),
+//           sources: [
 //             {
 //               getSuggestionValue: ({ suggestion }) => suggestion.name,
 //               getSuggestions({ query }) {
@@ -680,8 +647,8 @@ storiesOf('Autocomplete', module)
 //                 },
 //               },
 //             },
-//           ]
-//         );
+//           ],
+//         });
 //       }
 //     }
 //   );

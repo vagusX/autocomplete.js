@@ -22,16 +22,17 @@ export interface AutocompleteOptions extends AutocompleteProps {
    * The input container to insert the search box.
    */
   container: string | HTMLElement;
+  sources: Array<AutocompleteSource>;
 }
 
-function autocomplete(
-  options: AutocompleteOptions,
-  sources: Array<AutocompleteSource>
-) {
+export const defaultEnvironment =
+  typeof window === 'undefined' ? ({} as Environment) : window;
+
+function autocomplete(options: AutocompleteOptions) {
   const {
     container,
     dropdownContainer,
-    environment = typeof window === 'undefined' ? ({} as Environment) : window,
+    environment = defaultEnvironment,
     placeholder,
     stalledDelay,
     defaultHighlightedIndex,
@@ -41,17 +42,12 @@ function autocomplete(
     autofocus,
     initialState,
     templates,
+    sources,
     onSelect,
     onClick,
     onKeyDown,
     onError,
   } = options || {};
-
-  const sanitizedSources = sources.map(source => ({
-    // @TODO: set `getSuggestionValue` as `() => ''` by default?
-    templates: {},
-    ...source,
-  }));
 
   const containerElement = getHTMLElement(container);
   const dropdownContainerElement = dropdownContainer
@@ -69,7 +65,7 @@ function autocomplete(
       autofocus={autofocus}
       showHint={showHint}
       initialState={initialState}
-      sources={sanitizedSources}
+      sources={sources}
       templates={templates}
       environment={environment}
       onSelect={onSelect}

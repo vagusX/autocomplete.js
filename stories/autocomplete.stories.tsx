@@ -95,7 +95,17 @@ const createSource = (items: any[], { templates = {}, limit = 10 } = {}) => ({
   },
   getSuggestionValue: ({ suggestion }) => suggestion.value,
   templates: {
-    suggestion: ({ suggestion }) => suggestion.value,
+    suggestion: ({ suggestion }) => (
+      <div style={{ display: 'flex' }}>
+        {suggestion.icon && (
+          <div
+            style={{ width: 24 }}
+            dangerouslySetInnerHTML={{ __html: suggestion.icon }}
+          />
+        )}
+        <span>{suggestion.value}</span>
+      </div>
+    ),
     ...templates,
   },
 });

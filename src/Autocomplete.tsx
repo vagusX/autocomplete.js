@@ -39,6 +39,7 @@ export interface AutocompleteSource {
     query: string;
   }): Suggestion[] | Promise<Suggestion[]>;
   templates: AutocompleteSourceTemplates;
+  onSelect?: (options: ItemEventHandlerOptions) => void;
 }
 
 export interface AutocompleteItem {
@@ -120,7 +121,6 @@ export interface AutocompleteProps {
   templates?: AutocompleteTemplates;
   environment?: Environment;
   onFocus?: (options: EventHandlerOptions) => void;
-  onSelect?: (options: ItemEventHandlerOptions) => void;
   onClick?: (options: EventItemEventHandlerOptions<MouseEvent>) => void;
   onKeyDown?: (options: EventItemEventHandlerOptions<KeyboardEvent>) => void;
   onError?: (options: EventHandlerOptions) => void;
@@ -160,11 +160,6 @@ export function Autocomplete(props: AutocompleteProps) {
     templates = {},
     environment = defaultEnvironment,
     dropdownContainer = environment.document.body,
-    onSelect = ({ setState }) => {
-      setState({
-        isOpen: false,
-      });
-    },
     onFocus = () => {},
     onClick = () => {},
     onKeyDown = () => {},
@@ -393,18 +388,22 @@ export function Autocomplete(props: AutocompleteProps) {
           source.getSuggestionValue({ suggestion, state: getState() }),
           false
         ).then(() => {
-          const currentState = getState();
+          if (source.onSelect) {
+            const currentState = getState();
 
-          onSelect({
-            suggestion: suggestion,
-            suggestionValue: source.getSuggestionValue({
-              suggestion,
+            source.onSelect({
+              suggestion: suggestion,
+              suggestionValue: source.getSuggestionValue({
+                suggestion,
+                state: currentState,
+              }),
+              source,
               state: currentState,
-            }),
-            source,
-            state: currentState,
-            setState,
-          });
+              setState,
+            });
+          } else {
+            setIsOpen(false);
+          }
         });
       }}
       onOuterClick={() => {

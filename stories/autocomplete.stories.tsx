@@ -20,7 +20,6 @@ const searchClient = algoliasearch(
 );
 
 const querySuggestionsSource = {
-  key: 'suggestion',
   getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
   getSuggestions({ query }) {
     return searchClient
@@ -379,12 +378,9 @@ storiesOf('Autocomplete', module)
       placeholder: 'Search…',
       showHint: true,
       minLength: 0,
-      onSelect({ state }) {
-        recentSearches.setRecentSearch(state.query.trim());
-      },
+
       sources: [
         {
-          key: 'history',
           getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
           getSuggestions({ query }) {
             if (query) {
@@ -472,18 +468,8 @@ storiesOf('Autocomplete', module)
           }
         }
       },
-      onSelect({ source, state, setState }) {
-        if (['history', 'suggestion'].includes(source.key!)) {
-          setState({
-            isOpen: true,
-          });
-        } else {
-          recentSearches.setRecentSearch(state.query);
-        }
-      },
       sources: [
         {
-          key: 'history',
           getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
           getSuggestions({ query }) {
             if (query) {
@@ -491,6 +477,12 @@ storiesOf('Autocomplete', module)
             }
 
             return recentSearches.getRecentSearches();
+          },
+
+          onSelect({ setState }) {
+            setState({
+              isOpen: true,
+            });
           },
           templates: {
             suggestion({ suggestion }) {
@@ -515,7 +507,6 @@ storiesOf('Autocomplete', module)
         },
         querySuggestionsSource,
         {
-          key: 'products',
           getSuggestionValue: ({ state }) => state.query,
           getSuggestions({ query }) {
             return searchClient
@@ -538,6 +529,14 @@ storiesOf('Autocomplete', module)
 
                 return results;
               });
+          },
+
+          onSelect({ state }) {
+            const query = state.query;
+
+            if (query.length >= 3) {
+              recentSearches.setRecentSearch(query);
+            }
           },
           templates: {
             header: () =>

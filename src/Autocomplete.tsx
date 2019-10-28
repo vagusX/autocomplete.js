@@ -2,11 +2,13 @@
 
 import { h } from 'preact';
 import { useState, useEffect, useRef } from 'preact/hooks';
+import { createPortal } from 'preact/compat';
 import Downshift from 'downshift/preact';
 
 import { Dropdown } from './Dropdown';
 import { SearchBox } from './SearchBox';
 import { Template } from './Template';
+import { Environment } from '.';
 
 export type Suggestion = any;
 
@@ -61,13 +63,6 @@ interface EventItemEventHandlerOptions<TEvent = Event>
   event: TEvent;
 }
 
-interface Environment {
-  [prop: string]: unknown;
-  addEventListener: Window['addEventListener'];
-  removeEventListener: Window['removeEventListener'];
-  setTimeout: Window['setTimeout'];
-}
-
 export interface AutocompleteProps {
   /**
    * The text that appears in the search box input when there is no query.
@@ -108,6 +103,12 @@ export interface AutocompleteProps {
    * @default false
    */
   showHint?: boolean;
+  /**
+   * The container for the autocomplete dropdown.
+   *
+   * @default environment.document.body
+   */
+  dropdownContainer?: string | HTMLElement;
   /**
    * The initial state to apply when the page is loaded.
    */
@@ -157,7 +158,8 @@ export function Autocomplete(props: AutocompleteProps) {
     keyboardShortcuts = [],
     sources = [],
     templates = {},
-    environment = typeof window === 'undefined' ? ({} as Environment) : window,
+    environment,
+    dropdownContainer = environment.document.body,
     onSelect = ({ setState }) => {
       setState({
         isOpen: false,
@@ -514,7 +516,7 @@ export function Autocomplete(props: AutocompleteProps) {
                 setQuery('');
 
                 if (minLength === 0) {
-                  performQuery('', isOpen);
+                  performQuery('');
                 }
 
                 inputRef.current && inputRef.current.focus();
@@ -526,16 +528,19 @@ export function Autocomplete(props: AutocompleteProps) {
               }}
             />
 
-            <Dropdown
-              hidden={!shouldOpen}
-              internalState={getState()}
-              internalSetState={setState}
-              sources={sources}
-              templates={templates}
-              onClick={onClick}
-              getMenuProps={getMenuProps}
-              getItemProps={getItemProps}
-            />
+            {createPortal(
+              <Dropdown
+                hidden={!shouldOpen}
+                internalState={getState()}
+                internalSetState={setState}
+                sources={sources}
+                templates={templates}
+                onClick={onClick}
+                getMenuProps={getMenuProps}
+                getItemProps={getItemProps}
+              />,
+              dropdownContainer
+            )}
           </div>
         );
       }}

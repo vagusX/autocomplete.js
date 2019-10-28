@@ -7,12 +7,21 @@ import {
   AutocompleteProps,
   AutocompleteSource,
 } from './Autocomplete';
+import { getHTMLElement } from './utils';
+
+export interface Environment {
+  [prop: string]: unknown;
+  addEventListener: Window['addEventListener'];
+  removeEventListener: Window['removeEventListener'];
+  setTimeout: Window['setTimeout'];
+  document: Window['document'];
+}
 
 export interface AutocompleteOptions extends AutocompleteProps {
   /**
    * The input container to insert the search box.
    */
-  container: HTMLElement;
+  container: string | HTMLElement;
 }
 
 function autocomplete(
@@ -21,6 +30,8 @@ function autocomplete(
 ) {
   const {
     container,
+    dropdownContainer,
+    environment = typeof window === 'undefined' ? ({} as Environment) : window,
     placeholder,
     stalledDelay,
     defaultHighlightedIndex,
@@ -42,8 +53,14 @@ function autocomplete(
     ...source,
   }));
 
+  const containerElement = getHTMLElement(container);
+  const dropdownContainerElement = dropdownContainer
+    ? getHTMLElement(dropdownContainer)
+    : environment.document.body;
+
   render(
     <Autocomplete
+      dropdownContainer={dropdownContainerElement}
       placeholder={placeholder}
       stalledDelay={stalledDelay}
       defaultHighlightedIndex={defaultHighlightedIndex}
@@ -54,13 +71,14 @@ function autocomplete(
       initialState={initialState}
       sources={sanitizedSources}
       templates={templates}
+      environment={environment}
       onSelect={onSelect}
       onClick={onClick}
       onError={onError}
       onKeyDown={onKeyDown}
     />,
-    container,
-    container.lastChild as Element
+    containerElement,
+    containerElement.lastChild as HTMLElement
   );
 }
 

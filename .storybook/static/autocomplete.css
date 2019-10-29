@@ -59,7 +59,7 @@ body {
 }
 
 .algolia-autocomplete-input,
-.algolia-autocomplete-hint {
+.algolia-autocomplete-completion {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -79,7 +79,7 @@ body {
   display: none;
 }
 
-.algolia-autocomplete-hint {
+.algolia-autocomplete-completion {
   opacity: 0.4;
   pointer-events: none;
   position: absolute;

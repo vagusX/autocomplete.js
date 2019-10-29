@@ -8,7 +8,7 @@ import { AutocompleteState, RequiredAutocompleteProps } from './Autocomplete';
 export interface SearchBoxProps {
   placeholder: RequiredAutocompleteProps['placeholder'];
   autofocus: RequiredAutocompleteProps['autofocus'];
-  hint: string;
+  completion: string;
   internalState: AutocompleteState;
   internalSetState(nextState: Partial<AutocompleteState>): void;
   onInput: (event: any) => void;
@@ -21,8 +21,10 @@ export interface SearchBoxProps {
 }
 
 export function SearchBox(props: SearchBoxProps) {
-  const showHint = Boolean(
-    props.internalState.isOpen && !props.internalState.isStalled && props.hint
+  const showCompletion = Boolean(
+    props.internalState.isOpen &&
+      !props.internalState.isStalled &&
+      props.completion
   );
 
   return (
@@ -73,20 +75,20 @@ export function SearchBox(props: SearchBoxProps) {
       </div>
 
       <div className="algolia-autocomplete-searchbox">
-        {showHint && (
+        {showCompletion && (
           <span
-            className="algolia-autocomplete-hint"
+            className="algolia-autocomplete-completion"
             aria-live={'assertive'}
-            aria-suggest={`Press tab to select ${props.hint}`}
+            aria-suggest={`Press tab to select ${props.completion}`}
           >
-            {props.hint}
+            {props.completion}
           </span>
         )}
 
         <input
           className="algolia-autocomplete-input"
           {...props.getInputProps({
-            placeholder: showHint ? '' : props.placeholder,
+            placeholder: showCompletion ? '' : props.placeholder,
             ref: props.onInputRef,
             autofocus: props.autofocus,
             type: 'search',

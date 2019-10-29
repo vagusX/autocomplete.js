@@ -99,11 +99,11 @@ export interface AutocompleteProps {
    */
   autofocus?: boolean;
   /**
-   * Whether to show the highlighted suggestion as hint in the input.
+   * Whether to show the highlighted suggestion as completion in the input.
    *
    * @default false
    */
-  showHint?: boolean;
+  showCompletion?: boolean;
   /**
    * The container for the autocomplete dropdown.
    *
@@ -150,13 +150,13 @@ export function Autocomplete(props: AutocompleteProps) {
   const {
     placeholder = '',
     minLength = 1,
-    showHint = false,
+    showCompletion = false,
     autofocus = false,
     initialState = {},
     defaultHighlightedIndex = 0,
     stalledDelay = 300,
     keyboardShortcuts = [],
-    sources = [],
+    sources,
     templates = {},
     environment = defaultEnvironment,
     dropdownContainer = environment.document.body,
@@ -324,8 +324,8 @@ export function Autocomplete(props: AutocompleteProps) {
     return sources[sourceNumber];
   }
 
-  function getHint(highlightedIndex: number) {
-    if (!showHint) {
+  function getCompletion(highlightedIndex: number) {
+    if (!showCompletion) {
       return '';
     }
 
@@ -436,7 +436,7 @@ export function Autocomplete(props: AutocompleteProps) {
             <SearchBox
               placeholder={placeholder}
               autofocus={autofocus}
-              hint={getHint(highlightedIndex)}
+              completion={getCompletion(highlightedIndex)}
               internalState={getState()}
               internalSetState={setState}
               onInputRef={inputRef}

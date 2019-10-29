@@ -227,7 +227,7 @@ storiesOf('Autocomplete', module)
     autocomplete({
       container,
       placeholder: 'Search…',
-      showHint: true,
+      showCompletion: true,
       sources: [
         {
           getSuggestions({ query }) {
@@ -340,13 +340,13 @@ storiesOf('Autocomplete', module)
 
     return container;
   })
-  .add('with hint', () => {
+  .add('with completion', () => {
     const container = document.createElement('div');
 
     autocomplete({
       container,
       placeholder: 'Search…',
-      showHint: true,
+      showCompletion: true,
       sources: [querySuggestionsSource],
     });
 
@@ -374,7 +374,7 @@ storiesOf('Autocomplete', module)
     autocomplete({
       container,
       placeholder: 'Search…',
-      showHint: true,
+      showCompletion: true,
       minLength: 0,
 
       sources: [
@@ -430,7 +430,7 @@ storiesOf('Autocomplete', module)
       container,
       placeholder: 'Search…',
       minLength: 0,
-      showHint: true,
+      showCompletion: true,
       defaultHighlightedIndex: -1,
       onClick({ event, setState }) {
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {

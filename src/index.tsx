@@ -2,11 +2,7 @@
 
 import { h, render } from 'preact';
 
-import {
-  Autocomplete,
-  AutocompleteProps,
-  AutocompleteSource,
-} from './Autocomplete';
+import { Autocomplete, AutocompleteProps } from './Autocomplete';
 import { getHTMLElement } from './utils';
 
 export interface Environment {
@@ -37,7 +33,7 @@ function autocomplete(options: AutocompleteOptions) {
     defaultHighlightedIndex,
     keyboardShortcuts,
     minLength,
-    showHint,
+    showCompletion,
     autofocus,
     initialState,
     templates,
@@ -61,7 +57,7 @@ function autocomplete(options: AutocompleteOptions) {
       keyboardShortcuts={keyboardShortcuts}
       minLength={minLength}
       autofocus={autofocus}
-      showHint={showHint}
+      showCompletion={showCompletion}
       initialState={initialState}
       sources={sources}
       templates={templates}

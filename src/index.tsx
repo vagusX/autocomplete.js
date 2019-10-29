@@ -77,6 +77,8 @@ function autocomplete(options: AutocompleteOptions) {
 }
 
 export default autocomplete;
+export { version } from './version';
+export { getAlgoliaHits } from './suggestions';
 export {
   highlightAlgoliaHit,
   reverseHighlightAlgoliaHit,

@@ -1,0 +1,1 @@
+export { getAlgoliaHits } from './getAlgoliaHits';

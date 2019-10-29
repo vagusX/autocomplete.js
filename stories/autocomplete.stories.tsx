@@ -11,6 +11,7 @@ import RecentSearches from 'recent-searches';
 import autocomplete, {
   highlightAlgoliaHit,
   reverseHighlightAlgoliaHit,
+  getAlgoliaHits,
 } from '../src';
 import { states, fruits, artists } from './data';
 
@@ -22,29 +23,26 @@ const searchClient = algoliasearch(
 const querySuggestionsSource = {
   getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
   getSuggestions({ query }) {
-    return searchClient
-      .search([
+    return getAlgoliaHits({
+      searchClient,
+      query,
+      searchParameters: [
         {
           indexName: 'instant_search_demo_query_suggestions',
-          query,
           params: {
             hitsPerPage: 4,
-            highlightPreTag: '<mark>',
-            highlightPostTag: '</mark>',
           },
         },
-      ])
-      .then(response => {
-        return response.results
-          .map(result => result.hits)
-          .flat()
-          .filter(
-            suggestion =>
-              suggestion.query !== query.toLocaleLowerCase() &&
-              `${suggestion.query} ` !== query.toLocaleLowerCase()
-          )
-          .slice(0, 3);
-      });
+      ],
+    }).then(hits => {
+      return hits
+        .filter(
+          suggestion =>
+            suggestion.query !== query.toLocaleLowerCase() &&
+            `${suggestion.query} ` !== query.toLocaleLowerCase()
+        )
+        .slice(0, 3);
+    });
   },
   templates: {
     suggestion({ suggestion }) {
@@ -509,26 +507,18 @@ storiesOf('Autocomplete', module)
         {
           getSuggestionValue: ({ state }) => state.query,
           getSuggestions({ query }) {
-            return searchClient
-              .search([
+            return getAlgoliaHits({
+              searchClient,
+              query,
+              searchParameters: [
                 {
                   indexName: 'instant_search',
-                  query,
                   params: {
-                    hitsPerPage: 5,
-                    highlightPreTag: '<mark>',
-                    highlightPostTag: '</mark>',
                     attributesToSnippet: ['description'],
                   },
                 },
-              ])
-              .then(response => {
-                const results = response.results
-                  .map(result => result.hits)
-                  .flat();
-
-                return results;
-              });
+              ],
+            });
           },
 
           onSelect({ state }) {

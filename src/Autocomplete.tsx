@@ -221,7 +221,7 @@ export function Autocomplete(props: AutocompleteProps) {
     if (nextState.error) setError(nextState.error);
   }
 
-  function onGlobalKeyDown(event: KeyboardEvent) {
+  function onGlobalKeyDown(event: KeyboardEvent): void {
     if (!inputRef.current) {
       return;
     }

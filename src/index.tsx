@@ -22,7 +22,6 @@ export interface AutocompleteOptions extends AutocompleteProps {
    * The input container to insert the search box.
    */
   container: string | HTMLElement;
-  sources: Array<AutocompleteSource>;
 }
 
 export const defaultEnvironment =

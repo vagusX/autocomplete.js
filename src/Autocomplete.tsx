@@ -25,6 +25,7 @@ interface AutocompleteSourceTemplates {
 }
 
 export interface AutocompleteSource {
+  // @TODO: see if we need a `key`
   key?: string;
   getSuggestionValue({
     suggestion,
@@ -190,12 +191,12 @@ export function Autocomplete(props: AutocompleteProps) {
   }, []);
 
   useEffect(() => {
-    if (keyboardShortcuts.length > 1) {
+    if (keyboardShortcuts.length > 0) {
       environment.addEventListener('keydown', onGlobalKeyDown);
     }
 
     return () => {
-      if (keyboardShortcuts.length > 1) {
+      if (keyboardShortcuts.length > 0) {
         environment.removeEventListener('keydown', onGlobalKeyDown);
       }
     };

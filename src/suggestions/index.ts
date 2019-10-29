@@ -1,1 +1,1 @@
-export { getAlgoliaHits } from './getAlgoliaHits';
+export { getAlgoliaHits, getAlgoliaResults } from './algolia';

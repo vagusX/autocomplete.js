@@ -363,6 +363,7 @@ export function Autocomplete(props: AutocompleteProps) {
     // already open because there are results displayed. Otherwise,
     // it would result in a flashy behavior.
     canOpen &&
+    // @TODO: should hiding the menu when no results be an option?
     results.some((result: Suggestion[]) => result.length > 0);
 
   return (

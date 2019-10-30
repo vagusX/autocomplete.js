@@ -96,8 +96,7 @@ export const Dropdown = ({
                             item,
                             tabIndex: 0,
                             onClick: (event: MouseEvent) =>
-                              onClick({
-                                event,
+                              onClick(event, {
                                 suggestion: item.suggestion,
                                 suggestionValue: item.suggestionValue,
                                 source: item.source,

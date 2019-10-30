@@ -11,13 +11,13 @@ export type SearchClient = Pick<Client, 'search' | 'searchForFacetValues'>;
 
 interface SearchParameters {
   indexName: string;
-  params: QueryParameters;
+  params?: QueryParameters;
 }
 
 interface GetAlgoliaSourceOptions {
   searchClient: SearchClient;
   query: string;
-  searchParameters: SearchParameters[];
+  searchParameters?: SearchParameters[];
 }
 
 interface GetAlgoliaHitsOptions extends GetAlgoliaSourceOptions {

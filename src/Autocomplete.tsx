@@ -60,11 +60,6 @@ interface ItemEventHandlerOptions extends EventHandlerOptions {
   source: AutocompleteSource;
 }
 
-interface EventItemEventHandlerOptions<TEvent = Event>
-  extends ItemEventHandlerOptions {
-  event: TEvent;
-}
-
 export interface AutocompleteProps {
   /**
    * The text that appears in the search box input when there is no query.
@@ -118,12 +113,12 @@ export interface AutocompleteProps {
   /**
    * The sources to get the suggestions from.
    */
-  sources?: AutocompleteSource[];
+  sources: AutocompleteSource[];
   templates?: AutocompleteTemplates;
   environment?: Environment;
   onFocus?: (options: EventHandlerOptions) => void;
-  onClick?: (options: EventItemEventHandlerOptions<MouseEvent>) => void;
-  onKeyDown?: (options: EventItemEventHandlerOptions<KeyboardEvent>) => void;
+  onClick?: (event: MouseEvent, options: ItemEventHandlerOptions) => void;
+  onKeyDown?: (event: KeyboardEvent, options: ItemEventHandlerOptions) => void;
   onError?: (options: EventHandlerOptions) => void;
 }
 
@@ -467,8 +462,7 @@ export function Autocomplete(props: AutocompleteProps) {
                 if (suggestion && source) {
                   const currentState = getState();
 
-                  onKeyDown({
-                    event,
+                  onKeyDown(event, {
                     suggestion,
                     suggestionValue: source.getSuggestionValue({
                       suggestion,
@@ -478,6 +472,8 @@ export function Autocomplete(props: AutocompleteProps) {
                     state: currentState,
                     setState,
                   });
+                } else {
+                  onKeyDown(event);
                 }
 
                 if (event.key === 'Escape') {

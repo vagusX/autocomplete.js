@@ -1,0 +1,109 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Autocomplete should generated the correct DOM 1`] = `
+<div>
+  <div
+    aria-haspopup="listbox"
+    aria-labelledby="autocomplete-0-label"
+    class="algolia-autocomplete"
+    role="combobox"
+  >
+    <form
+      action=""
+      class="algolia-autocomplete-form"
+      novalidate=""
+      role="search"
+    >
+      <label
+        class="algolia-autocomplete-magnifierLabel"
+        for="autocomplete-0-input"
+      >
+        <svg
+          viewBox="0 0 18 18"
+        >
+          <path
+            d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
+            fill="none"
+            fill-rule="evenodd"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.78"
+          />
+        </svg>
+      </label>
+      <div
+        class="algolia-autocomplete-loadingIndicator"
+      >
+        <svg
+          stroke="currentColor"
+          stroke-opacity=".5"
+          viewBox="0 0 38 38"
+        >
+          <g
+            fill="none"
+            fill-rule="evenodd"
+          >
+            <g
+              stroke-width="2"
+              transform="translate(1 1)"
+            >
+              <circle
+                cx="18"
+                cy="18"
+                r="18"
+                stroke-opacity=".3"
+              />
+              <path
+                d="M36 18c0-9.94-8.06-18-18-18"
+              >
+                <animatetransform
+                  attributeName="transform"
+                  dur="1s"
+                  from="0 18 18"
+                  repeatCount="indefinite"
+                  to="360 18 18"
+                  type="rotate"
+                />
+              </path>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <div
+        class="algolia-autocomplete-searchbox"
+      >
+        <input
+          aria-autocomplete="list"
+          aria-labelledby="autocomplete-0-label"
+          autocapitalize="off"
+          autocomplete="off"
+          autocorrect="off"
+          class="algolia-autocomplete-input"
+          id="autocomplete-0-input"
+          maxlength="512"
+          placeholder=""
+          spellcheck="false"
+          type="search"
+        />
+      </div>
+      <button
+        class="algolia-autocomplete-reset"
+        hidden=""
+        title="Clear the query"
+        type="reset"
+      >
+        <svg
+          viewBox="0 0 10 10"
+        >
+          <path
+            d="M5 4.12L8.93.18a.62.62 0 1 1 .89.89L5.88 5l3.94 3.93a.62.62 0 1 1-.89.89L5 5.88 1.07 9.82a.62.62 0 1 1-.89-.89L4.12 5 .18 1.07a.62.62 0 1 1 .89-.89L5 4.12z"
+            fill="currentColor"
+            fill-rule="evenodd"
+          />
+        </svg>
+      </button>
+    </form>
+  </div>
+</div>
+`;

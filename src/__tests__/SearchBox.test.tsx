@@ -1,29 +1,38 @@
 /** @jsx h */
 
 import { h } from 'preact';
-import {
-  render,
-  cleanup,
-  fireEvent,
-  getByPlaceholderText,
-  getByDisplayValue,
-} from 'preact-testing-library';
+import { render, fireEvent } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/extend-expect';
 
 import { SearchBox, SearchBoxProps } from '../SearchBox';
 
 describe('SearchBox', () => {
-  const inputId = 'docsearch-0-input';
+  const inputId = 'autocomplete-0-input';
 
   function getDefaultProps(): SearchBoxProps {
     return {
       placeholder: '',
-      query: '',
+      autofocus: false,
+      completion: '',
+      internalSetState: jest.fn(),
+      internalState: {
+        query: '',
+        isLoading: false,
+        isStalled: false,
+        isOpen: false,
+        error: null,
+        results: [],
+        metadata: {},
+      },
       onFocus: jest.fn(),
       onKeyDown: jest.fn(),
-      onChange: jest.fn(),
+      onInput: jest.fn(),
       onReset: jest.fn(),
+      onSubmit: jest.fn(),
+      onInputRef: {
+        current: null,
+      },
       getInputProps: (options?: object) => ({
         ...options,
         id: inputId,
@@ -31,23 +40,21 @@ describe('SearchBox', () => {
     };
   }
 
-  afterEach(cleanup);
-
   test('should generate the correct DOM', () => {
     const props = {
       ...getDefaultProps(),
     };
 
     const { container } = render(<SearchBox {...props} />);
-    const form = container.querySelector('.algolia-docsearch-form');
+    const form = container.querySelector('.algolia-autocomplete-form');
     const magnifierLabel = container.querySelector(
-      '.algolia-docsearch-magnifierLabel'
+      '.algolia-autocomplete-magnifierLabel'
     );
     const loadingIndicator = container.querySelector(
-      '.algolia-docsearch-loadingIndicator'
+      '.algolia-autocomplete-loadingIndicator'
     );
-    const input = container.querySelector('.algolia-docsearch-input');
-    const reset = container.querySelector('.algolia-docsearch-reset');
+    const input = container.querySelector('.algolia-autocomplete-input');
+    const reset = container.querySelector('.algolia-autocomplete-reset');
 
     expect(form).toBeInTheDocument();
     expect(form).toHaveAttribute('novalidate', '');
@@ -66,104 +73,272 @@ describe('SearchBox', () => {
     expect(reset).toHaveAttribute('type', 'reset');
   });
 
-  test('should allow custom placeholders', () => {
-    const props = {
-      ...getDefaultProps(),
-      placeholder: 'Search placeholder',
-    };
+  describe('placeholder', () => {
+    test('should allow custom placeholders', () => {
+      const props = {
+        ...getDefaultProps(),
+        placeholder: 'Search placeholder',
+      };
 
-    const { container } = render(<SearchBox {...props} />);
-    const input = getByPlaceholderText(container, props.placeholder);
+      const { getByPlaceholderText } = render(<SearchBox {...props} />);
+      const input = getByPlaceholderText('Search placeholder');
 
-    expect(input).toBeInTheDocument();
+      expect(input).toBeInTheDocument();
+    });
   });
 
-  test('should have the query prop as input', () => {
-    const props = {
-      ...getDefaultProps(),
-      query: 'Search query',
-    };
+  describe('query', () => {
+    test('should have the query prop as input', () => {
+      const props = {
+        ...getDefaultProps(),
+        internalState: {
+          ...getDefaultProps().internalState,
+          query: 'Search query',
+        },
+      };
 
-    const { container } = render(<SearchBox {...props} />);
-    const input = getByDisplayValue(container, props.query);
-    const reset = container.querySelector('button[type="reset"]');
+      const { container } = render(<SearchBox {...props} />);
+      const input = container.querySelector('.algolia-autocomplete-input');
+      const reset = container.querySelector('button[type="reset"]');
 
-    expect(input).toBeInTheDocument();
-    expect(reset).not.toHaveAttribute('hidden');
+      expect(input).toHaveValue(props.internalState.query);
+      expect(reset).toBeVisible();
+    });
   });
 
-  test('should call onFocus prop on input focus', () => {
-    const props = {
-      ...getDefaultProps(),
-      placeholder: 'Search placeholder',
-    };
+  describe('completion', () => {
+    test('should show the completion with a completion value', () => {
+      const props = {
+        ...getDefaultProps(),
+        completion: 'Query',
+        internalState: {
+          ...getDefaultProps().internalState,
+          query: 'Que',
+          isOpen: true,
+          isStalled: false,
+        },
+      };
 
-    const { container } = render(<SearchBox {...props} />);
-    const input = getByPlaceholderText(container, props.placeholder);
+      const { container } = render(<SearchBox {...props} />);
+      const completion = container.querySelector(
+        '.algolia-autocomplete-completion'
+      );
 
-    expect(props.onFocus).toHaveBeenCalledTimes(0);
+      expect(completion).toBeInTheDocument();
+      expect(completion).toContainHTML('Query');
+    });
 
-    input.focus();
+    test('should not show the completion when empty', () => {
+      const props = {
+        ...getDefaultProps(),
+        completion: '',
+        internalState: {
+          ...getDefaultProps().internalState,
+          query: 'Que',
+          isOpen: true,
+          isStalled: false,
+        },
+      };
 
-    expect(props.onFocus).toHaveBeenCalledTimes(1);
+      const { container } = render(<SearchBox {...props} />);
+      const completion = container.querySelector(
+        '.algolia-autocomplete-completion'
+      );
 
-    userEvent.type(input, 'hello');
-    input.blur();
+      expect(completion).not.toBeInTheDocument();
+    });
 
-    expect(props.onFocus).toHaveBeenCalledTimes(1);
+    test('should not show the completion when is the menu is closed', () => {
+      const props = {
+        ...getDefaultProps(),
+        completion: 'Query',
+        internalState: {
+          ...getDefaultProps().internalState,
+          query: 'Que',
+          isOpen: false,
+        },
+      };
 
-    input.focus();
-    userEvent.type(input, ' there');
+      const { container } = render(<SearchBox {...props} />);
+      const completion = container.querySelector(
+        '.algolia-autocomplete-completion'
+      );
 
-    expect(props.onFocus).toHaveBeenCalledTimes(2);
+      expect(completion).not.toBeInTheDocument();
+    });
+
+    test('should not show the completion when is the search is stalled', () => {
+      const props = {
+        ...getDefaultProps(),
+        completion: 'Query',
+        internalState: {
+          ...getDefaultProps().internalState,
+          query: 'Que',
+          isOpen: true,
+          isStalled: true,
+        },
+      };
+
+      const { container } = render(<SearchBox {...props} />);
+      const completion = container.querySelector(
+        '.algolia-autocomplete-completion'
+      );
+
+      expect(completion).not.toBeInTheDocument();
+    });
+
+    // This test is to avoid having a placeholder showing at the same time as
+    // a completion.
+    // This can happen when `minLength` is set to 0.
+    test('should hide the placeholder when showing the completion', () => {
+      const props = {
+        ...getDefaultProps(),
+        placeholder: 'Search…',
+        completion: 'Query',
+        internalState: {
+          ...getDefaultProps().internalState,
+          query: '',
+          isOpen: true,
+        },
+      };
+
+      const { container } = render(<SearchBox {...props} />);
+      const input = container.querySelector('.algolia-autocomplete-input');
+
+      expect(input).toHaveAttribute('placeholder', '');
+    });
   });
 
-  test('should call onKeyDown prop on key down on the input', () => {
-    const props = {
-      ...getDefaultProps(),
-      placeholder: 'Search placeholder',
-    };
+  describe('events', () => {
+    test('should call onFocus prop on input focus', () => {
+      const props = {
+        ...getDefaultProps(),
+      };
 
-    const { container } = render(<SearchBox {...props} />);
-    const input = getByPlaceholderText(container, props.placeholder);
+      const { container } = render(<SearchBox {...props} />);
+      const input = container.querySelector<HTMLInputElement>(
+        '.algolia-autocomplete-input'
+      );
 
-    fireEvent.keyDown(input, { key: 'a', code: 65 });
+      expect(props.onFocus).toHaveBeenCalledTimes(0);
 
-    expect(props.onKeyDown).toHaveBeenCalledTimes(1);
+      input.focus();
 
-    fireEvent.keyDown(input, { key: 'Enter', code: 13 });
+      expect(props.onFocus).toHaveBeenCalledTimes(1);
 
-    expect(props.onKeyDown).toHaveBeenCalledTimes(2);
-  });
+      userEvent.type(input, 'hello');
+      input.blur();
 
-  test('should call onChange prop on input change', () => {
-    const props = {
-      ...getDefaultProps(),
-      placeholder: 'Search placeholder',
-    };
+      expect(props.onFocus).toHaveBeenCalledTimes(1);
 
-    const { container } = render(<SearchBox {...props} />);
-    const input = getByPlaceholderText(container, props.placeholder);
+      input.focus();
+      userEvent.type(input, ' there');
 
-    userEvent.type(input, 'hello');
+      expect(props.onFocus).toHaveBeenCalledTimes(2);
+    });
 
-    expect(props.onChange).toHaveBeenCalledTimes(5);
-    expect(props.onChange).toHaveBeenCalledWith(expect.any(Event));
-  });
+    // This test ensures that the menu opens again when clicking on the input
+    // although the input is already focused.
+    // This can happen when the menu was closed (e.g. hitting escape) but still
+    // having the focus on the input.
+    test('should call onFocus prop on click on the input when menu is closed', () => {
+      const props = {
+        ...getDefaultProps(),
+        internalState: {
+          ...getDefaultProps().internalState,
+          isOpen: false,
+        },
+      };
 
-  test('should call onReset prop on click on the reset button', () => {
-    const props = {
-      ...getDefaultProps(),
-      placeholder: 'Search placeholder',
-    };
+      const { container } = render(<SearchBox {...props} />);
+      const input = container.querySelector<HTMLInputElement>(
+        '.algolia-autocomplete-input'
+      );
 
-    const { container } = render(<SearchBox {...props} />);
-    const input = getByPlaceholderText(container, props.placeholder);
-    const resetButton = container.querySelector('button[type="reset"]');
+      expect(props.onFocus).toHaveBeenCalledTimes(0);
 
-    userEvent.click(resetButton);
+      input.click();
 
-    expect(props.onReset).toHaveBeenCalledTimes(1);
-    expect(document.activeElement).toBe(input);
+      expect(props.onFocus).toHaveBeenCalledTimes(1);
+      expect(props.onFocus).toHaveBeenCalledWith({
+        state: expect.any(Object),
+        setState: expect.any(Function),
+      });
+    });
+
+    test('should not call onFocus prop on click on the input when menu is open', () => {
+      const props = {
+        ...getDefaultProps(),
+        internalState: {
+          ...getDefaultProps().internalState,
+          isOpen: true,
+        },
+      };
+
+      const { container } = render(<SearchBox {...props} />);
+      const input = container.querySelector<HTMLInputElement>(
+        '.algolia-autocomplete-input'
+      );
+
+      expect(props.onFocus).toHaveBeenCalledTimes(0);
+
+      input.click();
+
+      expect(props.onFocus).toHaveBeenCalledTimes(0);
+    });
+
+    test('should call onKeyDown prop on key down on the input', () => {
+      const props = {
+        ...getDefaultProps(),
+      };
+
+      const { container } = render(<SearchBox {...props} />);
+      const input = container.querySelector<HTMLInputElement>(
+        '.algolia-autocomplete-input'
+      );
+
+      fireEvent.keyDown(input, { key: 'a', code: 65 });
+
+      expect(props.onKeyDown).toHaveBeenCalledTimes(1);
+
+      fireEvent.keyDown(input, { key: 'Enter', code: 13 });
+
+      expect(props.onKeyDown).toHaveBeenCalledTimes(2);
+    });
+
+    test('should call onInput prop on input change', () => {
+      const props = {
+        ...getDefaultProps(),
+      };
+
+      const { container } = render(<SearchBox {...props} />);
+      const input = container.querySelector<HTMLInputElement>(
+        '.algolia-autocomplete-input'
+      );
+
+      userEvent.type(input, 'hello');
+
+      expect(props.onInput).toHaveBeenCalledTimes(5);
+      expect(props.onInput).toHaveBeenCalledWith(expect.any(Event));
+    });
+
+    // @TODO: this test will pass with Jest 25.x
+    test.skip('should call onReset prop on click on the reset button', () => {
+      const props = {
+        ...getDefaultProps(),
+      };
+
+      const { container } = render(<SearchBox {...props} />);
+      const input = container.querySelector<HTMLInputElement>(
+        '.algolia-autocomplete-input'
+      );
+      const resetButton = container.querySelector('button[type="reset"]');
+
+      userEvent.click(resetButton);
+
+      expect(props.onReset).toHaveBeenCalledTimes(1);
+      expect(props.onReset).toHaveBeenCalledWith(expect.any(Event));
+      expect(input).toHaveFocus();
+    });
   });
 });

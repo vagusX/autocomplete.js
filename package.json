@@ -1,9 +1,9 @@
 {
   "name": "autocomplete.js",
-  "description": "",
+  "description": "Fast and fully-featured autocomplete JavaScript library.",
   "version": "1.0.0-alpha.0",
   "license": "MIT",
-  "homepage": "https://",
+  "homepage": "https://github.com/algolia/autocomplete.js",
   "repository": "algolia/autocomplete.js",
   "author": {
     "name": "Algolia, Inc.",
@@ -12,12 +12,12 @@
   "files": [
     "dist/"
   ],
-  "source": "src/index.tsx",
-  "module": "dist/es/index.js",
-  "main": "dist/umd/index.js",
-  "umd:main": "dist/umd/index.js",
-  "unpkg": "dist/umd/index.js",
-  "jsdelivr": "dist/umd/index.js",
+  "source": "src/autocomplete.tsx",
+  "module": "dist/es/autocomplete.js",
+  "main": "dist/umd/autocomplete.js",
+  "umd:main": "dist/umd/autocomplete.js",
+  "unpkg": "dist/umd/autocomplete.js",
+  "jsdelivr": "dist/umd/autocomplete.js",
   "sideEffects": false,
   "scripts": {
     "start": "yarn run storybook",

@@ -2,7 +2,7 @@
   "files": [
     {
       "path": "dist/umd/index.js",
-      "maxSize": "15 kB"
+      "maxSize": "16 kB"
     }
   ]
 }

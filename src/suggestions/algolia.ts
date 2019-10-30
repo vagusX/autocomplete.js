@@ -17,7 +17,7 @@ interface SearchParameters {
 interface GetAlgoliaSourceOptions {
   searchClient: SearchClient;
   query: string;
-  searchParameters?: SearchParameters[];
+  searchParameters: SearchParameters[];
 }
 
 interface GetAlgoliaHitsOptions extends GetAlgoliaSourceOptions {

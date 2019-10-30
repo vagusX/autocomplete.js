@@ -481,7 +481,7 @@ storiesOf('Autocomplete', module)
           }
         },
         onKeyDown(event, { suggestion, state, setState }) {
-          if (!suggestion.url) {
+          if (!suggestion || !suggestion.url) {
             return;
           }
 

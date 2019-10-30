@@ -118,7 +118,10 @@ export interface AutocompleteProps {
   environment?: Environment;
   onFocus?: (options: EventHandlerOptions) => void;
   onClick?: (event: MouseEvent, options: ItemEventHandlerOptions) => void;
-  onKeyDown?: (event: KeyboardEvent, options: ItemEventHandlerOptions) => void;
+  onKeyDown?: (
+    event: KeyboardEvent,
+    options: EventHandlerOptions & Partial<ItemEventHandlerOptions>
+  ) => void;
   onError?: (options: EventHandlerOptions) => void;
 }
 
@@ -459,9 +462,9 @@ export function Autocomplete(props: AutocompleteProps) {
                   Math.max(0, highlightedIndex)
                 );
 
-                if (suggestion && source) {
-                  const currentState = getState();
+                const currentState = getState();
 
+                if (suggestion && source) {
                   onKeyDown(event, {
                     suggestion,
                     suggestionValue: source.getSuggestionValue({
@@ -473,7 +476,7 @@ export function Autocomplete(props: AutocompleteProps) {
                     setState,
                   });
                 } else {
-                  onKeyDown(event);
+                  onKeyDown(event, { state: currentState, setState });
                 }
 
                 if (event.key === 'Escape') {

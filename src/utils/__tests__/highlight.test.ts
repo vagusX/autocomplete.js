@@ -5,47 +5,69 @@ import {
 } from '../highlight';
 
 describe('highlight', () => {
-  test('parseHighlightedAttribute', () => {
-    expect(
-      parseHighlightedAttribute({
-        highlightPreTag: '<mark>',
-        highlightPostTag: '</mark>',
-        highlightedValue: '<mark>Hell</mark>o',
-      })
-    ).toEqual([
-      { isHighlighted: true, value: 'Hell' },
-      { isHighlighted: false, value: 'o' },
-    ]);
+  describe('parseHighlightedAttribute', () => {
+    test('returns highlighting parts', () => {
+      expect(
+        parseHighlightedAttribute({
+          highlightPreTag: '<mark>',
+          highlightPostTag: '</mark>',
+          highlightedValue: '<mark>He</mark>llo t<mark>he</mark>re',
+        })
+      ).toEqual([
+        { isHighlighted: true, value: 'He' },
+        { isHighlighted: false, value: 'llo t' },
+        { isHighlighted: true, value: 'he' },
+        { isHighlighted: false, value: 're' },
+      ]);
+    });
   });
 
-  test('highlightAlgoliaHit', () => {
-    expect(
-      highlightAlgoliaHit({
-        highlightPreTag: '<mark>',
-        highlightPostTag: '</mark>',
-        attribute: 'title',
-        hit: { _highlightResult: { title: { value: '<mark>Hell</mark>o' } } },
-      })
-    ).toEqual('<mark>Hell</mark>o');
+  describe('highlightAlgoliaHit', () => {
+    test('returns the highlighted value of the hit', () => {
+      expect(
+        highlightAlgoliaHit({
+          highlightPreTag: '<mark>',
+          highlightPostTag: '</mark>',
+          attribute: 'title',
+          hit: {
+            _highlightResult: {
+              title: {
+                value: '<mark>He</mark>llo t<mark>he</mark>re',
+              },
+            },
+          },
+        })
+      ).toEqual('<mark>He</mark>llo t<mark>he</mark>re');
+    });
   });
 
-  test('reverseHighlightAlgoliaHit', () => {
-    expect(
-      reverseHighlightAlgoliaHit({
-        highlightPreTag: '<mark>',
-        highlightPostTag: '</mark>',
-        attribute: 'title',
-        hit: { _highlightResult: { title: { value: '<mark>Hell</mark>o' } } },
-      })
-    ).toEqual('Hell<mark>o</mark>');
+  describe('reverseHighlightAlgoliaHit', () => {
+    test('returns the reverse-highlighted value of the hit', () => {
+      expect(
+        reverseHighlightAlgoliaHit({
+          highlightPreTag: '<mark>',
+          highlightPostTag: '</mark>',
+          attribute: 'title',
+          hit: {
+            _highlightResult: {
+              title: {
+                value: '<mark>He</mark>llo t<mark>he</mark>re',
+              },
+            },
+          },
+        })
+      ).toEqual('He<mark>llo t</mark>he<mark>re</mark>');
+    });
 
-    expect(
-      reverseHighlightAlgoliaHit({
-        highlightPreTag: '<mark>',
-        highlightPostTag: '</mark>',
-        attribute: 'title',
-        hit: { _highlightResult: { title: { value: 'Hello' } } },
-      })
-    ).toEqual('Hello');
+    test('returns the non-highlighted value when every part matches', () => {
+      expect(
+        reverseHighlightAlgoliaHit({
+          highlightPreTag: '<mark>',
+          highlightPostTag: '</mark>',
+          attribute: 'title',
+          hit: { _highlightResult: { title: { value: 'Hello' } } },
+        })
+      ).toEqual('Hello');
+    });
   });
 });

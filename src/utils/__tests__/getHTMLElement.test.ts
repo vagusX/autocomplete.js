@@ -5,7 +5,7 @@ describe('getHTMLElement', () => {
     document.body.innerHTML = '';
   });
 
-  test('with string should return an HTML element', () => {
+  test('with string returns an HTML element', () => {
     const root = document.createElement('div');
     root.id = 'root';
 
@@ -14,7 +14,7 @@ describe('getHTMLElement', () => {
     expect(getHTMLElement('#root')).toEqual(root);
   });
 
-  test('with HTML element should return the HTML element', () => {
+  test('with HTML element returns the HTML element', () => {
     const root = document.createElement('div');
     root.id = '#root';
 

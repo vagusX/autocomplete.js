@@ -20,15 +20,7 @@ interface GetAlgoliaSourceOptions {
   searchParameters: SearchParameters[];
 }
 
-interface GetAlgoliaHitsOptions extends GetAlgoliaSourceOptions {
-  transformItems?(items: Response['hits']): any;
-}
-
-interface GetAlgoliaResultsOptions extends GetAlgoliaSourceOptions {
-  transformItems?(items: MultiResponse['results']): any;
-}
-
-function getAlgoliaSource({
+export function getAlgoliaSource({
   searchClient,
   query,
   searchParameters,
@@ -55,40 +47,36 @@ function getAlgoliaSource({
   );
 }
 
+export function getAlgoliaResults({
+  searchClient,
+  query,
+  searchParameters,
+}: GetAlgoliaSourceOptions): Promise<MultiResponse['results']> {
+  return getAlgoliaSource({ searchClient, query, searchParameters }).then(
+    response => {
+      return response.results;
+    }
+  );
+}
+
 export function getAlgoliaHits({
   searchClient,
   query,
   searchParameters,
-  transformItems = x => x,
-}: GetAlgoliaHitsOptions): Promise<Response['hits']> {
+}: GetAlgoliaSourceOptions): Promise<Response['hits']> {
   return getAlgoliaSource({ searchClient, query, searchParameters }).then(
     response => {
       const results = response.results;
 
       if (!results) {
-        return transformItems!([]);
+        return [];
       }
 
-      return transformItems!(
-        results
-          .map(result => result.hits)
-          .reduce((a, b) => {
-            return a.concat(b);
-          }, [])
-      );
-    }
-  );
-}
-
-export function getAlgoliaResults({
-  searchClient,
-  query,
-  searchParameters,
-  transformItems = x => x,
-}: GetAlgoliaResultsOptions): Promise<MultiResponse['results']> {
-  return getAlgoliaSource({ searchClient, query, searchParameters }).then(
-    response => {
-      return transformItems!(response.results);
+      return results
+        .map(result => result.hits)
+        .reduce((a, b) => {
+          return a.concat(b);
+        }, []);
     }
   );
 }

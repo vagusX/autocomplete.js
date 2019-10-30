@@ -3,7 +3,6 @@
 import { h } from 'preact';
 import { render, fireEvent } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
-import '@testing-library/jest-dom/extend-expect';
 
 import { SearchBox, SearchBoxProps } from '../SearchBox';
 

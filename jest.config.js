@@ -2,7 +2,8 @@
 
 module.exports = {
   rootDir: process.cwd(),
-  testPathIgnorePatterns: ['node_modules/', 'dist/', '<rootDir>/examples/'],
+  setupFilesAfterEnv: ['./scripts/setupTests.ts'],
+  testPathIgnorePatterns: ['node_modules/', 'dist/'],
   watchPlugins: [
     'jest-watch-typeahead/filename',
     'jest-watch-typeahead/testname',

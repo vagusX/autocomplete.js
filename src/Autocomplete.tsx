@@ -5,12 +5,20 @@ import { useState, useEffect, useRef } from 'preact/hooks';
 import { createPortal } from 'preact/compat';
 import Downshift from 'downshift/preact';
 
-import { Environment, defaultEnvironment } from '.';
 import { Dropdown } from './Dropdown';
 import { SearchBox } from './SearchBox';
 import { Template } from './Template';
+import { flatten } from './utils';
 
 export type Suggestion = any;
+
+export interface Environment {
+  [prop: string]: unknown;
+  addEventListener: Window['addEventListener'];
+  removeEventListener: Window['removeEventListener'];
+  setTimeout: Window['setTimeout'];
+  document: Window['document'];
+}
 
 interface AutocompleteTemplates {
   header?: Template;
@@ -137,6 +145,9 @@ export interface AutocompleteState {
   error: Error | null;
   metadata: { [key: string]: any };
 }
+
+export const defaultEnvironment =
+  typeof window === 'undefined' ? ({} as Environment) : window;
 
 let autocompleteIdCounter = 0;
 
@@ -365,7 +376,7 @@ export function Autocomplete(props: AutocompleteProps) {
       return '';
     }
 
-    const suggestion = results.flat()[Math.max(0, highlightedIndex)];
+    const suggestion = flatten(results)[Math.max(0, highlightedIndex)];
     const source = getSourceFromHighlightedIndex(Math.max(0, highlightedIndex));
 
     if (!suggestion || !source) {
@@ -492,7 +503,7 @@ export function Autocomplete(props: AutocompleteProps) {
                 });
               }}
               onKeyDown={(event: KeyboardEvent) => {
-                const suggestion: any = results.flat()[
+                const suggestion: any = flatten(results)[
                   Math.max(0, highlightedIndex)
                 ];
                 const source = getSourceFromHighlightedIndex(

@@ -31,7 +31,6 @@ const plugins = [
   babel({
     exclude: 'node_modules/**',
     extensions: ['.js', '.ts', '.tsx'],
-    rootMode: 'upward',
   }),
   terser(),
   license({

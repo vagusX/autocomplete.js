@@ -6,6 +6,7 @@ import {
 } from 'algoliasearch';
 
 import { version } from '../version';
+import { flatten } from '../utils';
 
 export type SearchClient = Pick<Client, 'search' | 'searchForFacetValues'>;
 
@@ -72,11 +73,7 @@ export function getAlgoliaHits({
         return [];
       }
 
-      return results
-        .map(result => result.hits)
-        .reduce((a, b) => {
-          return a.concat(b);
-        }, []);
+      return flatten(results.map(result => result.hits));
     }
   );
 }

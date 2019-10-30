@@ -2,26 +2,19 @@
 
 import { h, render } from 'preact';
 
-import { Autocomplete, AutocompleteProps } from './Autocomplete';
+import {
+  Autocomplete,
+  AutocompleteProps,
+  defaultEnvironment,
+} from './Autocomplete';
 import { getHTMLElement } from './utils';
 
-export interface Environment {
-  [prop: string]: unknown;
-  addEventListener: Window['addEventListener'];
-  removeEventListener: Window['removeEventListener'];
-  setTimeout: Window['setTimeout'];
-  document: Window['document'];
-}
-
-export interface AutocompleteOptions extends AutocompleteProps {
+interface AutocompleteOptions extends AutocompleteProps {
   /**
    * The input container to insert the search box.
    */
   container: string | HTMLElement;
 }
-
-export const defaultEnvironment =
-  typeof window === 'undefined' ? ({} as Environment) : window;
 
 function autocomplete(options: AutocompleteOptions) {
   const {

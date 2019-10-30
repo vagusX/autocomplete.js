@@ -12,7 +12,7 @@ import { Template } from './Template';
 interface DropdownProps {
   hidden: boolean;
   templates: RequiredAutocompleteProps['templates'];
-  sources: RequiredAutocompleteProps['sources'];
+  sources: ReturnType<RequiredAutocompleteProps['getSources']>;
   onClick: RequiredAutocompleteProps['onClick'];
   internalState: AutocompleteState;
   internalSetState(nextState: Partial<AutocompleteState>): void;

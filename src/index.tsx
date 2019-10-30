@@ -37,7 +37,7 @@ function autocomplete(options: AutocompleteOptions) {
     autofocus,
     initialState,
     templates,
-    sources,
+    getSources,
     onClick,
     onKeyDown,
     onError,
@@ -59,7 +59,7 @@ function autocomplete(options: AutocompleteOptions) {
       autofocus={autofocus}
       showCompletion={showCompletion}
       initialState={initialState}
-      sources={sources}
+      getSources={getSources}
       templates={templates}
       environment={environment}
       onClick={onClick}

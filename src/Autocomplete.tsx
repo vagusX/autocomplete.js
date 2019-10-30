@@ -34,12 +34,13 @@ export interface AutocompleteSource {
     suggestion: Suggestion;
     state: AutocompleteState;
   }): string;
-  getSuggestions({
-    query,
-  }: {
+  getSuggestions(options: {
     query: string;
+    state: AutocompleteState;
+    setState(nextState: Partial<AutocompleteState>): void;
   }): Suggestion[] | Promise<Suggestion[]>;
   templates: AutocompleteSourceTemplates;
+  onInput?: (options: EventHandlerOptions) => void;
   onSelect?: (options: ItemEventHandlerOptions) => void;
 }
 
@@ -113,7 +114,7 @@ export interface AutocompleteProps {
   /**
    * The sources to get the suggestions from.
    */
-  sources: AutocompleteSource[];
+  getSources(options: { query: string }): AutocompleteSource[];
   templates?: AutocompleteTemplates;
   environment?: Environment;
   onFocus?: (options: EventHandlerOptions) => void;
@@ -134,6 +135,7 @@ export interface AutocompleteState {
   isLoading: boolean;
   isStalled: boolean;
   error: Error | null;
+  metadata: { [key: string]: any };
 }
 
 let autocompleteIdCounter = 0;
@@ -155,7 +157,7 @@ export function Autocomplete(props: AutocompleteProps) {
     defaultHighlightedIndex = 0,
     stalledDelay = 300,
     keyboardShortcuts = [],
-    sources,
+    getSources,
     templates = {},
     environment = defaultEnvironment,
     dropdownContainer = environment.document.body,
@@ -167,19 +169,29 @@ export function Autocomplete(props: AutocompleteProps) {
     },
   } = props;
 
-  let setIsStalledId: number | null = null;
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const [query, setQuery] = useState<string>(initialState.query || '');
-  const [results, setResults] = useState<Suggestion[]>([]);
-  const [isOpen, setIsOpen] = useState<boolean>(initialState.isOpen || false);
-  const [isLoading, setIsLoading] = useState<boolean>(
+  const [query, setQuery] = useState<AutocompleteState['query']>(
+    initialState.query || ''
+  );
+  const [results, setResults] = useState<AutocompleteState['results']>([]);
+  const [isOpen, setIsOpen] = useState<AutocompleteState['isOpen']>(
+    initialState.isOpen || false
+  );
+  const [isLoading, setIsLoading] = useState<AutocompleteState['isLoading']>(
     initialState.isLoading || false
   );
-  const [isStalled, setIsStalled] = useState<boolean>(
+  const [isStalled, setIsStalled] = useState<AutocompleteState['isStalled']>(
     initialState.isStalled || false
   );
-  const [error, setError] = useState<Error | null>(initialState.error || null);
+  const [error, setError] = useState<AutocompleteState['error'] | null>(
+    initialState.error || null
+  );
+  const [metadata, setMetadata] = useState<AutocompleteState['metadata']>({});
+  const [sources, setSources] = useState<AutocompleteSource[]>(
+    getSources({ query })
+  );
+
+  let setIsStalledId: number | null = null;
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     // Perform the query if coming from the initial state.
@@ -208,16 +220,33 @@ export function Autocomplete(props: AutocompleteProps) {
       isLoading,
       isStalled,
       error,
+      metadata,
     };
   }
 
   function setState(nextState: Partial<AutocompleteState>): void {
-    if (nextState.query) setQuery(nextState.query);
-    if (nextState.results) setResults(nextState.results);
-    if (nextState.isOpen) setIsOpen(nextState.isOpen);
-    if (nextState.isLoading) setIsLoading(nextState.isLoading);
-    if (nextState.isStalled) setIsStalled(nextState.isStalled);
-    if (nextState.error) setError(nextState.error);
+    if (nextState.query !== undefined) {
+      setQuery(nextState.query);
+      performQuery(nextState.query);
+    }
+    if (nextState.results) {
+      setResults(nextState.results);
+    }
+    if (nextState.isOpen !== undefined) {
+      setIsOpen(nextState.isOpen);
+    }
+    if (nextState.isLoading !== undefined) {
+      setIsLoading(nextState.isLoading);
+    }
+    if (nextState.isStalled !== undefined) {
+      setIsStalled(nextState.isStalled);
+    }
+    if (nextState.error !== undefined) {
+      setError(nextState.error);
+    }
+    if (nextState.metadata !== undefined) {
+      setMetadata({ ...metadata, ...nextState.metadata });
+    }
   }
 
   function onGlobalKeyDown(event: KeyboardEvent): void {
@@ -261,6 +290,7 @@ export function Autocomplete(props: AutocompleteProps) {
     if (query.length < minLength) {
       setIsLoading(false);
       setIsOpen(false);
+      setSources(getSources({ query }));
       setResults([]);
 
       return Promise.resolve();
@@ -273,11 +303,17 @@ export function Autocomplete(props: AutocompleteProps) {
     }, stalledDelay);
 
     return Promise.all(
-      sources.map(source =>
-        source.getSuggestions({
+      sources.map(source => {
+        if (source.onInput) {
+          source.onInput({ state: getState(), setState });
+        }
+
+        return source.getSuggestions({
           query,
-        })
-      )
+          state: getState(),
+          setState,
+        });
+      })
     )
       .then(results => {
         if (setIsStalledId) {
@@ -285,9 +321,10 @@ export function Autocomplete(props: AutocompleteProps) {
           setIsStalled(false);
         }
 
-        setResults(results);
         setIsLoading(false);
         setIsOpen(nextIsOpen);
+        setResults(results);
+        setSources(getSources({ query }));
       })
       .catch(error => {
         if (setIsStalledId) {

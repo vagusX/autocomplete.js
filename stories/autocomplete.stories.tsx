@@ -4,9 +4,6 @@ import { h } from 'preact';
 import { storiesOf } from '@storybook/html';
 import * as algoliasearch from 'algoliasearch';
 import RecentSearches from 'recent-searches';
-// import instantsearch from 'instantsearch.js';
-// import { connectAutocomplete } from 'instantsearch.js/es/connectors';
-// import { configure } from 'instantsearch.js/es/widgets';
 
 import { withPlayground } from '../.storybook/decorators';
 import autocomplete, {
@@ -116,7 +113,7 @@ storiesOf('Autocomplete', module)
         container,
         dropdownContainer,
         placeholder: 'Search for U.S. states… (e.g. "Carolina")',
-        sources: [createSource(states)],
+        getSources: () => [createSource(states)],
       });
 
       return container;
@@ -132,7 +129,7 @@ storiesOf('Autocomplete', module)
         initialState: {
           query: 'Carolina',
         },
-        sources: [createSource(states)],
+        getSources: () => [createSource(states)],
       });
 
       return container;
@@ -146,7 +143,7 @@ storiesOf('Autocomplete', module)
         dropdownContainer,
         placeholder:
           'Search for states, fruits, artists… (e.g. "Carolina", "Apple", "John")',
-        sources: [
+        getSources: () => [
           createSource(fruits, {
             limit: 5,
             templates: {
@@ -188,7 +185,7 @@ storiesOf('Autocomplete', module)
         dropdownContainer,
         placeholder: 'Search for fruits (e.g. "apple")',
         minLength: 3,
-        sources: [createSource(fruits)],
+        getSources: () => [createSource(fruits)],
       });
 
       return container;
@@ -202,7 +199,7 @@ storiesOf('Autocomplete', module)
         dropdownContainer,
         placeholder: 'Search for fruits (e.g. "banana")',
         minLength: 0,
-        sources: [createSource(fruits)],
+        getSources: () => [createSource(fruits)],
       });
 
       return container;
@@ -216,7 +213,7 @@ storiesOf('Autocomplete', module)
         dropdownContainer,
         placeholder: 'Search… (focus the inner window and type "/" or "a")',
         keyboardShortcuts: ['/', 'a'],
-        sources: [createSource(fruits)],
+        getSources: () => [createSource(fruits)],
       });
 
       return container;
@@ -235,7 +232,7 @@ storiesOf('Autocomplete', module)
             window.location.assign('https://google.com');
           }
         },
-        sources: [createSource(fruits)],
+        getSources: () => [createSource(fruits)],
       });
 
       return container;
@@ -249,7 +246,7 @@ storiesOf('Autocomplete', module)
         dropdownContainer,
         placeholder: 'Search…',
         showCompletion: true,
-        sources: [
+        getSources: () => [
           {
             getSuggestions({ query }) {
               return new Promise(resolve => {
@@ -311,7 +308,7 @@ storiesOf('Autocomplete', module)
         dropdownContainer,
         placeholder: 'Search (the loader spins right away)',
         stalledDelay: 0,
-        sources: [
+        getSources: () => [
           {
             getSuggestions({ query }) {
               return new Promise(resolve => {
@@ -372,7 +369,7 @@ storiesOf('Autocomplete', module)
         dropdownContainer,
         placeholder: 'Search…',
         showCompletion: true,
-        sources: [querySuggestionsSource],
+        getSources: () => [querySuggestionsSource],
       });
 
       return container;
@@ -387,7 +384,7 @@ storiesOf('Autocomplete', module)
         container,
         dropdownContainer,
         placeholder: 'Search…',
-        sources: [querySuggestionsSource],
+        getSources: () => [querySuggestionsSource],
       });
 
       return container;
@@ -407,7 +404,7 @@ storiesOf('Autocomplete', module)
         showCompletion: true,
         minLength: 0,
 
-        sources: [
+        getSources: () => [
           {
             getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
             getSuggestions({ query }) {
@@ -503,7 +500,7 @@ storiesOf('Autocomplete', module)
             }
           }
         },
-        sources: [
+        getSources: () => [
           {
             getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
             getSuggestions({ query }) {
@@ -513,7 +510,6 @@ storiesOf('Autocomplete', module)
 
               return recentSearches.getRecentSearches();
             },
-
             onSelect({ setState }) {
               setState({
                 isOpen: true,
@@ -621,78 +617,3 @@ storiesOf('Autocomplete', module)
       return container;
     })
   );
-// .add(
-//   'with InstantSearch',
-//   withPlayground(({ container, dropdownContainer }) => {
-//     const autocompleteContainer = document.createElement('div');
-//     const hitsContainer = document.createElement('div');
-
-//     container.appendChild(autocompleteContainer);
-//     container.appendChild(hitsContainer);
-
-//     const search = instantsearch({
-//       searchClient,
-//       indexName: 'instant_search',
-//     });
-//     const autocompleteState = {};
-
-//     const autocompleteWidget = connectAutocomplete(
-//       (renderOptions, isFirstRender) => {
-//         const {
-//           indices,
-//           refine,
-//           widgetParams,
-//           instantSearchInstance,
-//         } = renderOptions;
-
-//         console.log(instantSearchInstance);
-
-//         autocompleteState.hits = indices.map(index => index.hits).flat();
-
-//         if (isFirstRender) {
-//           autocomplete({
-//             container: widgetParams.container,
-//             dropdownContainer,
-//             placeholder: 'Search…',
-
-//             sources: [
-//               {
-//                 onSelect: ({ suggestionValue }) => refine(suggestionValue),
-//                 getSuggestionValue: ({ suggestion }) => suggestion.name,
-//                 getSuggestions({ query }) {
-//                   refine(query);
-
-//                   // @TODO: this value is coming from the previous state
-//                   return autocompleteState.hits;
-//                 },
-//                 templates: {
-//                   header: () =>
-//                     '<h5 class="algolia-autocomplete-item-header">E-commerce</h5>',
-//                   suggestion({ suggestion }) {
-//                     return highlightAlgoliaHit({
-//                       hit: suggestion,
-//                       attribute: 'name',
-//                     });
-//                   },
-//                 },
-//               },
-//             ],
-//           });
-//         }
-//       }
-//     );
-
-//     search.addWidgets([
-//       configure({
-//         hitsPerPage: 5,
-//       }),
-//       autocompleteWidget({
-//         container: autocompleteContainer,
-//       }),
-//     ]);
-
-//     search.start();
-
-//     return container;
-//   })
-// );

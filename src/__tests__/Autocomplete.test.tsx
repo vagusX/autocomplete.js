@@ -123,7 +123,7 @@ describe('Autocomplete', () => {
       };
 
       const { container } = render(<Autocomplete {...props} />);
-      const stalledRoot = container.querySelector<HTMLInputElement>(
+      const stalledRoot = container.querySelector<HTMLElement>(
         '.algolia-autocomplete--stalled'
       );
       const input = container.querySelector<HTMLInputElement>(
@@ -142,7 +142,7 @@ describe('Autocomplete', () => {
       };
 
       const { container } = render(<Autocomplete {...props} />);
-      const stalledRoot = container.querySelector<HTMLInputElement>(
+      const stalledRoot = container.querySelector<HTMLElement>(
         '.algolia-autocomplete--stalled'
       );
       const input = container.querySelector<HTMLInputElement>(
@@ -153,6 +153,21 @@ describe('Autocomplete', () => {
 
       expect(stalledRoot).not.toBeInTheDocument();
     });
+  });
+
+  describe('dropdownContainer', () => {
+    test.todo('defaults to `document.body`');
+    test.todo('can be other HTML elements');
+  });
+
+  describe('dropdownPosition', () => {
+    test.todo('defaults to `"left"`');
+    test.todo('can be set to `"right"`');
+  });
+
+  describe('placeholder', () => {
+    test.todo('is empty by default');
+    test.todo('is forwarded to the input');
   });
 
   describe('defaultHighlightedIndex', () => {
@@ -222,5 +237,22 @@ describe('Autocomplete', () => {
         expect.any(Function)
       );
     });
+  });
+
+  describe('onFocus', () => {
+    test.todo('is called when the input is focused');
+  });
+
+  describe('onClick', () => {
+    test.todo('is called when an item is cliked');
+  });
+
+  describe('onKeyDown', () => {
+    test.todo('is forwarded to the input without selected item');
+    test.todo('is forwarded to the input with a selected item');
+  });
+
+  describe('onError', () => {
+    test.todo('is called when fetching the suggestions fails');
   });
 });

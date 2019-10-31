@@ -273,8 +273,59 @@ describe('Autocomplete', () => {
   });
 
   describe('onKeyDown', () => {
-    test.todo('is forwarded to the input without selected item');
-    test.todo('is forwarded to the input with a selected item');
+    test('is forwarded to the input without selected item', () => {
+      const props = {
+        ...getDefaultProps(),
+        onKeyDown: jest.fn(),
+      };
+
+      const { container } = render(<Autocomplete {...props} />);
+      const input = container.querySelector<HTMLInputElement>(
+        '.algolia-autocomplete-input'
+      );
+
+      userEvent.type(input, 'Query');
+
+      expect(props.onKeyDown).toHaveBeenCalledTimes(5);
+      expect(props.onKeyDown).toHaveBeenLastCalledWith(
+        expect.any(KeyboardEvent),
+        {
+          state: expect.any(Object),
+          setState: expect.any(Function),
+        }
+      );
+    });
+
+    test('is forwarded to the input with a selected item', () => {
+      const props = {
+        ...getDefaultProps(),
+        onKeyDown: jest.fn(),
+        getSources: () => [
+          {
+            ...defaultSource,
+            getSuggestions() {
+              return [];
+            },
+          },
+        ],
+      };
+
+      const { container } = render(<Autocomplete {...props} />);
+      const input = container.querySelector<HTMLInputElement>(
+        '.algolia-autocomplete-input'
+      );
+
+      userEvent.type(input, 'Query');
+
+      expect(props.onKeyDown).toHaveBeenCalledTimes(5);
+      expect(props.onKeyDown).toHaveBeenLastCalledWith(
+        expect.any(KeyboardEvent),
+        {
+          state: expect.any(Object),
+          setState: expect.any(Function),
+        }
+      );
+    });
   });
 
   describe('onError', () => {

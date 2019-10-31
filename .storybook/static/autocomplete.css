@@ -155,6 +155,7 @@ body {
   position: absolute;
   scrollbar-width: none;
   width: 100%;
+  z-index: 1;
 }
 
 .algolia-autocomplete-dropdown::-webkit-scrollbar {

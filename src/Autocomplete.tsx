@@ -110,11 +110,22 @@ export interface AutocompleteProps {
    */
   showCompletion?: boolean;
   /**
+   * The container for the autocomplete search box.
+   */
+  container: HTMLElement;
+  /**
    * The container for the autocomplete dropdown.
    *
    * @default environment.document.body
    */
   dropdownContainer?: HTMLElement;
+  /**
+   * The dropdown position related to the container.
+   * Possible values are `"left"` and `"right"`.
+   *
+   * @default "left"
+   */
+  dropdownPosition?: 'left' | 'right';
   /**
    * The initial state to apply when the page is loaded.
    */
@@ -160,6 +171,7 @@ function generateId(): string {
 
 export function Autocomplete(props: AutocompleteProps) {
   const {
+    container,
     placeholder = '',
     minLength = 1,
     showCompletion = false,
@@ -172,6 +184,7 @@ export function Autocomplete(props: AutocompleteProps) {
     templates = {},
     environment = defaultEnvironment,
     dropdownContainer = environment.document.body,
+    dropdownPosition = 'left',
     onFocus = () => {},
     onClick = () => {},
     onKeyDown = () => {},
@@ -200,6 +213,9 @@ export function Autocomplete(props: AutocompleteProps) {
   const [sources, setSources] = useState<AutocompleteSource[]>(
     getSources({ query })
   );
+  const [dropdownRect, setDropdownRect] = useState<
+    Pick<ClientRect, 'top' | 'left'> | undefined
+  >(undefined);
 
   let setIsStalledId: number | null = null;
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -222,6 +238,20 @@ export function Autocomplete(props: AutocompleteProps) {
       }
     };
   }, [environment, keyboardShortcuts]);
+
+  useEffect(() => {
+    environment.addEventListener('resize', onResize);
+
+    return () => {
+      environment.removeEventListener('resize', onResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    // We need to track the container position because the dropdown position is
+    // computed based on the container position.
+    onResize();
+  }, [container, dropdownContainer]);
 
   function getState(): AutocompleteState {
     return {
@@ -287,6 +317,23 @@ export function Autocomplete(props: AutocompleteProps) {
 
     event.stopPropagation();
     event.preventDefault();
+  }
+
+  function onResize(): void {
+    const nextContainerRect = container.getBoundingClientRect();
+    const nextDropdownRect = dropdownContainer.getBoundingClientRect();
+
+    const newDropdownRect = {
+      top: nextContainerRect.top + nextContainerRect.height,
+      left:
+        dropdownPosition === 'right'
+          ? nextContainerRect.width +
+            nextContainerRect.left -
+            nextDropdownRect.width
+          : nextContainerRect.left,
+    };
+
+    setDropdownRect(newDropdownRect);
   }
 
   function performQuery(query: string, nextIsOpen: boolean = true) {
@@ -578,6 +625,7 @@ export function Autocomplete(props: AutocompleteProps) {
 
             {createPortal(
               <Dropdown
+                position={dropdownRect}
                 hidden={!shouldOpen}
                 internalState={getState()}
                 internalSetState={setState}

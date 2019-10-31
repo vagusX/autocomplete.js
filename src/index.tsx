@@ -9,17 +9,25 @@ import {
 } from './Autocomplete';
 import { getHTMLElement } from './utils';
 
-interface AutocompleteOptions extends AutocompleteProps {
+interface AutocompleteOptions
+  extends Omit<AutocompleteProps, 'container' | 'dropdownContainer'> {
   /**
-   * The input container to insert the search box.
+   * The container for the autocomplete search box.
    */
   container: string | HTMLElement;
+  /**
+   * The container for the autocomplete dropdown.
+   *
+   * @default environment.document.body
+   */
+  dropdownContainer?: string | HTMLElement;
 }
 
 function autocomplete(options: AutocompleteOptions) {
   const {
     container,
     dropdownContainer,
+    dropdownPosition,
     environment = defaultEnvironment,
     placeholder,
     stalledDelay,
@@ -43,7 +51,9 @@ function autocomplete(options: AutocompleteOptions) {
 
   render(
     <Autocomplete
+      container={containerElement}
       dropdownContainer={dropdownContainerElement}
+      dropdownPosition={dropdownPosition}
       placeholder={placeholder}
       stalledDelay={stalledDelay}
       defaultHighlightedIndex={defaultHighlightedIndex}
@@ -60,7 +70,7 @@ function autocomplete(options: AutocompleteOptions) {
       onKeyDown={onKeyDown}
     />,
     containerElement,
-    containerElement.lastChild as HTMLElement
+    containerElement.lastElementChild!
   );
 }
 

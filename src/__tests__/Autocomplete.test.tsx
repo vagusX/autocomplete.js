@@ -36,8 +36,11 @@ const fruits = [
 ];
 
 function getDefaultProps() {
+  const environment = createEnvironment();
+
   return {
-    environment: createEnvironment(),
+    container: environment.document.body,
+    environment,
     getSources: () => [
       {
         ...defaultSource,
@@ -187,11 +190,17 @@ describe('Autocomplete', () => {
 
       const { unmount } = render(<Autocomplete {...props} />);
 
-      expect(props.environment.addEventListener).toHaveBeenCalledTimes(1);
+      expect(props.environment.addEventListener).toHaveBeenCalledWith(
+        'keydown',
+        expect.any(Function)
+      );
 
       unmount();
 
-      expect(props.environment.removeEventListener).toHaveBeenCalledTimes(1);
+      expect(props.environment.removeEventListener).toHaveBeenCalledWith(
+        'keydown',
+        expect.any(Function)
+      );
     });
 
     test('does not attach keydown event to environment without keyboardShortcuts', () => {
@@ -201,11 +210,17 @@ describe('Autocomplete', () => {
 
       const { unmount } = render(<Autocomplete {...props} />);
 
-      expect(props.environment.addEventListener).toHaveBeenCalledTimes(0);
+      expect(props.environment.addEventListener).not.toHaveBeenCalledWith(
+        'keydown',
+        expect.any(Function)
+      );
 
       unmount();
 
-      expect(props.environment.removeEventListener).toHaveBeenCalledTimes(0);
+      expect(props.environment.addEventListener).not.toHaveBeenCalledWith(
+        'keydown',
+        expect.any(Function)
+      );
     });
   });
 });

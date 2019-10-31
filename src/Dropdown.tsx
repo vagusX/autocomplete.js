@@ -10,6 +10,7 @@ import {
 import { Template } from './Template';
 
 interface DropdownProps {
+  position: Pick<ClientRect, 'left' | 'top'> | undefined;
   hidden: boolean;
   templates: RequiredAutocompleteProps['templates'];
   sources: ReturnType<RequiredAutocompleteProps['getSources']>;
@@ -21,6 +22,7 @@ interface DropdownProps {
 }
 
 export const Dropdown = ({
+  position,
   hidden,
   sources,
   templates,
@@ -31,7 +33,11 @@ export const Dropdown = ({
   getMenuProps,
 }: DropdownProps) => {
   return (
-    <div className="algolia-autocomplete-dropdown" hidden={hidden}>
+    <div
+      className="algolia-autocomplete-dropdown"
+      style={position}
+      hidden={hidden}
+    >
       <Template
         tagName="header"
         data={{

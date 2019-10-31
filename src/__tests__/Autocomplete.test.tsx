@@ -240,7 +240,32 @@ describe('Autocomplete', () => {
   });
 
   describe('onFocus', () => {
-    test.todo('is called when the input is focused');
+    test('is called when the input is focused', () => {
+      const props = {
+        ...getDefaultProps(),
+        onFocus: jest.fn(),
+      };
+
+      const { container } = render(<Autocomplete {...props} />);
+      const input = container.querySelector<HTMLInputElement>(
+        '.algolia-autocomplete-input'
+      );
+
+      expect(props.onFocus).toHaveBeenCalledTimes(0);
+
+      input.focus();
+
+      expect(props.onFocus).toHaveBeenCalledTimes(1);
+      expect(props.onFocus).toHaveBeenCalledWith({
+        state: expect.any(Object),
+        setState: expect.any(Function),
+      });
+
+      input.blur();
+      input.focus();
+
+      expect(props.onFocus).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('onClick', () => {

@@ -2,7 +2,7 @@
 
 module.exports = {
   rootDir: process.cwd(),
-  setupFilesAfterEnv: ['./scripts/setupTests.ts'],
+  setupFilesAfterEnv: ['@testing-library/jest-dom/extend-expect'],
   testPathIgnorePatterns: ['node_modules/', 'dist/'],
   watchPlugins: [
     'jest-watch-typeahead/filename',

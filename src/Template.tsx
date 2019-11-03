@@ -2,7 +2,7 @@
 
 import { createElement } from 'preact';
 
-import { AutocompleteState } from './Autocomplete';
+import { AutocompleteState } from './types';
 
 interface TemplateData {
   state: AutocompleteState;

@@ -11,15 +11,15 @@ describe('getHTMLElement', () => {
 
     document.body.appendChild(root);
 
-    expect(getHTMLElement('#root')).toEqual(root);
+    expect(getHTMLElement('#root')).toBe(root);
   });
 
   test('with HTML element returns the HTML element', () => {
     const root = document.createElement('div');
-    root.id = '#root';
+    root.id = 'root';
 
     document.body.appendChild(root);
 
-    expect(getHTMLElement(root)).toEqual(root);
+    expect(getHTMLElement(root)).toBe(root);
   });
 });

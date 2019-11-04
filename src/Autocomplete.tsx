@@ -93,6 +93,35 @@ export function Autocomplete(props: AutocompleteProps) {
   }, []);
 
   useEffect(() => {
+    function onGlobalKeyDown(event: KeyboardEvent): void {
+      if (!inputRef.current) {
+        return;
+      }
+
+      const element = event.target as HTMLElement;
+      const tagName = element.tagName;
+
+      // Do not trigger the focus if we're already editing text.
+      if (
+        element.isContentEditable ||
+        tagName === 'INPUT' ||
+        tagName === 'SELECT' ||
+        tagName === 'TEXTAREA'
+      ) {
+        return;
+      }
+
+      // Do not trigger the focus if the shortcut is not correct.
+      if (keyboardShortcuts.indexOf(event.key) === -1) {
+        return;
+      }
+
+      inputRef.current.focus();
+
+      event.stopPropagation();
+      event.preventDefault();
+    }
+
     if (keyboardShortcuts.length > 0) {
       environment.addEventListener('keydown', onGlobalKeyDown);
     }
@@ -110,13 +139,13 @@ export function Autocomplete(props: AutocompleteProps) {
     return () => {
       environment.removeEventListener('resize', onResize);
     };
-  }, []);
+  }, [environment, onResize]);
 
   useEffect(() => {
     // We need to track the container position because the dropdown position is
     // computed based on the container position.
     onResize();
-  }, [container, dropdownContainer]);
+  }, [container, dropdownContainer, onResize]);
 
   function getState(): AutocompleteState {
     return {
@@ -153,35 +182,6 @@ export function Autocomplete(props: AutocompleteProps) {
     if (nextState.metadata !== undefined) {
       setMetadata({ ...metadata, ...nextState.metadata });
     }
-  }
-
-  function onGlobalKeyDown(event: KeyboardEvent): void {
-    if (!inputRef.current) {
-      return;
-    }
-
-    const element = event.target as HTMLElement;
-    const tagName = element.tagName;
-
-    // Do not trigger the focus if we're already editing text.
-    if (
-      element.isContentEditable ||
-      tagName === 'INPUT' ||
-      tagName === 'SELECT' ||
-      tagName === 'TEXTAREA'
-    ) {
-      return;
-    }
-
-    // Do not trigger the focus if the shortcut is not correct.
-    if (keyboardShortcuts.indexOf(event.key) === -1) {
-      return;
-    }
-
-    inputRef.current.focus();
-
-    event.stopPropagation();
-    event.preventDefault();
   }
 
   function onResize(): void {

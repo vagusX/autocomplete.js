@@ -281,7 +281,7 @@ storiesOf('Autocomplete', module)
           {
             getSuggestions({ query }) {
               return new Promise(resolve => {
-                let wait = setTimeout(() => {
+                const wait = setTimeout(() => {
                   clearTimeout(wait);
 
                   resolve(
@@ -305,7 +305,7 @@ storiesOf('Autocomplete', module)
           {
             getSuggestions({ query }) {
               return new Promise(resolve => {
-                let wait = setTimeout(() => {
+                const wait = setTimeout(() => {
                   clearTimeout(wait);
                   resolve(
                     artists.filter(artist =>
@@ -343,7 +343,7 @@ storiesOf('Autocomplete', module)
           {
             getSuggestions({ query }) {
               return new Promise(resolve => {
-                let wait = setTimeout(() => {
+                const wait = setTimeout(() => {
                   clearTimeout(wait);
                   resolve(
                     fruits.filter(fruit =>
@@ -366,7 +366,7 @@ storiesOf('Autocomplete', module)
           {
             getSuggestions({ query }) {
               return new Promise(resolve => {
-                let wait = setTimeout(() => {
+                const wait = setTimeout(() => {
                   clearTimeout(wait);
                   resolve(
                     artists.filter(artist =>

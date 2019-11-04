@@ -1,7 +1,7 @@
 /** @jsx h */
 
 import { h } from 'preact';
-import { render, fireEvent } from '@testing-library/preact';
+import { render } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 
 import { Autocomplete } from '../Autocomplete';

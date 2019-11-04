@@ -1,6 +1,10 @@
 module.exports = {
   extends: ['algolia', 'algolia/jest', 'algolia/typescript'],
   settings: {
+    react: {
+      version: 'detect',
+      pragma: 'h',
+    },
     'import/resolver': {
       node: {
         extensions: ['.js', '.ts', '.tsx'],

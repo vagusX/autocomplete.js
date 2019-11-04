@@ -132,7 +132,7 @@ export interface AutocompleteProps {
    */
   minLength?: number;
   /**
-   * Focus the search box when the page is loaded.
+   * Whether to focus the search box when the page is loaded.
    *
    * @default false
    */
@@ -158,15 +158,44 @@ export interface AutocompleteProps {
    * The initial state to apply when the page is loaded.
    */
   initialState?: Partial<AutocompleteState>;
+  /**
+   *
+   */
   templates?: AutocompleteTemplates;
+  /**
+   * The environment from where your JavaScript is running.
+   * Useful if you're using Autocomplete.js in a different context than
+   * `window`.
+   *
+   * @default window
+   */
   environment?: Environment;
+  /**
+   * Called when the input is focused.
+   */
   onFocus?: (options: EventHandlerOptions) => void;
+  /**
+   * Called when a `click` event is fired on an item.
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event
+   */
   onClick?: (event: MouseEvent, options: ItemEventHandlerOptions) => void;
+  /**
+   * Called when a `keydown` event is fired.
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event
+   */
   onKeyDown?: (
     event: KeyboardEvent,
     options: EventHandlerOptions & Partial<ItemEventHandlerOptions>
   ) => void;
+  /**
+   * Called when an error is thrown while getting the suggestions.
+   */
   onError?: (options: EventHandlerOptions) => void;
+  /**
+   * Called when there are no results.
+   */
   onEmpty?: (options: EventHandlerOptions) => void;
 }
 

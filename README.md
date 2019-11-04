@@ -34,15 +34,40 @@ Autocomplete.js is a JavaScript library that creates a fast and fully-featured a
 ###### JavaScript
 
 ```js
+const items = [
+  { value: 'Apple', count: 120 },
+  { value: 'Banana', count: 100 },
+  { value: 'Cherry', count: 50 },
+  { value: 'Orange', count: 150 },
+];
+
 autocomplete({
   container: '#autocomplete',
   getSources() {
-    return [];
+    return [
+      {
+        getSuggestions({ query }) {
+          return items.filter(item =>
+            item.value.toLocaleLowerCase().includes(query.toLocaleLowerCase())
+          );
+        },
+        getSuggestionValue({ suggestion }) {
+          return suggestion.value;
+        },
+        templates: {
+          suggestion({ suggestion }) {
+            return `<div>${suggestion.value} (${suggestion.count})</div>`;
+          },
+        },
+      },
+    ];
   },
 });
 ```
 
 ## Installation
+
+**🚧 This version of Autocomplete.js is not yet published.**
 
 Autocomplete.js is available on the [npm](https://www.npmjs.com/) registry.
 
@@ -72,6 +97,8 @@ If you do not wish to use a package manager, you can use standalone endpoints:
 
 > `string | HTMLElement` | **required**
 
+The container for the autocomplete search box.
+
 #### `getSources`
 
 > `(options: { query: string }) => Source[]` | **required**
@@ -80,65 +107,151 @@ If you do not wish to use a package manager, you can use standalone endpoints:
 
 > `string | HTMLElement` | defaults to `document.body`
 
+The container for the autocomplete dropdown.
+
 #### `dropdownPosition`
 
 > `'left' | 'right'` | defaults to `'left'`
+
+The dropdown position related to the container.
 
 #### `placeholder`
 
 > `string` | defaults to `""`
 
+The text that appears in the search box input when there is no query.
+
+It is fowarded to the [`input`'s placeholder](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#htmlattrdefplaceholder).
+
 #### `showCompletion`
 
 > `boolean` | defaults to `false`
+
+Whether to show the highlighted suggestion as completion in the input.
+
+![`showCompletion` preview](https://user-images.githubusercontent.com/6137112/68124812-7e989800-ff10-11e9-88a5-f28c1466b665.png)
 
 #### `minLength`
 
 > `number` | defaults to `1`
 
+The minimum number of characters long the autocomplete opens.
+
 #### `autofocus`
 
 > `boolean` | defaults to `false`
+
+Whether to focus the search box when the page is loaded.
 
 #### `keyboardShortcuts`
 
 > `string[]`
 
+The keyboard shortcuts keys to focus the input.
+
 #### `defaultHighlightedIndex`
 
 > `number` | defaults to `0` (the first item)
+
+The default item index to pre-select.
 
 #### `stalledDelay`
 
 > `number` | defaults to `300`
 
+The number of milliseconds before the autocomplete experience is considered as stalled.
+
 #### `initialState`
 
-> `State`
+> [`State`](#state)
+
+The initial state to apply when the page is loaded.
 
 #### `templates`
 
-> `GlobalTemplates`
+> [`GlobalTemplates`](#global-templates)
+
+Refer to the "[Global Templates](#global-templates)" section.
 
 #### `environment`
 
 > `typeof window` | defaults to `window`
 
+The environment from where your JavaScript is running.
+
+Useful if you're using Autocomplete.js in a different context than [`window`](https://developer.mozilla.org/en-US/docs/Web/API/Window).
+
 #### `onFocus`
 
 > `(options) => void`
 
+Called when the input is focused.
+
+This function is also called when the input is clicked while already having the focus _and_ the dropdown is closed.
+
 #### `onError`
 
-> `(options) => void`
+> `(options) => void` | defaults to `({ state }) => throw state.error`
+
+Called when an error is thrown while getting the suggestions.
+
+When an error is caught:
+
+- The error is thrown (default `onError` implementation)
+- The CSS class `algolia-autocomplete--errored` is added to the autocomplete container
+- The error is available in the [state](#state)
 
 #### `onClick`
 
 > `(event: MouseEvent, options) => void`
 
+Called when a [`click` event](https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event) is fired on an item.
+
+This function is useful to alter the behavior when a special key is held (e.g. keeping the dropdown open when the meta key is used).
+
 #### `onKeyDown`
 
 > `(event: KeyboardEvent, options) => void`
+
+Called when a [`keydown` event](https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event) is fired.
+
+This function is useful to alter the behavior when a special key is held.
+
+<details>
+
+<summary>Example</summary>
+
+```js
+onKeyDown(event, { suggestion, state, setState }) {
+  if (!suggestion || !suggestion.url) {
+    return;
+  }
+
+  if (event.key === 'Enter') {
+    if (event.metaKey || event.ctrlKey) {
+      setState({
+        isOpen: true,
+      });
+
+      const windowReference = window.open(suggestion.url, '_blank');
+      windowReference!.focus();
+    } else if (event.shiftKey) {
+      window.open(suggestion.url, '_blank');
+    } else if (event.altKey) {
+    } else {
+      window.location.assign(suggestion.url);
+    }
+  }
+}
+```
+
+</details>
+
+#### `onEmpty`
+
+> `(options) => void`
+
+Called when there are no results.
 
 ### Sources
 
@@ -276,12 +389,6 @@ Function called when an item is selected.
 > `(options) => void`
 
 Function called when the input changes.
-
-#### `onEmpty`
-
-> `(options) => void`
-
-Function called when there are not results.
 
 ### State
 

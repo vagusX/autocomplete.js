@@ -3,7 +3,7 @@
 import { h } from 'preact';
 import { Ref } from 'preact/hooks/src';
 
-import { AutocompleteState, RequiredAutocompleteProps } from './Autocomplete';
+import { AutocompleteState, RequiredAutocompleteProps } from './types';
 
 export interface SearchBoxProps {
   placeholder: RequiredAutocompleteProps['placeholder'];

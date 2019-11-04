@@ -6,7 +6,7 @@ import {
   AutocompleteItem,
   AutocompleteState,
   RequiredAutocompleteProps,
-} from './Autocomplete';
+} from './types';
 import { Template } from './Template';
 
 interface DropdownProps {

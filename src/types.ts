@@ -167,6 +167,7 @@ export interface AutocompleteProps {
     options: EventHandlerOptions & Partial<ItemEventHandlerOptions>
   ) => void;
   onError?: (options: EventHandlerOptions) => void;
+  onEmpty?: (options: EventHandlerOptions) => void;
 }
 
 export type RequiredAutocompleteProps = Required<AutocompleteProps>;

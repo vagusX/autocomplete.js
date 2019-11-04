@@ -277,6 +277,12 @@ Function called when an item is selected.
 
 Function called when the input changes.
 
+#### `onEmpty`
+
+> `(options) => void`
+
+Function called when there are not results.
+
 ### State
 
 <!-- TODO -->

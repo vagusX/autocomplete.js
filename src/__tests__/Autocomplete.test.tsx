@@ -193,7 +193,99 @@ describe('Autocomplete', () => {
   });
 
   describe('initialState', () => {
-    test.todo('allows to set the initial query');
+    test('allows to set the initial query', () => {
+      const props = {
+        ...getDefaultProps(),
+        initialState: {
+          query: 'Initial query',
+        },
+      };
+
+      const { container } = render(<Autocomplete {...props} />);
+      const input = container.querySelector<HTMLInputElement>(
+        '.algolia-autocomplete-input'
+      );
+
+      expect(input).toHaveValue('Initial query');
+    });
+
+    test.skip('allows to set the initial isOpen', () => {
+      const props = {
+        ...getDefaultProps(),
+        initialState: {
+          isOpen: true,
+        },
+      };
+
+      const { container } = render(<Autocomplete {...props} />);
+      const input = container.querySelector<HTMLInputElement>(
+        '.algolia-autocomplete-input'
+      );
+
+      const dropdown = props.environment.document.body.querySelector<
+        HTMLElement
+      >('.algolia-autocomplete-dropdown');
+
+      expect(dropdown).toHaveAttribute('hidden', 'false');
+    });
+
+    test('allows to set the initial isStalled', () => {
+      const props = {
+        ...getDefaultProps(),
+        initialState: {
+          isStalled: true,
+        },
+      };
+
+      const { container } = render(<Autocomplete {...props} />);
+      const stalledContainer = container.querySelector(
+        '.algolia-autocomplete--stalled'
+      );
+
+      expect(stalledContainer).toBeInTheDocument();
+    });
+
+    test.todo('allows to set the initial isLoading');
+
+    test('allows to set the initial error', () => {
+      const props = {
+        ...getDefaultProps(),
+        initialState: {
+          error: new Error('Test error'),
+        },
+      };
+
+      const { container } = render(<Autocomplete {...props} />);
+      const erroredContainer = container.querySelector(
+        '.algolia-autocomplete--errored'
+      );
+
+      expect(erroredContainer).toBeInTheDocument();
+    });
+
+    test.skip('allows to set the initial results', () => {
+      const props = {
+        ...getDefaultProps(),
+        getSources() {
+          return [
+            {
+              getSuggestionValue: () => '',
+              getSuggestions: () => fruits,
+              templates: {
+                suggestion: () => '',
+              },
+            },
+          ];
+        },
+        initialState: {
+          results: [fruits],
+        },
+      };
+
+      const { container } = render(<Autocomplete {...props} />);
+    });
+
+    test.todo('allows to set the initial metadata');
   });
 
   describe('keyboardShortcuts', () => {
@@ -269,7 +361,33 @@ describe('Autocomplete', () => {
   });
 
   describe('onClick', () => {
-    test.todo('is called when an item is cliked');
+    test.skip('is called when an item is cliked', () => {
+      const props = {
+        ...getDefaultProps(),
+        onClick: jest.fn(),
+        minLength: 0,
+        initialState: {
+          isOpen: true,
+          query: 'Apple',
+          results: [fruits],
+        },
+      };
+
+      const { container, debug } = render(<Autocomplete {...props} />);
+      const input = container.querySelector<HTMLInputElement>(
+        '.algolia-autocomplete-input'
+      );
+
+      userEvent.type(input, 'Apple');
+
+      const [firstItem] = container.querySelectorAll<HTMLElement>(
+        '.algolia-autocomplete-item'
+      );
+
+      firstItem.click();
+
+      expect(props.onClick).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('onKeyDown', () => {
@@ -328,7 +446,70 @@ describe('Autocomplete', () => {
     });
   });
 
-  describe('onError', () => {
-    test.todo('is called when fetching the suggestions fails');
+  describe.skip('onEmpty', () => {
+    test('is called when there are no results', () => {
+      const props = {
+        ...getDefaultProps(),
+        onEmpty: jest.fn(),
+        getSources: () => [
+          {
+            ...defaultSource,
+            getSuggestions({ query }) {
+              return [{ value: 'Apple' }].filter(
+                suggestion => suggestion.value === query
+              );
+            },
+          },
+        ],
+      };
+
+      const { container } = render(<Autocomplete {...props} />);
+      const input = container.querySelector<HTMLInputElement>(
+        '.algolia-autocomplete-input'
+      );
+
+      userEvent.type(input, 'Appl');
+
+      expect(props.onEmpty).toHaveBeenCalledTimes(4);
+
+      userEvent.type(input, 'Apple');
+
+      expect(props.onEmpty).toHaveBeenCalledTimes(4);
+    });
+  });
+
+  describe.skip('onError', () => {
+    test('is called when fetching the suggestions fails', () => {
+      const testError = new Error('Test error');
+      const props = {
+        ...getDefaultProps(),
+        onError: jest.fn(({ state }) => {
+          console.log(state);
+        }),
+        getSources: () => [
+          {
+            ...defaultSource,
+            getSuggestions() {
+              throw testError;
+            },
+          },
+        ],
+      };
+
+      const { container } = render(<Autocomplete {...props} />);
+      const input = container.querySelector<HTMLInputElement>(
+        '.algolia-autocomplete-input'
+      );
+
+      userEvent.type(input, 'q');
+
+      expect(props.onError).toHaveBeenCalledTimes(1);
+      expect(props.onError).toHaveBeenCalledWith({
+        state: expect.objectContaining({
+          error: testError,
+        }),
+        setState: expect.any(Function),
+      });
+    });
   });
 });

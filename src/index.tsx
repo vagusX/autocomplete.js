@@ -2,11 +2,8 @@
 
 import { h, render } from 'preact';
 
-import {
-  Autocomplete,
-  AutocompleteProps,
-  defaultEnvironment,
-} from './Autocomplete';
+import { Autocomplete, defaultEnvironment } from './Autocomplete';
+import { AutocompleteProps } from './types';
 import { getHTMLElement } from './utils';
 
 interface AutocompleteOptions
@@ -42,6 +39,7 @@ function autocomplete(options: AutocompleteOptions) {
     onClick,
     onKeyDown,
     onError,
+    onEmpty,
   } = options || {};
 
   const containerElement = getHTMLElement(container);
@@ -67,6 +65,7 @@ function autocomplete(options: AutocompleteOptions) {
       environment={environment}
       onClick={onClick}
       onError={onError}
+      onEmpty={onEmpty}
       onKeyDown={onKeyDown}
     />,
     containerElement,

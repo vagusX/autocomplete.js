@@ -14,6 +14,7 @@ import {
   AutocompleteState,
   AutocompleteSource,
   AutocompleteItem,
+  Suggestion,
 } from './types';
 
 export const defaultEnvironment =
@@ -22,7 +23,7 @@ export const defaultEnvironment =
 let autocompleteIdCounter = 0;
 
 /**
- * Generates a unique ID for an instance of a Autocomplete DownShift instance.
+ * Generates a unique ID for an instance of an Autocomplete DownShift instance.
  */
 function generateId(): string {
   return String(autocompleteIdCounter++);
@@ -47,6 +48,7 @@ export function Autocomplete(props: AutocompleteProps) {
     onFocus = () => {},
     onClick = () => {},
     onKeyDown = () => {},
+    onEmpty = () => {},
     onError = ({ state }) => {
       throw state.error;
     },
@@ -55,7 +57,9 @@ export function Autocomplete(props: AutocompleteProps) {
   const [query, setQuery] = useState<AutocompleteState['query']>(
     initialState.query || ''
   );
-  const [results, setResults] = useState<AutocompleteState['results']>([]);
+  const [results, setResults] = useState<AutocompleteState['results']>(
+    initialState.results || []
+  );
   const [isOpen, setIsOpen] = useState<AutocompleteState['isOpen']>(
     initialState.isOpen || false
   );
@@ -68,7 +72,9 @@ export function Autocomplete(props: AutocompleteProps) {
   const [error, setError] = useState<AutocompleteState['error'] | null>(
     initialState.error || null
   );
-  const [metadata, setMetadata] = useState<AutocompleteState['metadata']>({});
+  const [metadata, setMetadata] = useState<AutocompleteState['metadata']>(
+    initialState.metadata || {}
+  );
   const [sources, setSources] = useState<AutocompleteSource[]>(
     getSources({ query })
   );
@@ -242,6 +248,14 @@ export function Autocomplete(props: AutocompleteProps) {
         setIsOpen(nextIsOpen);
         setResults(results);
         setSources(getSources({ query }));
+
+        const hasResults = results.some(
+          (result: Suggestion[]) => result.length > 0
+        );
+
+        if (!hasResults) {
+          onEmpty({ state: getState(), setState });
+        }
       })
       .catch(error => {
         if (setIsStalledId) {
@@ -307,6 +321,7 @@ export function Autocomplete(props: AutocompleteProps) {
   }
 
   const canOpen = query.length >= minLength;
+  const hasResults = results.some((result: Suggestion[]) => result.length > 0);
   const shouldOpen =
     isOpen &&
     // We don't want to open the dropdown when the results
@@ -316,8 +331,7 @@ export function Autocomplete(props: AutocompleteProps) {
     // already open because there are results displayed. Otherwise,
     // it would result in a flashy behavior.
     canOpen &&
-    // @TODO: should hiding the menu when no results be an option?
-    results.some((result: Suggestion[]) => result.length > 0);
+    hasResults;
 
   return (
     <Downshift

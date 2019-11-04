@@ -124,7 +124,7 @@ describe('SearchBox', () => {
       );
 
       expect(completion).toBeInTheDocument();
-      expect(completion).toContainHTML('Query');
+      expect(completion).toHaveTextContent('Query');
     });
 
     test('should not show the completion when empty', () => {

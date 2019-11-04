@@ -484,7 +484,7 @@ describe('Autocomplete', () => {
       const props = {
         ...getDefaultProps(),
         onError: jest.fn(({ state }) => {
-          console.log(state);
+          throw state.error;
         }),
         getSources: () => [
           {

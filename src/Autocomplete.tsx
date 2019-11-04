@@ -18,7 +18,7 @@ import {
 } from './types';
 
 export const defaultEnvironment =
-  typeof window === 'undefined' ? ({} as Environment) : window;
+  typeof window === 'undefined' ? {} : (window as Environment);
 
 let autocompleteIdCounter = 0;
 
@@ -361,7 +361,7 @@ export function Autocomplete(props: AutocompleteProps) {
             const currentState = getState();
 
             source.onSelect({
-              suggestion: suggestion,
+              suggestion,
               suggestionValue: source.getSuggestionValue({
                 suggestion,
                 state: currentState,
@@ -488,12 +488,17 @@ export function Autocomplete(props: AutocompleteProps) {
                   performQuery('');
                 }
 
-                inputRef.current && inputRef.current.focus();
+                if (inputRef.current) {
+                  inputRef.current.focus();
+                }
               }}
               onSubmit={(event: Event) => {
                 event.preventDefault();
                 setIsOpen(false);
-                inputRef.current && inputRef.current.blur();
+
+                if (inputRef.current) {
+                  inputRef.current.blur();
+                }
               }}
             />
 

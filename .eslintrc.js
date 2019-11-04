@@ -12,10 +12,10 @@ module.exports = {
     },
   },
   rules: {
-    'no-param-reassign': 'off',
-    // @TODO: re-enable once the rule is properly setup for monorepos
-    // https://github.com/benmosher/eslint-plugin-import/issues/1103
-    // https://github.com/benmosher/eslint-plugin-import/issues/1174
-    'import/no-extraneous-dependencies': 'off',
+    'no-param-reassign': 0,
+    'valid-jsdoc': 0,
+    'no-shadow': 0,
+    'prefer-template': 0,
+    'jest/no-disabled-tests': 0,
   },
 };

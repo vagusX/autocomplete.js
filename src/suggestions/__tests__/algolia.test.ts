@@ -6,7 +6,7 @@ import {
 } from '../algolia';
 import { Response } from 'algoliasearch';
 
-function createSearchClient() {
+const createSearchClient = () => {
   return {
     search: jest.fn(() =>
       Promise.resolve({
@@ -25,7 +25,7 @@ function createSearchClient() {
     searchForFacetValues: jest.fn(),
     addAlgoliaAgent: jest.fn(),
   };
-}
+};
 
 describe('algolia suggestions', () => {
   describe('getAlgoliaSource', () => {

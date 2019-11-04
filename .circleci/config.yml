@@ -72,15 +72,15 @@ workflows:
   version: 2
   ci:
     jobs:
-      - test_build
+      - test_build:
         branches:
           only:
-          - next
-      - test_unit
+            - next
+      - test_unit:
         branches:
           only:
-          - next
-      - test_lint
+            - next
+      - test_lint:
         branches:
           only:
-          - next
+            - next

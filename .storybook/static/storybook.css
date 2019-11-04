@@ -1,0 +1,8 @@
+body {
+  font-family: 'Nunito Sans', -apple-system, '.SFNSText-Regular',
+    'San Francisco', BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica,
+    Arial, sans-serif;
+  margin: auto;
+  max-width: 600px;
+  padding: 2rem 1rem;
+}

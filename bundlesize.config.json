@@ -1,7 +1,7 @@
 {
   "files": [
     {
-      "path": "dist/umd/index.js",
+      "path": "dist/umd/autocomplete.js",
       "maxSize": "16 kB"
     }
   ]

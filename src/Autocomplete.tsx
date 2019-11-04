@@ -18,7 +18,7 @@ import {
 } from './types';
 
 export const defaultEnvironment =
-  typeof window === 'undefined' ? {} : (window as Environment);
+  typeof window === 'undefined' ? ({} as Environment) : window;
 
 let autocompleteIdCounter = 0;
 

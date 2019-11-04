@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ['algolia', 'algolia/jest', 'algolia/typescript'],
+  extends: ['algolia', 'algolia/jest', 'algolia/react', 'algolia/typescript'],
   settings: {
     react: {
       version: 'detect',

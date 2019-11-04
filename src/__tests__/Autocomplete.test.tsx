@@ -156,8 +156,9 @@ describe('Autocomplete', () => {
   });
 
   describe('dropdownContainer', () => {
-    test.todo('defaults to `document.body`');
-    test.todo('can be other HTML elements');
+    test.todo('should be the document body by default');
+    test.todo('can be any other HTML element');
+    test.todo('can be any other string referencing to an HTML element');
   });
 
   describe('dropdownPosition', () => {
@@ -184,12 +185,6 @@ describe('Autocomplete', () => {
   describe('showCompletion', () => {
     test.todo('should be disable by default');
     test.todo('should start showing when typing');
-  });
-
-  describe('dropdownContainer', () => {
-    test.todo('should be the document body by default');
-    test.todo('can be any other HTML element');
-    test.todo('can be any other string referencing to an HTML element');
   });
 
   describe('initialState', () => {

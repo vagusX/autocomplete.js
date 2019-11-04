@@ -349,13 +349,13 @@ const items = [{ value: 'Apple' }, { value: 'Banana' }];
 const source = {
   templates: {
     header() {
-      return '<h2>Fruits</h2>'
+      return '<h2>Fruits</h2>';
     },
-    suggestion({ suggestion }) (
-      return suggestion.value
-    ),
+    suggestion({ suggestion }) {
+      return suggestion.value;
+    },
     footer() {
-      return '<a href="/fruits">See more</a>'
+      return '<a href="/fruits">See more</a>';
     },
   },
   // ...
@@ -370,13 +370,13 @@ const items = [{ value: 'Apple' }, { value: 'Banana' }];
 const source = {
   templates: {
     header() {
-      return <h2>Fruits</h2>
+      return <h2>Fruits</h2>;
     },
-    suggestion({ suggestion }) (
-      return suggestion.value
-    ),
+    suggestion({ suggestion }) {
+      return suggestion.value;
+    },
     footer() {
-      return <a href="/fruits">See more</a>
+      return <a href="/fruits">See more</a>;
     },
   },
   // ...
@@ -456,6 +456,166 @@ The template to display after all sources.
 ## Design
 
 <!-- TODO -->
+
+## Presets
+
+Autocomplete.js comes with presets to facilitate the integration with [Algolia](http://algolia.com/).
+
+### `getAlgoliaHits`
+
+> `(options: { searchClient: SearchClient, query: string, searchParameters: SearchParameters[] }) => Promise<Response['hits']>`
+
+Function that retrieves and merges Algolia hits from multiple indices.
+
+This function comes with default Algolia search parameters:
+
+- [`hitsPerPage`](https://www.algolia.com/doc/api-reference/api-parameters/hitsPerPage/): `5`
+- [`highlightPreTag`](https://www.algolia.com/doc/api-reference/api-parameters/highlightPreTag/): `<mark>`
+- [`highlightPostTag`](https://www.algolia.com/doc/api-reference/api-parameters/highlightPostTag/): `</mark>`
+
+<details>
+  <summary>Example</summary>
+
+```js
+import algoliasearch from 'algoliasearch';
+
+const searchClient = algoliasearch(
+  'latency',
+  '6be0576ff61c053d5f9a3225e2a90f76'
+);
+
+autocomplete({
+  // ...
+  getSources({ query }) {
+    return [
+      {
+        // ...
+        getSuggestions({ query }) {
+          return getAlgoliaHits({
+            searchClient,
+            query,
+            searchParameters: [
+              {
+                indexName: 'instant_search',
+                params: {
+                  hitsPerPage: 3,
+                },
+              },
+            ],
+          });
+        },
+      },
+    ];
+  },
+});
+```
+
+</details>
+
+### `getAlgoliaResults`
+
+> `(options: { searchClient: SearchClient, query: string, searchParameters: SearchParameters[] }) => Promise<MultiResponse['results']>`
+
+Function that retrieves Algolia results from multiple indices.
+
+This function comes with default Algolia search parameters:
+
+- [`hitsPerPage`](https://www.algolia.com/doc/api-reference/api-parameters/hitsPerPage/): `5`
+- [`highlightPreTag`](https://www.algolia.com/doc/api-reference/api-parameters/highlightPreTag/): `<mark>`
+- [`highlightPostTag`](https://www.algolia.com/doc/api-reference/api-parameters/highlightPostTag/): `</mark>`
+
+<details>
+  <summary>Example</summary>
+
+```js
+import algoliasearch from 'algoliasearch';
+
+const searchClient = algoliasearch(
+  'latency',
+  '6be0576ff61c053d5f9a3225e2a90f76'
+);
+
+autocomplete({
+  // ...
+  getSources({ query }) {
+    return [
+      {
+        // ...
+        getSuggestions({ query }) {
+          return getAlgoliaResults({
+            searchClient,
+            query,
+            searchParameters: [
+              {
+                indexName: 'instant_search',
+                params: {
+                  hitsPerPage: 3,
+                },
+              },
+            ],
+          }).then(results => {
+            const firstResult = results[0];
+
+            return firstResult.hits;
+          });
+        },
+      },
+    ];
+  },
+});
+```
+
+</details>
+
+### `highlightAlgoliaHit`
+
+Highlights and escapes the value of a record.
+
+<details>
+
+<summary>Example</summary>
+
+```js
+autocomplete({
+  // ...
+  templates: {
+    suggestion({ suggestion }) {
+      return highlightAlgoliaHit({
+        hit: suggestion,
+        attribute: 'name',
+      });
+    },
+  },
+});
+```
+
+</details>
+
+### `reverseHighlightAlgoliaHit`
+
+This function reverse-highlights and escapes the value of a record.
+
+It's useful when following the pattern of [Query Suggestions](https://www.algolia.com/doc/guides/getting-insights-and-analytics/leveraging-analytics-data/query-suggestions/) to highlight the difference between what the user types and the suggestion shown.
+
+<details>
+
+<summary>Example</summary>
+
+```js
+autocomplete({
+  // ...
+  templates: {
+    suggestion({ suggestion }) {
+      return reverseHighlightAlgoliaHit({
+        hit: suggestion,
+        attribute: 'query',
+      });
+    },
+  },
+});
+```
+
+</details>
 
 ## Examples
 

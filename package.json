@@ -13,7 +13,8 @@
     "dist/"
   ],
   "source": "src/index.tsx",
-  "module": "dist/es/autocomplete.js",
+  "types": "dist/es/index.d.ts",
+  "module": "dist/es/index.js",
   "main": "dist/umd/autocomplete.js",
   "umd:main": "dist/umd/autocomplete.js",
   "unpkg": "dist/umd/autocomplete.js",
@@ -29,8 +30,8 @@
     "build:umd": "rollup --config",
     "build:es": "babel src --root-mode upward --extensions '.js,.ts,.tsx' --ignore '**/__tests__/**/*','**/__mocks__/**/*','**/__fixtures__/**/*' --out-dir dist/es --quiet",
     "build:prepare": "yarn run build:es",
-    "build:types": "tsc --emitDeclarationOnly",
-    "build": "yarn run build:umd && yarn run build:es",
+    "build:types": "tsc --declaration --declarationMap --outFile dist/es/index.d.ts --emitDeclarationOnly",
+    "build": "yarn run build:umd && yarn run build:es && yarn run build:types",
     "watch": "babel src --root-mode upward --extensions '.js,.ts,.tsx' --ignore '**/__tests__/**/*','**/__mocks__/**/*','**/__fixtures__/**/*' --out-dir dist/es --quiet --watch",
     "type-check": "tsc --noEmit",
     "website:build": "yarn run build && yarn run storybook:build"

@@ -1,25 +1,28 @@
 {
   "compilerOptions": {
-    "target": "ESNEXT",
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react",
+    "jsxFactory": "h",
     "module": "es2015",
     "moduleResolution": "node",
-    "strict": true,
+    "noFallthroughCasesInSwitch": true,
     "noImplicitAny": false,
+    "noImplicitReturns": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "jsx": "react",
-    "jsxFactory": "h"
+    "strict": true,
+    "target": "ESNEXT"
   },
   "exclude": [
-    "node_modules",
-    "dist",
-    "**/__tests__/**/*",
+    ".storybook",
+    "**/__fixtures__/**/*",
     "**/__mocks__/**/*",
-    "**/__fixtures__/**/*"
+    "**/__tests__/**/*",
+    "dist",
+    "node_modules",
+    "stories",
+    "website"
   ]
 }

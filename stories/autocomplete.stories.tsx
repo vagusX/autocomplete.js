@@ -42,38 +42,69 @@ const querySuggestionsSource = {
         .slice(0, 3);
     });
   },
+  onSelect({ setState }) {
+    setState({
+      isOpen: true,
+    });
+  },
   templates: {
     suggestion({ suggestion }) {
       return (
-        <div style={{ display: 'flex' }}>
-          <div style={{ width: 28 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex' }}>
+            <div style={{ width: 28 }}>
+              <svg
+                viewBox="0 0 18 18"
+                width={16}
+                style={{
+                  color: 'rgba(0, 0, 0, 0.3)',
+                }}
+              >
+                <path
+                  d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
+                  stroke="currentColor"
+                  stroke-width="1.78"
+                  fill="none"
+                  fill-rule="evenodd"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+              </svg>
+            </div>
+
+            <div
+              dangerouslySetInnerHTML={{
+                __html: reverseHighlightAlgoliaHit({
+                  hit: suggestion,
+                  attribute: 'query',
+                }),
+              }}
+            />
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              width: 28,
+            }}
+          >
             <svg
-              viewBox="0 0 18 18"
-              width={16}
+              height="13"
+              viewBox="0 0 13 13"
+              width="13"
               style={{
                 color: 'rgba(0, 0, 0, 0.3)',
               }}
             >
               <path
-                d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
-                stroke="currentColor"
-                stroke-width="1.78"
-                fill="none"
-                fill-rule="evenodd"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></path>
+                d="m16 7h-12.17l5.59-5.59-1.42-1.41-8 8 8 8 1.41-1.41-5.58-5.59h12.17z"
+                transform="matrix(.70710678 .70710678 -.70710678 .70710678 6 -5.313708)"
+                fill="currentColor"
+              />
             </svg>
           </div>
-
-          <div
-            dangerouslySetInnerHTML={{
-              __html: reverseHighlightAlgoliaHit({
-                hit: suggestion,
-                attribute: 'query',
-              }),
-            }}
-          />
         </div>
       );
     },
@@ -553,12 +584,16 @@ storiesOf('Autocomplete', module)
                 ],
               });
             },
-            onSelect({ state }) {
+            onSelect({ state, setState }) {
               const query = state.query;
 
               if (query.length >= 3) {
                 recentSearches.setRecentSearch(query);
               }
+
+              setState({
+                isOpen: true,
+              });
             },
             templates: {
               header: () =>

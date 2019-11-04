@@ -103,6 +103,8 @@ The container for the autocomplete search box.
 
 > `(options: { query: string }) => Source[]` | **required**
 
+Called to fetch the [sources](#sources).
+
 #### `dropdownContainer`
 
 > `string | HTMLElement` | defaults to `document.body`
@@ -159,7 +161,12 @@ The default item index to pre-select.
 
 > `number` | defaults to `300`
 
-The number of milliseconds before the autocomplete experience is considered as stalled.
+The number of milliseconds before the autocomplete experience is stalled. It's considered as stalled when the `stalledDelay` timeout exceeds when fetching the suggestions.
+
+When the experience is stalled:
+
+- The CSS class `algolia-autocomplete--stalled` is added to the autocomplete container
+- The `isStalled` boolean is `true` in the [state](#state)
 
 #### `initialState`
 
@@ -234,7 +241,7 @@ onKeyDown(event, { suggestion, state, setState }) {
       });
 
       const windowReference = window.open(suggestion.url, '_blank');
-      windowReference!.focus();
+      windowReference.focus();
     } else if (event.shiftKey) {
       window.open(suggestion.url, '_blank');
     } else if (event.altKey) {
@@ -309,25 +316,25 @@ Templates to use for the source. A template supports strings and JSX elements.
 
 ##### `header`
 
-> (options: { state: State }) => string | JSX.Element
+> `(options: { state: State }) => string | JSX.Element`
 
 The template to display before the suggestions.
 
 ##### `suggestion`
 
-> (options: { suggestion: Suggestion, state: State }) => string | JSX.Element
+> `(options: { suggestion: Suggestion, state: State }) => string | JSX.Element`
 
 The template for each suggestion.
 
 ##### `footer`
 
-> (options: { state: State }) => string | JSX.Element
+> `(options: { state: State }) => string | JSX.Element`
 
 The template to display after the suggestions.
 
 ##### `empty`
 
-> (options: { state: State }) => string | JSX.Element
+> `(options: { state: State }) => string | JSX.Element`
 
 The template to display when there are no suggestions.
 
@@ -392,7 +399,43 @@ Function called when the input changes.
 
 ### State
 
-<!-- TODO -->
+The Autocomplete.js state drives the experience. The state is passed to all templates.
+
+#### `query`
+
+> `string` | defaults to `initialState.query || ''`
+
+The query.
+
+#### `results`
+
+> `Array<Suggestion[]>` | defaults to `initialState.results || []`
+
+The results of all the sources.
+
+#### `isOpen`
+
+> `boolean` | defaults to `initialState.isOpen || false`
+
+Whether the dropdown is open.
+
+#### `isLoading`
+
+> `boolean` | defaults to `initialState.isLoading || false`
+
+Whether the experience is loading.
+
+#### `isStalled`
+
+> `boolean` | defaults to `initialState.isStalled || false`
+
+Whether the experience is stalled.
+
+#### `error`
+
+> `null | Error` | defaults to `initialState.error || null`
+
+The error that happened, `null` if none.
 
 ### Global templates
 

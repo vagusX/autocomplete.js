@@ -336,6 +336,7 @@ export function Autocomplete(props: AutocompleteProps) {
   return (
     <Downshift
       id={`autocomplete-${generateId()}`}
+      environment={environment}
       itemToString={(item: AutocompleteItem) => {
         return item
           ? item.source.getSuggestionValue({

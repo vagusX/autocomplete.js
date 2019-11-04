@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'preact/hooks';
 import { createPortal } from 'preact/compat';
 import Downshift from 'downshift/preact';
 
-import { flatten } from './utils';
+import { flatten, noop } from './utils';
 import { Dropdown } from './Dropdown';
 import { SearchBox } from './SearchBox';
 import {
@@ -45,10 +45,10 @@ export function Autocomplete(props: AutocompleteProps) {
     environment = defaultEnvironment,
     dropdownContainer = environment.document.body,
     dropdownPosition = 'left',
-    onFocus = () => {},
-    onClick = () => {},
-    onKeyDown = () => {},
-    onEmpty = () => {},
+    onFocus = noop,
+    onClick = noop,
+    onKeyDown = noop,
+    onEmpty = noop,
     onError = ({ state }) => {
       throw state.error;
     },

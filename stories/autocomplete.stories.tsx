@@ -539,7 +539,12 @@ storiesOf('Autocomplete', module)
                 return [];
               }
 
-              return recentSearches.getRecentSearches();
+              // Also inject some fake searches for the demo
+              return [
+                ...recentSearches.getRecentSearches(),
+                { query: 'guitar' },
+                { query: 'amazon' },
+              ].slice(0, 3);
             },
             onSelect({ setState }) {
               setState({

@@ -73,14 +73,17 @@ workflows:
   ci:
     jobs:
       - test_build:
-        branches:
-          only:
-            - next
+        filters:
+          branches:
+            only:
+              - next
       - test_unit:
-        branches:
-          only:
-            - next
+        filters:
+          branches:
+            only:
+              - next
       - test_lint:
-        branches:
-          only:
-            - next
+        filters:
+          branches:
+            only:
+              - next

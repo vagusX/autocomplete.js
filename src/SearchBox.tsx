@@ -1,7 +1,6 @@
 /** @jsx h */
 
-import { h } from 'preact';
-import { Ref } from 'preact/hooks/src';
+import { h, Ref } from 'preact';
 
 import { AutocompleteState, RequiredAutocompleteProps } from './types';
 

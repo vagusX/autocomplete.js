@@ -449,11 +449,10 @@ export function Autocomplete(props: AutocompleteProps) {
                 }
 
                 if (event.key === 'Escape') {
-                  if (shouldOpen) {
-                    setIsOpen(false);
-                  } else {
+                  setIsOpen(false);
+
+                  if (!shouldOpen) {
                     setQuery('');
-                    setIsOpen(false);
                   }
                 } else if (
                   event.key === 'Tab' ||

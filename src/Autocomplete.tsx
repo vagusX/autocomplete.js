@@ -317,7 +317,7 @@ export function Autocomplete(props: AutocompleteProps) {
     return '';
   }
 
-  const canOpen = query.length >= minLength;
+  const isQueryLongEnough = query.length >= minLength;
   const hasResults = results.some(result => result.length > 0);
   const shouldOpen =
     isOpen &&
@@ -327,7 +327,7 @@ export function Autocomplete(props: AutocompleteProps) {
     // However, we do want to leave the dropdown open when it's
     // already open because there are results displayed. Otherwise,
     // it would result in a flashy behavior.
-    canOpen &&
+    isQueryLongEnough &&
     hasResults;
 
   return (
@@ -399,7 +399,7 @@ export function Autocomplete(props: AutocompleteProps) {
               onInputRef={inputRef}
               getInputProps={getInputProps}
               onFocus={() => {
-                if (canOpen) {
+                if (isQueryLongEnough) {
                   setIsOpen(true);
                 }
 

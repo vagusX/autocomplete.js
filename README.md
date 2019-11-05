@@ -399,41 +399,41 @@ Function called when the input changes.
 
 ### State
 
-The Autocomplete.js state drives the experience. The state is passed to all templates.
+The Autocomplete.js state drives the behavior. It can be initially set with [`initialState`](#initial-state) and it's is passed to all templates.
 
 #### `query`
 
-> `string` | defaults to `initialState.query || ''`
+> `string` | defaults to `''`
 
 The query.
 
 #### `results`
 
-> `Array<Suggestion[]>` | defaults to `initialState.results || []`
+> `Array<Suggestion[]>` | defaults to `[]`
 
 The results of all the sources.
 
 #### `isOpen`
 
-> `boolean` | defaults to `initialState.isOpen || false`
+> `boolean` | defaults to `false`
 
 Whether the dropdown is open.
 
 #### `isLoading`
 
-> `boolean` | defaults to `initialState.isLoading || false`
+> `boolean` | defaults to `false`
 
 Whether the experience is loading.
 
 #### `isIdled`
 
-> `boolean` | defaults to `initialState.isIdled || false`
+> `boolean` | defaults to `false`
 
 Whether the experience is idled.
 
 #### `error`
 
-> `null | Error` | defaults to `initialState.error || null`
+> `null | Error` | defaults to `null`
 
 The error that happened, `null` if none.
 

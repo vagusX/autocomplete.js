@@ -68,8 +68,7 @@ function autocomplete(options: AutocompleteOptions) {
       onEmpty={onEmpty}
       onKeyDown={onKeyDown}
     />,
-    containerElement,
-    containerElement.lastElementChild!
+    containerElement
   );
 }
 

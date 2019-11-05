@@ -26,7 +26,7 @@ export interface SearchBoxProps {
 export function SearchBox(props: SearchBoxProps) {
   const showCompletion = Boolean(
     props.internalState.isOpen &&
-      !props.internalState.isIdled &&
+      !props.internalState.isStalled &&
       props.completion
   );
 

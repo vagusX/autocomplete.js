@@ -25,7 +25,7 @@ export const Dropdown = ({
   hidden,
   templates,
   isOpen,
-  isIdled,
+  isStalled,
   isLoading,
   query,
   error,
@@ -38,7 +38,7 @@ export const Dropdown = ({
 }: DropdownProps) => {
   const state = {
     isOpen,
-    isIdled,
+    isStalled,
     isLoading,
     query,
     error,

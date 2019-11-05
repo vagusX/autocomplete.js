@@ -9,7 +9,7 @@ const data = {
   suggestion: { value: 'Banana', url: '/banana' },
   state: {
     isOpen: false,
-    isIdled: false,
+    isStalled: false,
     isLoading: false,
     error: null,
     query: '',

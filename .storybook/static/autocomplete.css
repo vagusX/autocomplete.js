@@ -84,7 +84,7 @@
   width: 2rem;
 }
 
-.algolia-autocomplete--idled .algolia-autocomplete-loadingIndicator,
+.algolia-autocomplete--stalled .algolia-autocomplete-loadingIndicator,
 .algolia-autocomplete-magnifierLabel,
 .algolia-autocomplete-reset {
   align-items: center;
@@ -95,7 +95,7 @@
   justify-content: center;
 }
 
-.algolia-autocomplete--idled .algolia-autocomplete-magnifierLabel,
+.algolia-autocomplete--stalled .algolia-autocomplete-magnifierLabel,
 .algolia-autocomplete-loadingIndicator {
   display: none;
 }

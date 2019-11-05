@@ -69,7 +69,7 @@ export function Autocomplete(props: AutocompleteProps) {
     autofocus = false,
     initialState = {},
     defaultHighlightedIndex = 0,
-    idleThreshold = 300,
+    stallThreshold = 300,
     keyboardShortcuts = [],
     getSources,
     templates = {},
@@ -97,8 +97,8 @@ export function Autocomplete(props: AutocompleteProps) {
   const [isLoading, setIsLoading] = useState<AutocompleteState['isLoading']>(
     initialState.isLoading || false
   );
-  const [isIdled, setisIdled] = useState<AutocompleteState['isIdled']>(
-    initialState.isIdled || false
+  const [isStalled, setisStalled] = useState<AutocompleteState['isStalled']>(
+    initialState.isStalled || false
   );
   const [error, setError] = useState<AutocompleteState['error'] | null>(
     initialState.error || null
@@ -110,7 +110,7 @@ export function Autocomplete(props: AutocompleteProps) {
     Pick<ClientRect, 'top' | 'left'> | undefined
   >(undefined);
 
-  let setisIdledId: number | null = null;
+  let setisStalledId: number | null = null;
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -181,7 +181,7 @@ export function Autocomplete(props: AutocompleteProps) {
       results,
       isOpen,
       isLoading,
-      isIdled,
+      isStalled,
       error,
       metadata,
     };
@@ -201,8 +201,8 @@ export function Autocomplete(props: AutocompleteProps) {
     if (nextState.isLoading !== undefined) {
       setIsLoading(nextState.isLoading);
     }
-    if (nextState.isIdled !== undefined) {
-      setisIdled(nextState.isIdled);
+    if (nextState.isStalled !== undefined) {
+      setisStalled(nextState.isStalled);
     }
     if (nextState.error !== undefined) {
       setError(nextState.error);
@@ -230,9 +230,9 @@ export function Autocomplete(props: AutocompleteProps) {
   }
 
   function performQuery(query: string, nextIsOpen: boolean = true) {
-    if (setisIdledId) {
-      clearTimeout(setisIdledId);
-      setisIdled(false);
+    if (setisStalledId) {
+      clearTimeout(setisStalledId);
+      setisStalled(false);
     }
 
     setError(null);
@@ -253,9 +253,9 @@ export function Autocomplete(props: AutocompleteProps) {
 
     setIsLoading(true);
 
-    setisIdledId = environment.setTimeout(() => {
-      setisIdled(true);
-    }, idleThreshold);
+    setisStalledId = environment.setTimeout(() => {
+      setisStalled(true);
+    }, stallThreshold);
 
     return Promise.resolve(
       getSources({
@@ -271,9 +271,9 @@ export function Autocomplete(props: AutocompleteProps) {
         setState,
       })
         .then(results => {
-          if (setisIdledId) {
-            clearTimeout(setisIdledId);
-            setisIdled(false);
+          if (setisStalledId) {
+            clearTimeout(setisStalledId);
+            setisStalled(false);
           }
 
           setIsLoading(false);
@@ -289,9 +289,9 @@ export function Autocomplete(props: AutocompleteProps) {
           }
         })
         .catch(error => {
-          if (setisIdledId) {
-            clearTimeout(setisIdledId);
-            setisIdled(false);
+          if (setisStalledId) {
+            clearTimeout(setisStalledId);
+            setisStalled(false);
           }
 
           setIsLoading(false);
@@ -375,7 +375,7 @@ export function Autocomplete(props: AutocompleteProps) {
     isOpen &&
     // We don't want to open the dropdown when the results
     // are loading coming from an empty input.
-    // !isIdled &&
+    // !isStalled &&
     // However, we do want to leave the dropdown open when it's
     // already open because there are results displayed. Otherwise,
     // it would result in a flashy behavior.
@@ -433,7 +433,7 @@ export function Autocomplete(props: AutocompleteProps) {
           <div
             className={[
               'algolia-autocomplete',
-              isIdled && 'algolia-autocomplete--idled',
+              isStalled && 'algolia-autocomplete--stalled',
               error && 'algolia-autocomplete--errored',
             ]
               .filter(Boolean)
@@ -548,7 +548,7 @@ export function Autocomplete(props: AutocompleteProps) {
                 position={dropdownRect}
                 hidden={!shouldOpen}
                 isOpen={isOpen}
-                isIdled={isIdled}
+                isStalled={isStalled}
                 isLoading={isLoading}
                 query={query}
                 error={error}

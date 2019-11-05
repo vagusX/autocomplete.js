@@ -14,7 +14,6 @@ import {
   AutocompleteState,
   AutocompleteSource,
   AutocompleteItem,
-  Suggestion,
 } from './types';
 
 export const defaultEnvironment =
@@ -249,9 +248,7 @@ export function Autocomplete(props: AutocompleteProps) {
         setResults(results);
         setSources(getSources({ query }));
 
-        const hasResults = results.some(
-          (result: Suggestion[]) => result.length > 0
-        );
+        const hasResults = results.some(result => result.length > 0);
 
         if (!hasResults) {
           onEmpty({ state: getState(), setState });
@@ -321,7 +318,7 @@ export function Autocomplete(props: AutocompleteProps) {
   }
 
   const canOpen = query.length >= minLength;
-  const hasResults = results.some((result: Suggestion[]) => result.length > 0);
+  const hasResults = results.some(result => result.length > 0);
   const shouldOpen =
     isOpen &&
     // We don't want to open the dropdown when the results

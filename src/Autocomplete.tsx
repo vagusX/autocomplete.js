@@ -337,14 +337,6 @@ export function Autocomplete(props: AutocompleteProps) {
     <Downshift
       id={`autocomplete-${generateId()}`}
       environment={environment}
-      itemToString={(item: AutocompleteItem) => {
-        return item
-          ? item.source.getSuggestionValue({
-              suggestion: item.suggestion,
-              state: getState(),
-            })
-          : '';
-      }}
       defaultHighlightedIndex={defaultHighlightedIndex}
       onSelect={(item: AutocompleteItem) => {
         if (!item) {

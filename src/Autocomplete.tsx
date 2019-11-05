@@ -456,8 +456,10 @@ export function Autocomplete(props: AutocompleteProps) {
                   }
                 } else if (
                   event.key === 'Tab' ||
+                  // When the user hits the right arrow and is at the end of
+                  // the typed query only, we want to validate the completion.
                   (event.key === 'ArrowRight' &&
-                    (event.target! as HTMLInputElement).selectionStart ===
+                    (event.target as HTMLInputElement).selectionStart ===
                       query.length)
                 ) {
                   if (shouldOpen && suggestion && source) {
@@ -477,7 +479,7 @@ export function Autocomplete(props: AutocompleteProps) {
                 }
               }}
               onInput={(event: KeyboardEvent) => {
-                performQuery((event.target as any).value);
+                performQuery((event.target as HTMLInputElement).value);
               }}
               onReset={event => {
                 event.preventDefault();

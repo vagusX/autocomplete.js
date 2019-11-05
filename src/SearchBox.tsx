@@ -2,14 +2,18 @@
 
 import { h, Ref } from 'preact';
 
-import { AutocompleteState, RequiredAutocompleteProps } from './types';
+import {
+  AutocompleteState,
+  RequiredAutocompleteProps,
+  SetState,
+} from './types';
 
 export interface SearchBoxProps {
   placeholder: RequiredAutocompleteProps['placeholder'];
   autofocus: RequiredAutocompleteProps['autofocus'];
   completion: string;
   internalState: AutocompleteState;
-  internalSetState(nextState: Partial<AutocompleteState>): void;
+  internalSetState: SetState;
   onInput: (event: any) => void;
   onFocus: RequiredAutocompleteProps['onFocus'];
   onKeyDown: (event: KeyboardEvent) => void;

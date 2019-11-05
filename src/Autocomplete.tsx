@@ -10,11 +10,43 @@ import { Dropdown } from './Dropdown';
 import { SearchBox } from './SearchBox';
 import {
   Environment,
+  Result,
+  SetState,
   AutocompleteProps,
   AutocompleteState,
   AutocompleteSource,
   AutocompleteItem,
 } from './types';
+
+function getSourcesResults(options: {
+  sources: AutocompleteSource[];
+  query: string;
+  state: AutocompleteState;
+  setState: SetState;
+}): Promise<Result[]> {
+  const { sources, query, state, setState } = options;
+
+  return Promise.all(
+    sources.map(source => {
+      if (source.onInput) {
+        source.onInput({ state, setState });
+      }
+
+      return Promise.resolve(
+        source.getSuggestions({
+          query,
+          state,
+          setState,
+        })
+      ).then(suggestions => {
+        return {
+          source,
+          suggestions,
+        };
+      });
+    })
+  );
+}
 
 export const defaultEnvironment =
   typeof window === 'undefined' ? ({} as Environment) : window;
@@ -73,9 +105,6 @@ export function Autocomplete(props: AutocompleteProps) {
   );
   const [metadata, setMetadata] = useState<AutocompleteState['metadata']>(
     initialState.metadata || {}
-  );
-  const [sources, setSources] = useState<AutocompleteSource[]>(
-    getSources({ query })
   );
   const [dropdownRect, setDropdownRect] = useState<
     Pick<ClientRect, 'top' | 'left'> | undefined
@@ -144,7 +173,7 @@ export function Autocomplete(props: AutocompleteProps) {
     // We need to track the container position because the dropdown position is
     // computed based on the container position.
     onResize();
-  }, [container, dropdownContainer, onResize]);
+  }, [container, dropdownContainer]);
 
   function getState(): AutocompleteState {
     return {
@@ -158,7 +187,7 @@ export function Autocomplete(props: AutocompleteProps) {
     };
   }
 
-  function setState(nextState: Partial<AutocompleteState>): void {
+  const setState: SetState = nextState => {
     if (nextState.query !== undefined) {
       setQuery(nextState.query);
       performQuery(nextState.query);
@@ -181,7 +210,7 @@ export function Autocomplete(props: AutocompleteProps) {
     if (nextState.metadata !== undefined) {
       setMetadata({ ...metadata, ...nextState.metadata });
     }
-  }
+  };
 
   function onResize(): void {
     const nextContainerRect = container.getBoundingClientRect();
@@ -212,8 +241,12 @@ export function Autocomplete(props: AutocompleteProps) {
     if (query.length < minLength) {
       setIsLoading(false);
       setIsOpen(false);
-      setSources(getSources({ query }));
-      setResults([]);
+      setResults(
+        results.map(result => ({
+          ...result,
+          suggestions: [],
+        }))
+      );
 
       return Promise.resolve();
     }
@@ -224,60 +257,66 @@ export function Autocomplete(props: AutocompleteProps) {
       setisIdled(true);
     }, idleThreshold);
 
-    return Promise.all(
-      sources.map(source => {
-        if (source.onInput) {
-          source.onInput({ state: getState(), setState });
-        }
-
-        return source.getSuggestions({
-          query,
-          state: getState(),
-          setState,
-        });
+    return Promise.resolve(
+      getSources({
+        query,
+        state: getState(),
+        setState,
       })
-    )
-      .then(results => {
-        if (setisIdledId) {
-          clearTimeout(setisIdledId);
-          setisIdled(false);
-        }
-
-        setIsLoading(false);
-        setIsOpen(nextIsOpen);
-        setResults(results);
-        setSources(getSources({ query }));
-
-        const hasResults = results.some(result => result.length > 0);
-
-        if (!hasResults) {
-          onEmpty({ state: getState(), setState });
-        }
+    ).then(sources => {
+      return getSourcesResults({
+        query,
+        sources,
+        state: getState(),
+        setState,
       })
-      .catch(error => {
-        if (setisIdledId) {
-          clearTimeout(setisIdledId);
-          setisIdled(false);
-        }
+        .then(results => {
+          if (setisIdledId) {
+            clearTimeout(setisIdledId);
+            setisIdled(false);
+          }
 
-        setIsLoading(false);
-        setError(error);
+          setIsLoading(false);
+          setIsOpen(nextIsOpen);
+          setResults(results);
 
-        onError({
-          state: getState(),
-          setState,
+          const hasResults = results.some(
+            result => result.suggestions.length > 0
+          );
+
+          if (!hasResults) {
+            onEmpty({ state: getState(), setState });
+          }
+        })
+        .catch(error => {
+          if (setisIdledId) {
+            clearTimeout(setisIdledId);
+            setisIdled(false);
+          }
+
+          setIsLoading(false);
+          setError(error);
+
+          onError({
+            state: getState(),
+            setState,
+          });
         });
-      });
+    });
   }
 
   function getSourceFromHighlightedIndex(
     highlightedIndex: number
-  ): AutocompleteSource {
-    const resultsSizes = results.reduce<number[]>((acc, result: number[]) => {
-      acc.push(result.length + acc.reduce((a, b) => a + b, 0));
-      return acc;
-    }, []);
-    const sourceNumber = resultsSizes.reduce((acc, current) => {
+  ): AutocompleteSource | undefined {
+    const resultsSizes = results
+      .map(result => result.suggestions)
+      .reduce<number[]>((acc, suggestions) => {
+        acc.push(suggestions.length + acc.reduce((a, b) => a + b, 0));
+
+        return acc;
+      }, []);
+
+    const resultIndex = resultsSizes.reduce((acc, current) => {
       if (current <= highlightedIndex) {
         return acc + 1;
       }
@@ -285,7 +324,9 @@ export function Autocomplete(props: AutocompleteProps) {
       return acc;
     }, 0);
 
-    return sources[sourceNumber];
+    const result: Result | undefined = results[resultIndex];
+
+    return result ? result.source : undefined;
   }
 
   function getCompletion(highlightedIndex: number) {
@@ -293,7 +334,9 @@ export function Autocomplete(props: AutocompleteProps) {
       return '';
     }
 
-    const suggestion = flatten(results)[Math.max(0, highlightedIndex)];
+    const suggestion = flatten(results.map(result => result.suggestions))[
+      Math.max(0, highlightedIndex)
+    ];
     const source = getSourceFromHighlightedIndex(Math.max(0, highlightedIndex));
 
     if (!suggestion || !source) {
@@ -327,7 +370,7 @@ export function Autocomplete(props: AutocompleteProps) {
   }
 
   const isQueryLongEnough = query.length >= minLength;
-  const hasResults = results.some(result => result.length > 0);
+  const hasResults = results.some(result => result.suggestions.length > 0);
   const shouldOpen =
     isOpen &&
     // We don't want to open the dropdown when the results
@@ -344,26 +387,23 @@ export function Autocomplete(props: AutocompleteProps) {
       id={`autocomplete-${generateId()}`}
       environment={environment}
       defaultHighlightedIndex={defaultHighlightedIndex}
+      itemToString={(item: AutocompleteItem) => {
+        return item ? item.suggestionValue : '';
+      }}
       onSelect={(item: AutocompleteItem) => {
         if (!item) {
           return;
         }
 
-        const { suggestion, source } = item;
+        const { suggestion, suggestionValue, source } = item;
 
-        performQuery(
-          source.getSuggestionValue({ suggestion, state: getState() }),
-          false
-        ).then(() => {
+        performQuery(suggestionValue, false).then(() => {
           if (source.onSelect) {
             const currentState = getState();
 
             source.onSelect({
               suggestion,
-              suggestionValue: source.getSuggestionValue({
-                suggestion,
-                state: currentState,
-              }),
+              suggestionValue,
               source,
               state: currentState,
               setState,
@@ -412,6 +452,8 @@ export function Autocomplete(props: AutocompleteProps) {
                   setIsOpen(true);
                 }
 
+                // We should still perform a query if the minimal input length
+                // is set to 0 so that the menu shows updated results.
                 if (minLength === 0 && !query) {
                   performQuery('');
                 }
@@ -422,9 +464,9 @@ export function Autocomplete(props: AutocompleteProps) {
                 });
               }}
               onKeyDown={(event: KeyboardEvent) => {
-                const suggestion: any = flatten(results)[
-                  Math.max(0, highlightedIndex)
-                ];
+                const suggestion = flatten(
+                  results.map(result => result.suggestions)
+                )[Math.max(0, highlightedIndex)];
                 const source = getSourceFromHighlightedIndex(
                   Math.max(0, highlightedIndex)
                 );
@@ -505,10 +547,15 @@ export function Autocomplete(props: AutocompleteProps) {
               <Dropdown
                 position={dropdownRect}
                 hidden={!shouldOpen}
-                internalState={getState()}
-                internalSetState={setState}
-                sources={sources}
+                isOpen={isOpen}
+                isIdled={isIdled}
+                isLoading={isLoading}
+                query={query}
+                error={error}
+                metadata={metadata}
+                results={results}
                 templates={templates}
+                internalSetState={setState}
                 onClick={onClick}
                 getMenuProps={getMenuProps}
                 getItemProps={getItemProps}

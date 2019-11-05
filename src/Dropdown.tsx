@@ -2,21 +2,20 @@
 
 import { h } from 'preact';
 
+import { Template } from './Template';
 import {
   AutocompleteItem,
   AutocompleteState,
   RequiredAutocompleteProps,
+  SetState,
 } from './types';
-import { Template } from './Template';
 
-interface DropdownProps {
+interface DropdownProps extends AutocompleteState {
   position: Pick<ClientRect, 'left' | 'top'> | undefined;
   hidden: boolean;
   templates: RequiredAutocompleteProps['templates'];
-  sources: ReturnType<RequiredAutocompleteProps['getSources']>;
   onClick: RequiredAutocompleteProps['onClick'];
-  internalState: AutocompleteState;
-  internalSetState(nextState: Partial<AutocompleteState>): void;
+  internalSetState: SetState;
   getItemProps(options?: object): any;
   getMenuProps(options?: object): any;
 }
@@ -24,14 +23,29 @@ interface DropdownProps {
 export const Dropdown = ({
   position,
   hidden,
-  sources,
   templates,
-  internalState,
+  isOpen,
+  isIdled,
+  isLoading,
+  query,
+  error,
+  metadata,
+  results,
   internalSetState,
   onClick,
   getItemProps,
   getMenuProps,
 }: DropdownProps) => {
+  const state = {
+    isOpen,
+    isIdled,
+    isLoading,
+    query,
+    error,
+    metadata,
+    results,
+  };
+
   return (
     <div
       className="algolia-autocomplete-dropdown"
@@ -41,7 +55,7 @@ export const Dropdown = ({
       <Template
         tagName="header"
         data={{
-          state: internalState,
+          state,
           setState: internalSetState,
         }}
         template={templates.header}
@@ -51,24 +65,24 @@ export const Dropdown = ({
       />
 
       <div className="algolia-autocomplete-dropdown-container">
-        {internalState.results.map((suggestions, index) => {
-          const source = sources[index];
+        {results.map(result => {
+          const { source, suggestions } = result;
 
           return (
             <section className="algolia-autocomplete-results">
               <Template
                 tagName="header"
                 data={{
-                  state: internalState,
+                  state,
                   setState: internalSetState,
                 }}
                 template={source.templates.header}
               />
 
-              {!internalState.isLoading && suggestions.length === 0 ? (
+              {!isLoading && suggestions.length === 0 ? (
                 <Template
                   data={{
-                    state: internalState,
+                    state,
                     setState: internalSetState,
                   }}
                   template={source.templates.empty}
@@ -87,7 +101,7 @@ export const Dropdown = ({
                     const item: AutocompleteItem = {
                       suggestionValue: source.getSuggestionValue({
                         suggestion,
-                        state: internalState,
+                        state,
                       }),
                       suggestion,
                       source,
@@ -106,14 +120,14 @@ export const Dropdown = ({
                                 suggestion: item.suggestion,
                                 suggestionValue: item.suggestionValue,
                                 source: item.source,
-                                state: internalState,
+                                state,
                                 setState: internalSetState,
                               }),
                           }),
                         }}
                         data={{
                           suggestion,
-                          state: internalState,
+                          state,
                           setState: internalSetState,
                         }}
                         template={source.templates.suggestion}
@@ -126,7 +140,7 @@ export const Dropdown = ({
               <Template
                 tagName="footer"
                 data={{
-                  state: internalState,
+                  state,
                   setState: internalSetState,
                 }}
                 template={source.templates.footer}
@@ -138,7 +152,7 @@ export const Dropdown = ({
         <Template
           tagName="footer"
           data={{
-            state: internalState,
+            state,
             setState: internalSetState,
           }}
           template={templates.footer}

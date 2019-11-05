@@ -10,6 +10,7 @@ import autocomplete, {
   highlightAlgoliaHit,
   reverseHighlightAlgoliaHit,
   getAlgoliaHits,
+  getAlgoliaResults,
 } from '../src';
 import { states, fruits, artists } from './data';
 
@@ -174,35 +175,52 @@ storiesOf('Autocomplete', module)
         dropdownContainer,
         placeholder:
           'Search for states, fruits, artists… (e.g. "Carolina", "Apple", "John")',
-        getSources: () => [
-          createSource(fruits, {
-            limit: 5,
-            templates: {
-              header: ({ state }) =>
-                state.results[0].length === 0
-                  ? ''
-                  : '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
-            },
-          }),
-          createSource(artists, {
-            limit: 5,
-            templates: {
-              header: ({ state }) =>
-                state.results[1].length === 0
-                  ? ''
-                  : '<h5 class="algolia-autocomplete-item-header">Artists</h5>',
-            },
-          }),
-          createSource(states, {
-            limit: 5,
-            templates: {
-              header: ({ state }) =>
-                state.results[2].length === 0
-                  ? ''
-                  : '<h5 class="algolia-autocomplete-item-header">States</h5>',
-            },
-          }),
-        ],
+        minLength: 0,
+        getSources({ query }) {
+          if (!query) {
+            return [
+              createSource(fruits, {
+                limit: 5,
+                templates: {
+                  header: ({ state }) =>
+                    state.results[0].length === 0
+                      ? ''
+                      : '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
+                },
+              }),
+            ];
+          }
+
+          return [
+            createSource(fruits, {
+              limit: 5,
+              templates: {
+                header: ({ state }) =>
+                  state.results[0].length === 0
+                    ? ''
+                    : '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
+              },
+            }),
+            createSource(artists, {
+              limit: 5,
+              templates: {
+                header: ({ state }) =>
+                  state.results[1].length === 0
+                    ? ''
+                    : '<h5 class="algolia-autocomplete-item-header">Artists</h5>',
+              },
+            }),
+            createSource(states, {
+              limit: 5,
+              templates: {
+                header: ({ state }) =>
+                  state.results[2].length === 0
+                    ? ''
+                    : '<h5 class="algolia-autocomplete-item-header">States</h5>',
+              },
+            }),
+          ];
+        },
       });
 
       return container;
@@ -435,44 +453,46 @@ storiesOf('Autocomplete', module)
         showCompletion: true,
         minLength: 0,
 
-        getSources: () => [
-          {
-            getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
-            getSuggestions({ query }) {
-              if (query) {
-                return [];
-              }
+        getSources() {
+          return [
+            {
+              getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
+              getSuggestions({ query }) {
+                if (query) {
+                  return [];
+                }
 
-              // Also inject some fake searches for the demo
-              return [
-                ...recentSearches.getRecentSearches(),
-                { query: 'guitar' },
-                { query: 'amazon' },
-              ].slice(0, 3);
-            },
-            templates: {
-              suggestion({ suggestion }) {
-                return (
-                  <div style={{ display: 'flex' }}>
-                    <div style={{ width: 28 }}>
-                      <img
-                        src="https://image.flaticon.com/icons/svg/61/61122.svg"
-                        width="16"
-                        height="16"
-                        style={{
-                          opacity: 0.3,
-                        }}
-                      />
+                // Also inject some fake searches for the demo
+                return [
+                  ...recentSearches.getRecentSearches(),
+                  { query: 'guitar' },
+                  { query: 'amazon' },
+                ].slice(0, 3);
+              },
+              templates: {
+                suggestion({ suggestion }) {
+                  return (
+                    <div style={{ display: 'flex' }}>
+                      <div style={{ width: 28 }}>
+                        <img
+                          src="https://image.flaticon.com/icons/svg/61/61122.svg"
+                          width="16"
+                          height="16"
+                          style={{
+                            opacity: 0.3,
+                          }}
+                        />
+                      </div>
+
+                      {suggestion.query}
                     </div>
-
-                    {suggestion.query}
-                  </div>
-                );
+                  );
+                },
               },
             },
-          },
-          querySuggestionsSource,
-        ],
+            querySuggestionsSource,
+          ];
+        },
       });
 
       return container;
@@ -531,127 +551,219 @@ storiesOf('Autocomplete', module)
             }
           }
         },
-        getSources: () => [
-          {
-            getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
-            getSuggestions({ query }) {
-              if (query) {
-                return [];
-              }
-
-              // Also inject some fake searches for the demo
-              return [
-                ...recentSearches.getRecentSearches(),
-                { query: 'guitar' },
-                { query: 'amazon' },
-              ].slice(0, 3);
-            },
-            onSelect({ setState }) {
-              setState({
-                isOpen: true,
-              });
-            },
-            templates: {
-              suggestion({ suggestion }) {
-                return (
-                  <div style={{ display: 'flex' }}>
-                    <div style={{ width: 28 }}>
-                      <img
-                        src="https://image.flaticon.com/icons/svg/61/61122.svg"
-                        width="16"
-                        height="16"
-                        style={{
-                          opacity: 0.3,
-                        }}
-                      />
-                    </div>
-
-                    {suggestion.query}
-                  </div>
-                );
+        getSources({ query }) {
+          return getAlgoliaResults({
+            searchClient,
+            query,
+            searchParameters: [
+              {
+                indexName: 'instant_search',
+                params: {
+                  attributesToSnippet: ['description'],
+                },
               },
-            },
-          },
-          querySuggestionsSource,
-          {
-            getSuggestionValue: ({ state }) => state.query,
-            getSuggestions({ query }) {
-              return getAlgoliaHits({
-                searchClient,
-                query,
-                searchParameters: [
-                  {
-                    indexName: 'instant_search',
-                    params: {
-                      attributesToSnippet: ['description'],
-                    },
+              {
+                indexName: 'instant_search_demo_query_suggestions',
+                params: {
+                  hitsPerPage: 3,
+                },
+              },
+            ],
+          }).then(results => {
+            const [productsResults, querySuggestionsResults] = results;
+            const productsHits = productsResults.hits;
+            const querySuggestionsHits = querySuggestionsResults.hits;
+
+            return [
+              {
+                getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
+                getSuggestions({ query }) {
+                  if (query) {
+                    return [];
+                  }
+
+                  // Also inject some fake searches for the demo
+                  return [
+                    ...recentSearches.getRecentSearches(),
+                    { query: 'guitar' },
+                    { query: 'amazon' },
+                  ].slice(0, 3);
+                },
+                onSelect({ setState }) {
+                  setState({
+                    isOpen: true,
+                  });
+                },
+                templates: {
+                  suggestion({ suggestion }) {
+                    return (
+                      <div style={{ display: 'flex' }}>
+                        <div style={{ width: 28 }}>
+                          <img
+                            src="https://image.flaticon.com/icons/svg/61/61122.svg"
+                            width="16"
+                            height="16"
+                            style={{
+                              opacity: 0.3,
+                            }}
+                          />
+                        </div>
+
+                        {suggestion.query}
+                      </div>
+                    );
                   },
-                ],
-              });
-            },
-            onSelect({ state, setState }) {
-              const query = state.query;
-
-              if (query.length >= 3) {
-                recentSearches.setRecentSearch(query);
-              }
-
-              setState({
-                isOpen: true,
-              });
-            },
-            templates: {
-              header: () =>
-                '<h5 class="algolia-autocomplete-item-header">Products</h5>',
-              suggestion({ suggestion }) {
-                return (
-                  <a
-                    href={suggestion.url}
-                    style={{ display: 'flex', alignItems: 'center' }}
-                  >
-                    <div
-                      style={{
-                        flex: 1,
-                        maxWidth: 70,
-                        maxHeight: 70,
-                        paddingRight: '1rem',
-                      }}
-                    >
-                      <img
-                        src={suggestion.image}
-                        alt={suggestion.name}
-                        style={{ maxWidth: '100%', maxHeight: '100%' }}
-                      />
-                    </div>
-
-                    <div style={{ flex: 3 }}>
-                      <h2
-                        style={{ fontSize: 'inherit', margin: 0 }}
-                        dangerouslySetInnerHTML={{
-                          __html: highlightAlgoliaHit({
-                            hit: suggestion,
-                            attribute: 'name',
-                          }),
-                        }}
-                      />
-
-                      <p
-                        style={{
-                          margin: '.5rem 0 0 0',
-                          color: 'rgba(0, 0, 0, 0.5)',
-                        }}
-                        dangerouslySetInnerHTML={{
-                          // @TODO: add same highlight function for snippets
-                          __html: suggestion._snippetResult.description.value,
-                        }}
-                      />
-                    </div>
-                  </a>
-                );
+                },
               },
-            },
-          },
-        ],
+              {
+                getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
+                getSuggestions() {
+                  return querySuggestionsHits;
+                },
+                onSelect({ setState }) {
+                  setState({
+                    isOpen: true,
+                  });
+                },
+                templates: {
+                  suggestion({ suggestion }) {
+                    return (
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <div style={{ display: 'flex' }}>
+                          <div style={{ width: 28 }}>
+                            <svg
+                              viewBox="0 0 18 18"
+                              width={16}
+                              style={{
+                                color: 'rgba(0, 0, 0, 0.3)',
+                              }}
+                            >
+                              <path
+                                d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
+                                stroke="currentColor"
+                                stroke-width="1.78"
+                                fill="none"
+                                fill-rule="evenodd"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              ></path>
+                            </svg>
+                          </div>
+
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: reverseHighlightAlgoliaHit({
+                                hit: suggestion,
+                                attribute: 'query',
+                              }),
+                            }}
+                          />
+                        </div>
+
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            alignItems: 'center',
+                            width: 28,
+                          }}
+                        >
+                          <svg
+                            height="13"
+                            viewBox="0 0 13 13"
+                            width="13"
+                            style={{
+                              color: 'rgba(0, 0, 0, 0.3)',
+                            }}
+                          >
+                            <path
+                              d="m16 7h-12.17l5.59-5.59-1.42-1.41-8 8 8 8 1.41-1.41-5.58-5.59h12.17z"
+                              transform="matrix(.70710678 .70710678 -.70710678 .70710678 6 -5.313708)"
+                              fill="currentColor"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    );
+                  },
+                },
+              },
+              {
+                getSuggestionValue: ({ state }) => state.query,
+                getSuggestions() {
+                  return productsHits;
+                },
+                onSelect({ state, setState }) {
+                  const query = state.query;
+
+                  if (query.length >= 3) {
+                    recentSearches.setRecentSearch(query);
+                  }
+
+                  setState({
+                    isOpen: true,
+                  });
+                },
+                templates: {
+                  header: () =>
+                    '<h5 class="algolia-autocomplete-item-header">Products</h5>',
+                  suggestion({ suggestion }) {
+                    return (
+                      <a
+                        href={suggestion.url}
+                        style={{ display: 'flex', alignItems: 'center' }}
+                      >
+                        <div
+                          style={{
+                            flex: 1,
+                            maxWidth: 70,
+                            maxHeight: 70,
+                            paddingRight: '1rem',
+                          }}
+                        >
+                          <img
+                            src={suggestion.image}
+                            alt={suggestion.name}
+                            style={{ maxWidth: '100%', maxHeight: '100%' }}
+                          />
+                        </div>
+
+                        <div style={{ flex: 3 }}>
+                          <h2
+                            style={{ fontSize: 'inherit', margin: 0 }}
+                            dangerouslySetInnerHTML={{
+                              __html: highlightAlgoliaHit({
+                                hit: suggestion,
+                                attribute: 'name',
+                              }),
+                            }}
+                          />
+
+                          <p
+                            style={{
+                              margin: '.5rem 0 0 0',
+                              color: 'rgba(0, 0, 0, 0.5)',
+                            }}
+                            dangerouslySetInnerHTML={{
+                              // @TODO: add same highlight function for snippets
+                              __html:
+                                suggestion._snippetResult.description.value,
+                            }}
+                          />
+                        </div>
+                      </a>
+                    );
+                  },
+                },
+              },
+            ];
+          });
+        },
       });
 
       return container;

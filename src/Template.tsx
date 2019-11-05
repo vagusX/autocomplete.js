@@ -2,11 +2,11 @@
 
 import { createElement } from 'preact';
 
-import { AutocompleteState } from './types';
+import { AutocompleteState, SetState } from './types';
 
 interface TemplateData {
   state: AutocompleteState;
-  setState(nextState: Partial<AutocompleteState>): void;
+  setState: SetState;
 }
 
 export type Template<TData = {}> = (

@@ -2,6 +2,11 @@ import { Template } from './Template';
 
 export type Suggestion = any;
 
+export interface Result {
+  source: AutocompleteSource;
+  suggestions: Suggestion[];
+}
+
 export interface Environment {
   [prop: string]: unknown;
   addEventListener: Window['addEventListener'];
@@ -43,6 +48,18 @@ interface AutocompleteSourceTemplates {
   empty?: Template;
 }
 
+export type SetState = (nextState: Partial<AutocompleteState>) => void;
+
+export interface AutocompleteState {
+  query: string;
+  results: Result[];
+  isOpen: boolean;
+  isLoading: boolean;
+  isIdled: boolean;
+  error: Error | null;
+  metadata: { [key: string]: any };
+}
+
 export interface AutocompleteSource {
   /**
    * Function called to get the value of the suggestion. The value is used to fill the search box.
@@ -60,7 +77,7 @@ export interface AutocompleteSource {
   getSuggestions(options: {
     query: string;
     state: AutocompleteState;
-    setState(nextState: Partial<AutocompleteState>): void;
+    setState: SetState;
   }): Suggestion[] | Promise<Suggestion[]>;
   /**
    * Templates to use for the source.
@@ -84,7 +101,7 @@ export interface AutocompleteItem {
 
 export interface EventHandlerOptions {
   state: AutocompleteState;
-  setState(nextState: Partial<AutocompleteState>): void;
+  setState: SetState;
 }
 
 export interface ItemEventHandlerOptions extends EventHandlerOptions {
@@ -101,7 +118,11 @@ export interface AutocompleteProps {
   /**
    * The sources to get the suggestions from.
    */
-  getSources(options: { query: string }): AutocompleteSource[];
+  getSources(options: {
+    query: string;
+    state: AutocompleteState;
+    setState: SetState;
+  }): AutocompleteSource[] | Promise<AutocompleteSource[]>;
   /**
    * The container for the autocomplete dropdown.
    *
@@ -200,13 +221,3 @@ export interface AutocompleteProps {
 }
 
 export type RequiredAutocompleteProps = Required<AutocompleteProps>;
-
-export interface AutocompleteState {
-  query: string;
-  results: Suggestion[][];
-  isOpen: boolean;
-  isLoading: boolean;
-  isIdled: boolean;
-  error: Error | null;
-  metadata: { [key: string]: any };
-}

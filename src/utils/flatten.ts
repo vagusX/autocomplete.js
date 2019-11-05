@@ -1,5 +1,5 @@
-export function flatten(values: any[]): unknown[] {
-  return values.reduce((a, b) => {
+export function flatten<TType = any>(values: TType[]): TType[] {
+  return values.reduce<TType[]>((a, b) => {
     return a.concat(b);
   }, []);
 }

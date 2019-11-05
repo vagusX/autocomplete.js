@@ -48,7 +48,13 @@ export const Dropdown = ({
 
   return (
     <div
-      className="algolia-autocomplete-dropdown"
+      className={[
+        'algolia-autocomplete-dropdown',
+        isStalled && 'algolia-autocomplete-dropdown--stalled',
+        error && 'algolia-autocomplete-dropdown--errored',
+      ]
+        .filter(Boolean)
+        .join(' ')}
       style={position}
       hidden={hidden}
     >

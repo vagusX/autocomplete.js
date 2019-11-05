@@ -103,11 +103,11 @@ describe('Autocomplete', () => {
     });
   });
 
-  describe('stalledDelay', () => {
-    test.skip('should display information about the experience being stalled', () => {
+  describe('idleThreshold', () => {
+    test.skip('should display information about the experience being idled', () => {
       const props = {
         ...getDefaultProps(),
-        stalledDelay: 0,
+        idleThreshold: 0,
         getSources: () => [
           {
             ...defaultSource,
@@ -123,8 +123,8 @@ describe('Autocomplete', () => {
       };
 
       const { container } = render(<Autocomplete {...props} />);
-      const stalledRoot = container.querySelector<HTMLElement>(
-        '.algolia-autocomplete--stalled'
+      const idledRoot = container.querySelector<HTMLElement>(
+        '.algolia-autocomplete--idled'
       );
       const input = container.querySelector<HTMLInputElement>(
         '.algolia-autocomplete-input'
@@ -132,18 +132,18 @@ describe('Autocomplete', () => {
 
       userEvent.type(input, 'query');
 
-      expect(stalledRoot).toBeInTheDocument();
+      expect(idledRoot).toBeInTheDocument();
     });
 
-    test('should not display information about the experience being stalled above delay', () => {
+    test('should not display information about the experience being idled above delay', () => {
       const props = {
         ...getDefaultProps(),
-        stalledDelay: 0,
+        idleThreshold: 0,
       };
 
       const { container } = render(<Autocomplete {...props} />);
-      const stalledRoot = container.querySelector<HTMLElement>(
-        '.algolia-autocomplete--stalled'
+      const idledRoot = container.querySelector<HTMLElement>(
+        '.algolia-autocomplete--idled'
       );
       const input = container.querySelector<HTMLInputElement>(
         '.algolia-autocomplete-input'
@@ -151,7 +151,7 @@ describe('Autocomplete', () => {
 
       userEvent.type(input, 'query');
 
-      expect(stalledRoot).not.toBeInTheDocument();
+      expect(idledRoot).not.toBeInTheDocument();
     });
   });
 
@@ -224,20 +224,20 @@ describe('Autocomplete', () => {
       expect(dropdown).toHaveAttribute('hidden', 'false');
     });
 
-    test('allows to set the initial isStalled', () => {
+    test('allows to set the initial isIdled', () => {
       const props = {
         ...getDefaultProps(),
         initialState: {
-          isStalled: true,
+          isIdled: true,
         },
       };
 
       const { container } = render(<Autocomplete {...props} />);
-      const stalledContainer = container.querySelector(
-        '.algolia-autocomplete--stalled'
+      const idledContainer = container.querySelector(
+        '.algolia-autocomplete--idled'
       );
 
-      expect(stalledContainer).toBeInTheDocument();
+      expect(idledContainer).toBeInTheDocument();
     });
 
     test.todo('allows to set the initial isLoading');

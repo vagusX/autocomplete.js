@@ -148,12 +148,12 @@ export interface AutocompleteProps {
    */
   defaultHighlightedIndex?: number;
   /**
-   * The number of milliseconds before the autocomplete experience is considered
-   * as stalled.
+   * The number of milliseconds that must elapse before the autocomplete
+   * experience is idled.
    *
    * @default 300
    */
-  stalledDelay?: number;
+  idleThreshold?: number;
   /**
    * The initial state to apply when the page is loaded.
    */
@@ -206,7 +206,7 @@ export interface AutocompleteState {
   results: Suggestion[][];
   isOpen: boolean;
   isLoading: boolean;
-  isStalled: boolean;
+  isIdled: boolean;
   error: Error | null;
   metadata: { [key: string]: any };
 }

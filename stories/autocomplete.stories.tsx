@@ -332,13 +332,13 @@ storiesOf('Autocomplete', module)
     })
   )
   .add(
-    'with deferred values but no `stalledDelay`',
+    'with deferred values but no `idleThreshold`',
     withPlayground(({ container, dropdownContainer }) => {
       autocomplete({
         container,
         dropdownContainer,
         placeholder: 'Search (the loader spins right away)',
-        stalledDelay: 0,
+        idleThreshold: 0,
         getSources: () => [
           {
             getSuggestions({ query }) {

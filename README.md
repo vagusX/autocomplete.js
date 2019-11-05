@@ -157,16 +157,16 @@ The keyboard shortcuts keys to focus the input.
 
 The default item index to pre-select.
 
-#### `stalledDelay`
+#### `idleThreshold`
 
 > `number` | defaults to `300`
 
-The number of milliseconds before the autocomplete experience is stalled. It's considered as stalled when the `stalledDelay` timeout exceeds when fetching the suggestions.
+The number of milliseconds that must elapse before the autocomplete experience is idled. The timeout is set when calling `getSuggestions()` on all sources.
 
-When the experience is stalled:
+When the experience is idled:
 
-- The CSS class `algolia-autocomplete--stalled` is added to the autocomplete container
-- The `isStalled` boolean is `true` in the [state](#state)
+- The CSS class `algolia-autocomplete--idled` is added to the autocomplete container
+- The `isIdled` boolean is `true` in the [state](#state)
 
 #### `initialState`
 
@@ -425,11 +425,11 @@ Whether the dropdown is open.
 
 Whether the experience is loading.
 
-#### `isStalled`
+#### `isIdled`
 
-> `boolean` | defaults to `initialState.isStalled || false`
+> `boolean` | defaults to `initialState.isIdled || false`
 
-Whether the experience is stalled.
+Whether the experience is idled.
 
 #### `error`
 

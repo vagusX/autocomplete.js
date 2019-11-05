@@ -27,7 +27,7 @@ function autocomplete(options: AutocompleteOptions) {
     dropdownPosition,
     environment = defaultEnvironment,
     placeholder,
-    stalledDelay,
+    idleThreshold,
     defaultHighlightedIndex,
     keyboardShortcuts,
     minLength,
@@ -53,7 +53,7 @@ function autocomplete(options: AutocompleteOptions) {
       dropdownContainer={dropdownContainerElement}
       dropdownPosition={dropdownPosition}
       placeholder={placeholder}
-      stalledDelay={stalledDelay}
+      idleThreshold={idleThreshold}
       defaultHighlightedIndex={defaultHighlightedIndex}
       keyboardShortcuts={keyboardShortcuts}
       minLength={minLength}

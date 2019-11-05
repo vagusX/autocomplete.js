@@ -18,7 +18,7 @@ describe('SearchBox', () => {
       internalState: {
         query: '',
         isLoading: false,
-        isStalled: false,
+        isIdled: false,
         isOpen: false,
         error: null,
         results: [],
@@ -114,7 +114,7 @@ describe('SearchBox', () => {
           ...getDefaultProps().internalState,
           query: 'Que',
           isOpen: true,
-          isStalled: false,
+          isIdled: false,
         },
       };
 
@@ -135,7 +135,7 @@ describe('SearchBox', () => {
           ...getDefaultProps().internalState,
           query: 'Que',
           isOpen: true,
-          isStalled: false,
+          isIdled: false,
         },
       };
 
@@ -166,7 +166,7 @@ describe('SearchBox', () => {
       expect(completion).not.toBeInTheDocument();
     });
 
-    test('should not show the completion when is the search is stalled', () => {
+    test('should not show the completion when is the search is idled', () => {
       const props = {
         ...getDefaultProps(),
         completion: 'Query',
@@ -174,7 +174,7 @@ describe('SearchBox', () => {
           ...getDefaultProps().internalState,
           query: 'Que',
           isOpen: true,
-          isStalled: true,
+          isIdled: true,
         },
       };
 

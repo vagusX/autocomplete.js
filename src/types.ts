@@ -84,13 +84,9 @@ export interface AutocompleteSource {
    */
   templates: AutocompleteSourceTemplates;
   /**
-   * Function called when an item is selected.
+   * Called when an item is selected.
    */
   onSelect?: (options: ItemEventHandlerOptions) => void;
-  /**
-   * Function called when the input changes.
-   */
-  onInput?: (options: EventHandlerOptions) => void;
 }
 
 export interface AutocompleteItem {
@@ -218,6 +214,10 @@ export interface AutocompleteProps {
    * Called when there are no results.
    */
   onEmpty?: (options: EventHandlerOptions) => void;
+  /**
+   * Called when the input changes.
+   */
+  onInput?: (options: EventHandlerOptions & { query: string }) => void;
 }
 
 export type RequiredAutocompleteProps = Required<AutocompleteProps>;

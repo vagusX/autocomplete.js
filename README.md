@@ -260,6 +260,12 @@ onKeyDown(event, { suggestion, state, setState }) {
 
 Called when there are no results.
 
+#### `onInput`
+
+> `(options) => void`
+
+Called when the input changes.
+
 ### Sources
 
 An Autocomplete source refers to an object with the following properties:
@@ -268,7 +274,7 @@ An Autocomplete source refers to an object with the following properties:
 
 > `(options: { suggestion: Suggestion, state: State }) => string`
 
-Function called to get the value of the suggestion. The value is used to fill the search box.
+Called to get the value of the suggestion. The value is used to fill the search box.
 
 If you do not wish to update the input value when an item is selected, you can return `state.query`.
 
@@ -290,7 +296,7 @@ const source = {
 
 > `(options: { query }) => Suggestion[]` | **required**
 
-Function called when the input changes. You can use this function to filter/search the items based on the query.
+Called when the input changes. You can use this function to filter/search the items based on the query.
 
 <details>
   <summary>Example</summary>
@@ -389,13 +395,7 @@ const source = {
 
 > `(options) => void`
 
-Function called when an item is selected.
-
-#### `onInput`
-
-> `(options) => void`
-
-Function called when the input changes.
+Called when an item is selected.
 
 ### State
 

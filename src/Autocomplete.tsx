@@ -28,10 +28,6 @@ function getSourcesResults(options: {
 
   return Promise.all(
     sources.map(source => {
-      if (source.onInput) {
-        source.onInput({ state, setState });
-      }
-
       return Promise.resolve(
         source.getSuggestions({
           query,
@@ -79,6 +75,7 @@ export function Autocomplete(props: AutocompleteProps) {
     onFocus = noop,
     onClick = noop,
     onKeyDown = noop,
+    onInput = ({ query }) => performQuery(query),
     onEmpty = noop,
     onError = ({ state }) => {
       throw state.error;
@@ -519,7 +516,13 @@ export function Autocomplete(props: AutocompleteProps) {
                 }
               }}
               onInput={(event: KeyboardEvent) => {
-                performQuery((event.target as HTMLInputElement).value);
+                const query = (event.target as HTMLInputElement).value;
+
+                onInput({
+                  query,
+                  state: getState(),
+                  setState,
+                });
               }}
               onReset={event => {
                 event.preventDefault();

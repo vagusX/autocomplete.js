@@ -36,6 +36,7 @@ function autocomplete(options: AutocompleteOptions) {
     initialState,
     templates,
     getSources,
+    onInput,
     onClick,
     onKeyDown,
     onError,
@@ -63,6 +64,7 @@ function autocomplete(options: AutocompleteOptions) {
       getSources={getSources}
       templates={templates}
       environment={environment}
+      onInput={onInput}
       onClick={onClick}
       onError={onError}
       onEmpty={onEmpty}

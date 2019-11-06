@@ -44,10 +44,8 @@ const querySuggestionsSource = {
         .slice(0, 3);
     });
   },
-  onSelect({ setState }) {
-    setState({
-      isOpen: true,
-    });
+  onSelect({ setIsOpen }) {
+    setIsOpen(true);
   },
   templates: {
     suggestion({ suggestion }) {
@@ -453,7 +451,6 @@ storiesOf('Options', module)
         placeholder: 'Search…',
         showCompletion: true,
         minLength: 0,
-
         getSources() {
           return [
             {
@@ -513,23 +510,19 @@ storiesOf('Options', module)
         minLength: 0,
         showCompletion: true,
         defaultHighlightedIndex: -1,
-        onClick(event, { setState }) {
+        onClick(event, { setIsOpen }) {
           if (
             event.metaKey ||
             event.ctrlKey ||
             event.shiftKey ||
             event.altKey
           ) {
-            setState({
-              isOpen: true,
-            });
+            setIsOpen(true);
           } else {
-            setState({
-              isOpen: false,
-            });
+            setIsOpen(false);
           }
         },
-        onKeyDown(event, { suggestion, state, setState }) {
+        onKeyDown(event, { suggestion, state, setIsOpen }) {
           if (!suggestion || !suggestion.url) {
             return;
           }
@@ -538,9 +531,7 @@ storiesOf('Options', module)
             recentSearches.setRecentSearch(state.query);
 
             if (event.metaKey || event.ctrlKey) {
-              setState({
-                isOpen: true,
-              });
+              setIsOpen(true);
 
               const windowReference = window.open(suggestion.url, '_blank');
               windowReference!.focus();
@@ -552,7 +543,7 @@ storiesOf('Options', module)
             }
           }
         },
-        getSources({ query, setState }) {
+        getSources({ query, setContext }) {
           return getAlgoliaResults({
             searchClient,
             query,
@@ -575,10 +566,8 @@ storiesOf('Options', module)
             const productsHits = productsResults.hits;
             const querySuggestionsHits = querySuggestionsResults.hits;
 
-            setState({
-              context: {
-                nbProductsHits: productsResults.nbHits,
-              },
+            setContext({
+              nbProductsHits: productsResults.nbHits,
             });
 
             return [
@@ -596,10 +585,8 @@ storiesOf('Options', module)
                     { query: 'amazon' },
                   ].slice(0, 3);
                 },
-                onSelect({ setState }) {
-                  setState({
-                    isOpen: true,
-                  });
+                onSelect({ setIsOpen }) {
+                  setIsOpen(true);
                 },
                 templates: {
                   suggestion({ suggestion }) {
@@ -627,10 +614,8 @@ storiesOf('Options', module)
                 getSuggestions() {
                   return querySuggestionsHits;
                 },
-                onSelect({ setState }) {
-                  setState({
-                    isOpen: true,
-                  });
+                onSelect({ setIsOpen }) {
+                  setIsOpen(true);
                 },
                 templates: {
                   suggestion({ suggestion }) {
@@ -705,16 +690,14 @@ storiesOf('Options', module)
                 getSuggestions() {
                   return productsHits;
                 },
-                onSelect({ state, setState }) {
+                onSelect({ state, setIsOpen }) {
                   const query = state.query;
 
                   if (query.length >= 3) {
                     recentSearches.setRecentSearch(query);
                   }
 
-                  setState({
-                    isOpen: true,
-                  });
+                  setIsOpen(true);
                 },
                 templates: {
                   header: ({ state }) => (

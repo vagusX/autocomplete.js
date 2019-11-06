@@ -1,4 +1,5 @@
 import { Template } from './Template';
+import { StateUpdater } from 'preact/hooks';
 
 export type Suggestion = any;
 
@@ -48,8 +49,6 @@ interface AutocompleteSourceTemplates {
   empty?: Template;
 }
 
-export type SetState = (nextState: Partial<AutocompleteState>) => void;
-
 export interface AutocompleteState {
   query: string;
   results: Result[];
@@ -58,6 +57,11 @@ export interface AutocompleteState {
   isStalled: boolean;
   error: Error | null;
   context: { [key: string]: any };
+}
+
+interface SuggestionsOptions extends AutocompleteSetters {
+  query: string;
+  state: AutocompleteState;
 }
 
 export interface AutocompleteSource {
@@ -74,11 +78,9 @@ export interface AutocompleteSource {
   /**
    * Function called when the input changes. You can use this function to filter/search the items based on the query.
    */
-  getSuggestions(options: {
-    query: string;
-    state: AutocompleteState;
-    setState: SetState;
-  }): Suggestion[] | Promise<Suggestion[]>;
+  getSuggestions(
+    options: SuggestionsOptions
+  ): Suggestion[] | Promise<Suggestion[]>;
   /**
    * Templates to use for the source.
    */
@@ -95,9 +97,8 @@ export interface AutocompleteItem {
   source: AutocompleteSource;
 }
 
-export interface EventHandlerOptions {
+export interface EventHandlerOptions extends AutocompleteSetters {
   state: AutocompleteState;
-  setState: SetState;
 }
 
 export interface ItemEventHandlerOptions extends EventHandlerOptions {
@@ -114,11 +115,9 @@ export interface AutocompleteProps {
   /**
    * The sources to get the suggestions from.
    */
-  getSources(options: {
-    query: string;
-    state: AutocompleteState;
-    setState: SetState;
-  }): AutocompleteSource[] | Promise<AutocompleteSource[]>;
+  getSources?(
+    options: SuggestionsOptions
+  ): AutocompleteSource[] | Promise<AutocompleteSource[]>;
   /**
    * The container for the autocomplete dropdown.
    *
@@ -194,6 +193,12 @@ export interface AutocompleteProps {
    */
   isControlled?: boolean;
   /**
+   * The state to inject in Autocomplete.js.
+   * If this option is provided, Autocomplete.js is in controlled mode and
+   * you're responsible for updating the query and the results.
+   */
+  state?: Pick<AutocompleteState, 'query' | 'results'>;
+  /**
    * Called when the input is focused.
    */
   onFocus?: (options: EventHandlerOptions) => void;
@@ -228,7 +233,14 @@ export interface AutocompleteProps {
 
 export type RequiredAutocompleteProps = Required<AutocompleteProps>;
 
-export interface AutocompleteApi {
-  getState(): AutocompleteState;
-  setState: SetState;
+export interface AutocompleteSetters {
+  setQuery: StateUpdater<AutocompleteState['query']>;
+  setResults: StateUpdater<AutocompleteState['results']>;
+  setIsOpen: StateUpdater<AutocompleteState['isOpen']>;
+  setIsLoading: StateUpdater<AutocompleteState['isLoading']>;
+  setIsStalled: StateUpdater<AutocompleteState['isStalled']>;
+  setError: StateUpdater<AutocompleteState['error']>;
+  setContext: StateUpdater<AutocompleteState['context']>;
 }
+
+export interface AutocompleteApi extends AutocompleteSetters {}

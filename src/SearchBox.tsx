@@ -5,7 +5,7 @@ import { h, Ref } from 'preact';
 import {
   AutocompleteState,
   RequiredAutocompleteProps,
-  SetState,
+  AutocompleteSetters,
 } from './types';
 
 export interface SearchBoxProps {
@@ -13,7 +13,7 @@ export interface SearchBoxProps {
   autofocus: RequiredAutocompleteProps['autofocus'];
   completion: string;
   internalState: AutocompleteState;
-  internalSetState: SetState;
+  setters: AutocompleteSetters;
   onInput: (event: any) => void;
   onFocus: RequiredAutocompleteProps['onFocus'];
   onKeyDown: (event: KeyboardEvent) => void;
@@ -112,7 +112,7 @@ export function SearchBox(props: SearchBoxProps) {
               if (!props.internalState.isOpen) {
                 props.onFocus({
                   state: props.internalState,
-                  setState: props.internalSetState,
+                  ...props.setters,
                 });
               }
             },

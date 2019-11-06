@@ -229,16 +229,14 @@ This function is useful to alter the behavior when a special key is held.
 <summary>Example</summary>
 
 ```js
-onKeyDown(event, { suggestion, state, setState }) {
+onKeyDown(event, { suggestion, state, setIsOpen }) {
   if (!suggestion || !suggestion.url) {
     return;
   }
 
   if (event.key === 'Enter') {
     if (event.metaKey || event.ctrlKey) {
-      setState({
-        isOpen: true,
-      });
+      setIsOpen(true);
 
       const windowReference = window.open(suggestion.url, '_blank');
       windowReference.focus();
@@ -399,7 +397,7 @@ Called when an item is selected.
 
 ### State
 
-The Autocomplete.js state drives the behavior. It can be initially set with [`initialState`](#initial-state) and it's is passed to all templates.
+The Autocomplete.js state drives the behavior of the experience. It can be initially set with [`initialState`](#initial-state) and it's is passed to all templates. Each state has a setter that can be used in the lifecycle of Autocomplete.js.
 
 #### `query`
 
@@ -407,11 +405,15 @@ The Autocomplete.js state drives the behavior. It can be initially set with [`in
 
 The query.
 
+Can be set with `setQuery`.
+
 #### `results`
 
-> `Array<Suggestion[]>` | defaults to `[]`
+> `Array<Result[]>` | defaults to `[]`
 
 The results of all the sources.
+
+Can be set with `setResults`.
 
 #### `isOpen`
 
@@ -419,11 +421,15 @@ The results of all the sources.
 
 Whether the dropdown is open.
 
+Can be set with `setIsOpen`.
+
 #### `isLoading`
 
 > `boolean` | defaults to `false`
 
 Whether the experience is loading.
+
+Can be set with `setIsLoading`.
 
 #### `isStalled`
 
@@ -431,17 +437,23 @@ Whether the experience is loading.
 
 Whether the experience is stalled.
 
+Can be set with `setIsStalled`.
+
 #### `error`
 
 > `null | Error` | defaults to `null`
 
 The error that happened, `null` if none.
 
+Can be set with `setError`.
+
 #### `context`
 
 > `object` | defaults to `{}`
 
 The autocomplete context to store data in. It's useful to use custom data in templates.
+
+Can be set with `setContext`.
 
 <details>
   <summary>Example</summary>
@@ -451,7 +463,7 @@ The autocomplete context to store data in. It's useful to use custom data in tem
 ```js
 autocomplete({
   // ...
-  getSources({ query, setState }) {
+  getSources({ query, setContext }) {
     return getAlgoliaResults({
       searchClient,
       query,
@@ -466,10 +478,8 @@ autocomplete({
     }).then(results => {
       const productsResults = results[0];
 
-      setState({
-        context: {
-          nbProducts: productsResults.nbHits,
-        },
+      setContext({
+        nbProducts: productsResults.nbHits,
       });
 
       return [

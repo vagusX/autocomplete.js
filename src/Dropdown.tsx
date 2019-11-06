@@ -7,7 +7,7 @@ import {
   AutocompleteItem,
   AutocompleteState,
   RequiredAutocompleteProps,
-  SetState,
+  AutocompleteSetters,
 } from './types';
 
 interface DropdownProps extends AutocompleteState {
@@ -15,7 +15,7 @@ interface DropdownProps extends AutocompleteState {
   hidden: boolean;
   templates: RequiredAutocompleteProps['templates'];
   onClick: RequiredAutocompleteProps['onClick'];
-  internalSetState: SetState;
+  setters: AutocompleteSetters;
   getItemProps(options?: object): any;
   getMenuProps(options?: object): any;
 }
@@ -31,7 +31,7 @@ export const Dropdown = ({
   error,
   context,
   results,
-  internalSetState,
+  setters,
   onClick,
   getItemProps,
   getMenuProps,
@@ -62,7 +62,7 @@ export const Dropdown = ({
         tagName="header"
         data={{
           state,
-          setState: internalSetState,
+          ...setters,
         }}
         template={templates.header}
         rootProps={{
@@ -80,7 +80,7 @@ export const Dropdown = ({
                 tagName="header"
                 data={{
                   state,
-                  setState: internalSetState,
+                  ...setters,
                 }}
                 template={source.templates.header}
               />
@@ -89,7 +89,7 @@ export const Dropdown = ({
                 <Template
                   data={{
                     state,
-                    setState: internalSetState,
+                    ...setters,
                   }}
                   template={source.templates.empty}
                 />
@@ -127,14 +127,14 @@ export const Dropdown = ({
                                 suggestionValue: item.suggestionValue,
                                 source: item.source,
                                 state,
-                                setState: internalSetState,
+                                ...setters,
                               }),
                           }),
                         }}
                         data={{
                           suggestion,
                           state,
-                          setState: internalSetState,
+                          ...setters,
                         }}
                         template={source.templates.suggestion}
                       />
@@ -147,7 +147,7 @@ export const Dropdown = ({
                 tagName="footer"
                 data={{
                   state,
-                  setState: internalSetState,
+                  ...setters,
                 }}
                 template={source.templates.footer}
               />
@@ -159,7 +159,7 @@ export const Dropdown = ({
           tagName="footer"
           data={{
             state,
-            setState: internalSetState,
+            ...setters,
           }}
           template={templates.footer}
           rootProps={{

@@ -52,6 +52,16 @@ function getDefaultProps() {
   };
 }
 
+const settersExpectation = {
+  setQuery: expect.any(Function),
+  setResults: expect.any(Function),
+  setIsOpen: expect.any(Function),
+  setIsLoading: expect.any(Function),
+  setIsStalled: expect.any(Function),
+  setError: expect.any(Function),
+  setContext: expect.any(Function),
+};
+
 describe('Autocomplete', () => {
   test('should generated the correct DOM', () => {
     const props = {
@@ -345,7 +355,7 @@ describe('Autocomplete', () => {
       expect(props.onFocus).toHaveBeenCalledTimes(1);
       expect(props.onFocus).toHaveBeenCalledWith({
         state: expect.any(Object),
-        setState: expect.any(Function),
+        ...settersExpectation,
       });
 
       input.blur();
@@ -404,7 +414,7 @@ describe('Autocomplete', () => {
         expect.any(KeyboardEvent),
         {
           state: expect.any(Object),
-          setState: expect.any(Function),
+          ...settersExpectation,
         }
       );
     });
@@ -435,7 +445,7 @@ describe('Autocomplete', () => {
         expect.any(KeyboardEvent),
         {
           state: expect.any(Object),
-          setState: expect.any(Function),
+          ...settersExpectation,
         }
       );
     });
@@ -503,7 +513,7 @@ describe('Autocomplete', () => {
         state: expect.objectContaining({
           error: testError,
         }),
-        setState: expect.any(Function),
+        ...settersExpectation,
       });
     });
   });

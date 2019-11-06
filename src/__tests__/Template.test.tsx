@@ -16,7 +16,13 @@ const data = {
     results: [],
     context: {},
   },
-  setState: jest.fn(),
+  setQuery: jest.fn(),
+  setResults: jest.fn(),
+  setIsOpen: jest.fn(),
+  setIsLoading: jest.fn(),
+  setIsStalled: jest.fn(),
+  setError: jest.fn(),
+  setContext: jest.fn(),
 };
 
 describe('Template', () => {

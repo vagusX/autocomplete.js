@@ -5,7 +5,7 @@ import { storiesOf } from '@storybook/html';
 import * as algoliasearch from 'algoliasearch';
 import instantsearch from 'instantsearch.js';
 import { connectAutocomplete } from 'instantsearch.js/es/connectors';
-import { index, configure } from 'instantsearch.js/es/widgets';
+import { index, configure, searchBox } from 'instantsearch.js/es/widgets';
 
 import { withPlayground } from '../.storybook/decorators';
 import autocomplete, {
@@ -21,9 +21,11 @@ storiesOf('Experiences', module).add(
   withPlayground(({ container, dropdownContainer }) => {
     const autocompleteContainer = document.createElement('div');
     const hitsContainer = document.createElement('div');
+    const searchBoxContainer = document.createElement('div');
 
     container.appendChild(autocompleteContainer);
     container.appendChild(hitsContainer);
+    container.appendChild(searchBoxContainer);
 
     const searchClient = algoliasearch(
       'latency',
@@ -45,10 +47,8 @@ storiesOf('Experiences', module).add(
         getSuggestions() {
           return index.hits;
         },
-        onSelect({ setState }) {
-          setState({
-            isOpen: true,
-          });
+        onSelect({ setIsOpen }) {
+          setIsOpen(true);
         },
         templates: {
           header() {
@@ -112,12 +112,10 @@ storiesOf('Experiences', module).add(
 
     function querySuggestionsSource({ index, onRefine }) {
       return {
-        onSelect({ suggestionValue, setState }) {
+        onSelect({ suggestionValue, setIsOpen }) {
           onRefine(suggestionValue);
 
-          setState({
-            isOpen: true,
-          });
+          setIsOpen(true);
         },
         getSuggestionValue({ suggestion }) {
           return suggestion.query;
@@ -203,6 +201,24 @@ storiesOf('Experiences', module).add(
 
     let autocompleteSearch: AutocompleteApi;
 
+    // Object.defineProperty(autocompleteState, 'query', {
+    //   get() {
+    //     return '';
+    //   },
+    //   set(query) {
+    //     autocompleteSearch.setQuery(query);
+    //   },
+    // });
+
+    // Object.defineProperty(autocompleteState, 'results', {
+    //   get() {
+    //     return [];
+    //   },
+    //   set(results) {
+    //     autocompleteSearch.setResults(results);
+    //   },
+    // });
+
     const autocompleteWidget = connectAutocomplete(
       (renderOptions, isFirstRender: boolean) => {
         const {
@@ -210,13 +226,13 @@ storiesOf('Experiences', module).add(
           currentRefinement,
           refine,
           widgetParams,
+          instantSearchInstance,
         } = renderOptions;
 
         if (isFirstRender) {
           autocompleteSearch = autocomplete({
             container: widgetParams.container,
             dropdownContainer,
-            isControlled: true,
             placeholder: 'Search…',
             minLength: 0,
             showCompletion: true,
@@ -224,16 +240,14 @@ storiesOf('Experiences', module).add(
             onInput({ query }) {
               refine(query);
             },
-            onKeyDown(event, { suggestion, setState }) {
+            onKeyDown(event, { suggestion, setIsOpen }) {
               if (!suggestion || !suggestion.url) {
                 return;
               }
 
               if (event.key === 'Enter') {
                 if (event.metaKey || event.ctrlKey) {
-                  setState({
-                    isOpen: true,
-                  });
+                  setIsOpen(true);
 
                   const windowReference = window.open(suggestion.url, '_blank');
                   windowReference!.focus();
@@ -245,21 +259,19 @@ storiesOf('Experiences', module).add(
                 }
               }
             },
-            getSources() {
-              return [];
-            },
           });
         }
 
-        autocompleteSearch.setState({
-          query: currentRefinement,
-          results: indices.map(index => {
+        autocompleteSearch.setQuery(currentRefinement);
+        autocompleteSearch.setIsStalled(instantSearchInstance._isSearchStalled);
+        autocompleteSearch.setResults(
+          indices.map(index => {
             return {
               source: getSource({ index, onRefine: refine }),
               suggestions: index.hits,
             };
-          }),
-        });
+          })
+        );
       }
     );
 
@@ -273,6 +285,9 @@ storiesOf('Experiences', module).add(
         }),
         autocompleteWidget({
           container: autocompleteContainer,
+        }),
+        searchBox({
+          container: searchBoxContainer,
         }),
       ]),
     ]);

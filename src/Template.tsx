@@ -2,11 +2,10 @@
 
 import { createElement } from 'preact';
 
-import { AutocompleteState, SetState } from './types';
+import { AutocompleteState, AutocompleteSetters } from './types';
 
-interface TemplateData {
+interface TemplateData extends AutocompleteSetters {
   state: AutocompleteState;
-  setState: SetState;
 }
 
 export type Template<TData = {}> = (

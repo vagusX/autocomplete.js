@@ -2,48 +2,28 @@
 
 import { h, Ref } from 'preact';
 import { createPortal, forwardRef } from 'preact/compat';
-import { useState, useEffect, useRef, useImperativeHandle } from 'preact/hooks';
+import {
+  useState,
+  useEffect,
+  useRef,
+  useImperativeHandle,
+  StateUpdater,
+} from 'preact/hooks';
 import Downshift from 'downshift/preact';
 
 import { flatten, noop } from './utils';
 import { Dropdown } from './Dropdown';
 import { SearchBox } from './SearchBox';
 import {
-  AutocompleteApi,
+  AutocompleteSetters,
   AutocompleteItem,
   AutocompleteProps,
   AutocompleteSource,
   AutocompleteState,
   Environment,
   Result,
-  SetState,
+  RequiredAutocompleteProps,
 } from './types';
-
-function getSourcesResults(options: {
-  sources: AutocompleteSource[];
-  query: string;
-  state: AutocompleteState;
-  setState: SetState;
-}): Promise<Result[]> {
-  const { sources, query, state, setState } = options;
-
-  return Promise.all(
-    sources.map(source => {
-      return Promise.resolve(
-        source.getSuggestions({
-          query,
-          state,
-          setState,
-        })
-      ).then(suggestions => {
-        return {
-          source,
-          suggestions,
-        };
-      });
-    })
-  );
-}
 
 export const defaultEnvironment: Environment =
   typeof window === 'undefined' ? ({} as Environment) : window;
@@ -57,32 +37,201 @@ function generateId(): string {
   return String(autocompleteIdCounter++);
 }
 
-function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
-  const {
-    container,
-    placeholder = '',
-    minLength = 1,
-    showCompletion = false,
-    autofocus = false,
-    initialState = {},
-    defaultHighlightedIndex = 0,
-    stallThreshold = 300,
-    keyboardShortcuts = [],
-    getSources,
-    templates = {},
-    environment = defaultEnvironment,
-    dropdownContainer = environment.document.body,
-    dropdownPosition = 'left',
-    isControlled = false,
-    onFocus = noop,
-    onClick = noop,
-    onKeyDown = noop,
-    onInput = ({ query }) => performQuery(query),
-    onEmpty = noop,
-    onError = ({ state }) => {
-      throw state.error;
-    },
-  } = props;
+function hasResults(results: Result[]): boolean {
+  return results.some(result => result.suggestions.length > 0);
+}
+
+function defaultOnInput({
+  query,
+  getSources,
+  lastStallId,
+  environment,
+  stallThreshold,
+  state,
+  setters,
+  onEmpty,
+  onError,
+}: {
+  query: string;
+  getSources: AutocompleteProps['getSources'];
+  lastStallId: number | null;
+  environment: RequiredAutocompleteProps['environment'];
+  stallThreshold: RequiredAutocompleteProps['stallThreshold'];
+  state: AutocompleteState;
+  setters: AutocompleteSetters;
+  onEmpty: RequiredAutocompleteProps['onEmpty'];
+  onError: RequiredAutocompleteProps['onError'];
+}) {
+  if (!getSources) {
+    throw new Error(
+      "The option `getSources()` is required if you don't use `onInput()`."
+    );
+  }
+
+  if (lastStallId) {
+    clearTimeout(lastStallId);
+    setters.setIsStalled(false);
+  }
+
+  setters.setError(null);
+  setters.setQuery(query);
+  setters.setIsLoading(true);
+
+  lastStallId = environment.setTimeout(() => {
+    setters.setIsStalled(true);
+  }, stallThreshold);
+
+  return Promise.resolve(
+    getSources({
+      query,
+      state,
+      ...setters,
+    })
+  ).then(sources => {
+    return Promise.all(
+      sources.map(source => {
+        return Promise.resolve(
+          source.getSuggestions({
+            query,
+            state,
+            ...setters,
+          })
+        ).then(suggestions => {
+          return {
+            source,
+            suggestions,
+          };
+        });
+      })
+    )
+      .then(results => {
+        if (lastStallId) {
+          clearTimeout(lastStallId);
+          setters.setIsStalled(false);
+        }
+
+        setters.setIsLoading(false);
+        setters.setIsOpen(true);
+        setters.setResults(results);
+
+        if (!hasResults(results)) {
+          onEmpty({ state, ...setters });
+        }
+      })
+      .catch(error => {
+        if (lastStallId) {
+          clearTimeout(lastStallId);
+          setters.setIsStalled(false);
+        }
+
+        setters.setIsLoading(false);
+        setters.setError(error);
+
+        onError({
+          state,
+          ...setters,
+        });
+      });
+  });
+}
+
+// We don't have access to the Autocomplete source when we call `onKeyDown`
+// or `onClick` because those are native browser events.
+// However, we can get the source from the suggestion index.
+function getSourceFromSuggestionIndex({
+  highlightedIndex,
+  results,
+}: {
+  highlightedIndex: number;
+  results: Result[];
+}): AutocompleteSource | undefined {
+  // Given 3 sources with respectively 1, 2 and 3 suggestions: [1, 2, 3]
+  // We want to get the accumulated counts:
+  // [1, 1 + 2, 1 + 2 + 3] = [1, 3, 3 + 3] = [1, 3, 6]
+  const accumulatedSuggestionsCount = results
+    .map(result => result.suggestions.length)
+    .reduce<number[]>((acc, suggestionCount, index) => {
+      const previousValue = acc[index - 1] || 0;
+      const nextValue = previousValue + suggestionCount;
+
+      acc.push(nextValue);
+
+      return acc;
+    }, []);
+
+  // Based on the accumulated counts, we can infer the index of the result.
+  const resultIndex = accumulatedSuggestionsCount.reduce((acc, current) => {
+    if (current <= highlightedIndex) {
+      return acc + 1;
+    }
+
+    return acc;
+  }, 0);
+
+  const result: Result | undefined = results[resultIndex];
+
+  return result ? result.source : undefined;
+}
+
+function getCompletion({
+  highlightedIndex,
+  showCompletion,
+  results,
+  query,
+  state,
+}: {
+  highlightedIndex: number;
+  showCompletion: boolean;
+  results: Result[];
+  query: string;
+  state: AutocompleteState;
+}): string {
+  if (!showCompletion) {
+    return '';
+  }
+
+  const suggestion = flatten(results.map(result => result.suggestions))[
+    Math.max(0, highlightedIndex)
+  ];
+  const source = getSourceFromSuggestionIndex({
+    highlightedIndex: Math.max(0, highlightedIndex),
+    results,
+  });
+
+  if (!suggestion || !source) {
+    return '';
+  }
+
+  const currentSuggestion = source.getSuggestionValue({
+    suggestion,
+    state,
+  });
+
+  // The completion should appear only if the _first_ characters of the query
+  // match with the suggestion.
+  if (
+    query &&
+    currentSuggestion.toLocaleLowerCase().indexOf(query.toLocaleLowerCase()) ===
+      0
+  ) {
+    // If the query typed has a different case than the suggestion, we want
+    // to show the completion matching the case of the query. This makes both
+    // strings overlap correctly.
+    // Example:
+    //  - query: 'Gui'
+    //  - suggestion: 'guitar'
+    //  => completion: 'Guitar'
+    return query + currentSuggestion.slice(query.length);
+  }
+
+  return '';
+}
+
+function UncontrolledAutocomplete(
+  props: AutocompleteProps,
+  ref: Ref<AutocompleteSetters>
+) {
+  const { initialState = {} } = props;
 
   const [query, setQuery] = useState<AutocompleteState['query']>(
     initialState.query || ''
@@ -90,9 +239,7 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
   const [results, setResults] = useState<AutocompleteState['results']>(
     initialState.results || []
   );
-  const [isOpen, setIsOpen] = useState<AutocompleteState['isOpen']>(
-    initialState.isOpen || false
-  );
+  const [isOpen, setIsOpen] = useState<boolean>(initialState.isOpen || false);
   const [isLoading, setIsLoading] = useState<AutocompleteState['isLoading']>(
     initialState.isLoading || false
   );
@@ -105,54 +252,134 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
   const [context, setContext] = useState<AutocompleteState['context']>(
     initialState.context || {}
   );
+
+  const setMergedContext: StateUpdater<
+    AutocompleteState['context']
+  > = context =>
+    setContext(previousContext => {
+      return {
+        ...previousContext,
+        ...context,
+      };
+    });
+
+  // Expose the component setters to the external API.
+  useImperativeHandle(ref, () => {
+    return {
+      setQuery,
+      setResults,
+      setIsOpen,
+      setIsLoading,
+      setIsStalled,
+      setError,
+      setContext: setMergedContext,
+    };
+  });
+
+  return (
+    <ControlledAutocomplete
+      {...props}
+      query={query}
+      setQuery={setQuery}
+      results={results}
+      setResults={setResults}
+      isOpen={isOpen}
+      setIsOpen={setIsOpen}
+      isLoading={isLoading}
+      setIsLoading={setIsLoading}
+      isStalled={isStalled}
+      setIsStalled={setIsStalled}
+      error={error}
+      setError={setError}
+      context={context}
+      setContext={setContext}
+    />
+  );
+}
+
+interface ControlledAutocompleteProps
+  extends AutocompleteProps,
+    AutocompleteState {
+  query: string;
+  results: Result[];
+  setQuery: StateUpdater<AutocompleteState['query']>;
+  setResults: StateUpdater<AutocompleteState['results']>;
+  setIsOpen: StateUpdater<AutocompleteState['isOpen']>;
+  setIsLoading: StateUpdater<AutocompleteState['isLoading']>;
+  setIsStalled: StateUpdater<AutocompleteState['isStalled']>;
+  setError: StateUpdater<AutocompleteState['error']>;
+  setContext: StateUpdater<AutocompleteState['context']>;
+}
+
+function ControlledAutocomplete(props: ControlledAutocompleteProps) {
+  let lastStallId: number | null = null;
+
+  const {
+    // Props.
+    container,
+    placeholder = '',
+    minLength = 1,
+    showCompletion = false,
+    autofocus = false,
+    defaultHighlightedIndex = 0,
+    stallThreshold = 300,
+    keyboardShortcuts = [],
+    getSources,
+    templates = {},
+    environment = defaultEnvironment,
+    dropdownContainer = environment.document.body,
+    dropdownPosition = 'left',
+    onFocus = noop,
+    onClick = noop,
+    onKeyDown = noop,
+    onEmpty = noop,
+    onError = ({ state }) => {
+      throw state.error;
+    },
+    onInput = ({ query }) =>
+      defaultOnInput({
+        query,
+        getSources,
+        lastStallId,
+        environment,
+        stallThreshold,
+        state: getState(),
+        setters,
+        onEmpty,
+        onError,
+      }),
+    // State.
+    query,
+    setQuery,
+    results,
+    setResults,
+    isOpen,
+    setIsOpen,
+    isLoading,
+    setIsLoading,
+    isStalled,
+    setIsStalled,
+    error,
+    setError,
+    context,
+    setContext,
+  } = props;
+
   const [dropdownRect, setDropdownRect] = useState<
     Pick<ClientRect, 'top' | 'left'> | undefined
   >(undefined);
 
-  let setisStalledId: number | null = null;
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const setState: SetState = nextState => {
-    if (nextState.query !== undefined) {
-      setQuery(nextState.query);
-      performQuery(nextState.query);
-    }
-    if (nextState.results) {
-      setResults(nextState.results);
-    }
-    if (nextState.isOpen !== undefined) {
-      setIsOpen(nextState.isOpen);
-    }
-    // @TODO: are these next states useful to expose for modification?
-    if (nextState.isLoading !== undefined) {
-      setIsLoading(nextState.isLoading);
-    }
-    if (nextState.isStalled !== undefined) {
-      setIsStalled(nextState.isStalled);
-    }
-    if (nextState.error !== undefined) {
-      setError(nextState.error);
-    }
-    if (nextState.context !== undefined) {
-      setContext({ ...context, ...nextState.context });
-    }
+  const setters = {
+    setQuery,
+    setResults,
+    setIsOpen,
+    setIsLoading,
+    setIsStalled,
+    setError,
+    setContext,
   };
-
-  // Expose the component methods to the external API for the autocomplete
-  // object.
-  useImperativeHandle(ref, () => {
-    return {
-      getState,
-      setState,
-    };
-  });
-
-  useEffect(() => {
-    // Perform the query if coming from the initial state.
-    if (initialState.query) {
-      performQuery(initialState.query, { isOpen });
-    }
-  }, []);
 
   useEffect(() => {
     function onGlobalKeyDown(event: KeyboardEvent): void {
@@ -201,7 +428,7 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
     return () => {
       environment.removeEventListener('resize', onResize);
     };
-  }, [environment, onResize]);
+  }, [environment]);
 
   useEffect(() => {
     // We need to track the container position because the dropdown position is
@@ -238,166 +465,8 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
     setDropdownRect(newDropdownRect);
   }
 
-  function performQuery(
-    query: string,
-    nextState: Partial<AutocompleteState> = { isOpen: true }
-  ) {
-    if (setisStalledId) {
-      clearTimeout(setisStalledId);
-      setIsStalled(false);
-    }
-
-    setError(null);
-    setQuery(query);
-
-    if (query.length < minLength) {
-      setIsLoading(false);
-      setIsOpen(false);
-      if (!isControlled) {
-        setResults(
-          results.map(result => ({
-            ...result,
-            suggestions: [],
-          }))
-        );
-      }
-
-      return Promise.resolve();
-    }
-
-    setIsLoading(true);
-
-    setisStalledId = environment.setTimeout(() => {
-      setIsStalled(true);
-    }, stallThreshold);
-
-    return Promise.resolve(
-      getSources({
-        query,
-        state: getState(),
-        setState,
-      })
-    ).then(sources => {
-      return getSourcesResults({
-        query,
-        sources,
-        state: getState(),
-        setState,
-      })
-        .then(results => {
-          if (setisStalledId) {
-            clearTimeout(setisStalledId);
-            setIsStalled(false);
-          }
-
-          setIsLoading(false);
-          if (!isControlled) {
-            setResults(results);
-          }
-          setState(nextState);
-
-          const hasResults = results.some(
-            result => result.suggestions.length > 0
-          );
-
-          if (!hasResults) {
-            onEmpty({ state: getState(), setState });
-          }
-        })
-        .catch(error => {
-          if (setisStalledId) {
-            clearTimeout(setisStalledId);
-            setIsStalled(false);
-          }
-
-          setIsLoading(false);
-          setError(error);
-
-          onError({
-            state: getState(),
-            setState,
-          });
-        });
-    });
-  }
-
-  // We don't have access to the Autocomplete source when we call `onKeyDown`
-  // or `onClick` because those are native browser events.
-  // However, we can get the source from the suggestion index.
-  function getSourceFromSuggestionIndex(
-    highlightedIndex: number
-  ): AutocompleteSource | undefined {
-    // Given 3 sources with respectively 1, 2 and 3 suggestions: [1, 2, 3]
-    // We want to get the accumulated counts:
-    // [1, 1 + 2, 1 + 2 + 3] = [1, 3, 3 + 3] = [1, 3, 6]
-    const accumulatedSuggestionsCount = results
-      .map(result => result.suggestions.length)
-      .reduce<number[]>((acc, suggestionCount, index) => {
-        const previousValue = acc[index - 1] || 0;
-        const nextValue = previousValue + suggestionCount;
-
-        acc.push(nextValue);
-
-        return acc;
-      }, []);
-
-    // Based on the accumulated counts, we can infer the index of the result.
-    const resultIndex = accumulatedSuggestionsCount.reduce((acc, current) => {
-      if (current <= highlightedIndex) {
-        return acc + 1;
-      }
-
-      return acc;
-    }, 0);
-
-    const result: Result | undefined = results[resultIndex];
-
-    return result ? result.source : undefined;
-  }
-
-  function getCompletion(highlightedIndex: number) {
-    if (!showCompletion) {
-      return '';
-    }
-
-    const suggestion = flatten(results.map(result => result.suggestions))[
-      Math.max(0, highlightedIndex)
-    ];
-    const source = getSourceFromSuggestionIndex(Math.max(0, highlightedIndex));
-
-    if (!suggestion || !source) {
-      return '';
-    }
-
-    const currentSuggestion = source.getSuggestionValue({
-      suggestion,
-      state: getState(),
-    });
-
-    // The completion should appear only if the _first_ characters of the query
-    // match with the suggestion.
-    if (
-      query &&
-      currentSuggestion
-        .toLocaleLowerCase()
-        .indexOf(query.toLocaleLowerCase()) === 0
-    ) {
-      // If the query typed has a different case than the suggestion, we want
-      // to show the completion matching the case of the query. This makes both
-      // strings overlap correctly.
-      // Example:
-      //  - query: 'Gui'
-      //  - suggestion: 'guitar'
-      //  => completion: 'Guitar'
-      return query + currentSuggestion.slice(query.length);
-    }
-
-    return '';
-  }
-
   const isQueryLongEnough = query.length >= minLength;
-  const hasResults = results.some(result => result.suggestions.length > 0);
-  const shouldOpen = isOpen && isQueryLongEnough && hasResults;
+  const shouldOpen = isOpen && isQueryLongEnough && hasResults(results);
 
   return (
     <Downshift
@@ -414,21 +483,25 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
 
         const { suggestion, suggestionValue, source } = item;
 
-        performQuery(suggestionValue).then(() => {
-          if (source.onSelect) {
-            const currentState = getState();
-
-            source.onSelect({
-              suggestion,
-              suggestionValue,
-              source,
-              state: currentState,
-              setState,
-            });
-          } else {
-            setIsOpen(false);
-          }
+        onInput({
+          query: suggestionValue,
+          state: getState(),
+          ...setters,
         });
+
+        if (source.onSelect) {
+          const currentState = getState();
+
+          source.onSelect({
+            suggestion,
+            suggestionValue,
+            source,
+            state: currentState,
+            ...setters,
+          });
+        } else {
+          setIsOpen(false);
+        }
       }}
       onOuterClick={() => {
         setIsOpen(false);
@@ -459,34 +532,46 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
             <SearchBox
               placeholder={placeholder}
               autofocus={autofocus}
-              completion={getCompletion(highlightedIndex)}
+              completion={getCompletion({
+                highlightedIndex,
+                showCompletion,
+                query,
+                results,
+                state: getState(),
+              })}
               internalState={getState()}
-              internalSetState={setState}
+              setters={setters}
               onInputRef={inputRef}
               getInputProps={getInputProps}
               onFocus={() => {
                 if (isQueryLongEnough) {
                   setIsOpen(true);
-                }
 
-                // We should still perform a query if the minimal input length
-                // is set to 0 so that the menu shows updated results.
-                if (minLength === 0 && !query) {
-                  performQuery('');
+                  // If `minLength` is set to 0, and no queries have been
+                  // performed yet, you still want to show the results when
+                  // you focus the input.
+                  if (!hasResults(results)) {
+                    onInput({
+                      query,
+                      state: getState(),
+                      ...setters,
+                    });
+                  }
                 }
 
                 onFocus({
                   state: getState(),
-                  setState,
+                  ...setters,
                 });
               }}
               onKeyDown={(event: KeyboardEvent) => {
                 const suggestion = flatten(
                   results.map(result => result.suggestions)
                 )[Math.max(0, highlightedIndex)];
-                const source = getSourceFromSuggestionIndex(
-                  Math.max(0, highlightedIndex)
-                );
+                const source = getSourceFromSuggestionIndex({
+                  highlightedIndex: Math.max(0, highlightedIndex),
+                  results,
+                });
 
                 const currentState = getState();
 
@@ -499,17 +584,21 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
                     }),
                     source,
                     state: currentState,
-                    setState,
+                    ...setters,
                   });
                 } else {
-                  onKeyDown(event, { state: currentState, setState });
+                  onKeyDown(event, { state: currentState, ...setters });
                 }
 
                 if (event.key === 'Escape') {
                   setIsOpen(false);
 
                   if (!shouldOpen) {
-                    setQuery('');
+                    onInput({
+                      query: '',
+                      state: getState(),
+                      ...setters,
+                    });
                   }
                 } else if (
                   event.key === 'Tab' ||
@@ -531,7 +620,7 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
                       onInput({
                         query: nextQuery,
                         state: getState(),
-                        setState,
+                        ...setters,
                       });
 
                       setHighlightedIndex(defaultHighlightedIndex);
@@ -542,16 +631,40 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
               onInput={(event: KeyboardEvent) => {
                 const query = (event.target as HTMLInputElement).value;
 
-                onInput({
-                  query,
-                  state: getState(),
-                  setState,
-                });
+                if (query.length >= minLength) {
+                  setIsOpen(true);
+
+                  onInput({
+                    query,
+                    state: getState(),
+                    ...setters,
+                  });
+                } else {
+                  if (lastStallId) {
+                    clearTimeout(lastStallId);
+                    setIsStalled(false);
+                  }
+
+                  setError(null);
+                  setQuery(query);
+                  setIsLoading(false);
+                  setIsOpen(false);
+                  setResults(
+                    results.map(result => ({
+                      ...result,
+                      suggestions: [],
+                    }))
+                  );
+                }
               }}
               onReset={event => {
                 event.preventDefault();
 
-                onInput({ query: '', state: getState(), setState });
+                onInput({
+                  query: '',
+                  state: getState(),
+                  ...setters,
+                });
 
                 if (inputRef.current) {
                   inputRef.current.focus();
@@ -579,7 +692,7 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
                 context={context}
                 results={results}
                 templates={templates}
-                internalSetState={setState}
+                setters={setters}
                 onClick={onClick}
                 getMenuProps={getMenuProps}
                 getItemProps={getItemProps}
@@ -593,4 +706,4 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
   );
 }
 
-export const Autocomplete = forwardRef(AutocompleteRaw);
+export const Autocomplete = forwardRef(UncontrolledAutocomplete);

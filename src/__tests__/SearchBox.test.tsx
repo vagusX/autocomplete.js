@@ -6,39 +6,57 @@ import userEvent from '@testing-library/user-event';
 
 import { SearchBox, SearchBoxProps } from '../SearchBox';
 
+const settersExpectation = {
+  setQuery: expect.any(Function),
+  setResults: expect.any(Function),
+  setIsOpen: expect.any(Function),
+  setIsLoading: expect.any(Function),
+  setIsStalled: expect.any(Function),
+  setError: expect.any(Function),
+  setContext: expect.any(Function),
+};
+
+const inputId = 'autocomplete-0-input';
+
+function getDefaultProps(): SearchBoxProps {
+  return {
+    placeholder: '',
+    autofocus: false,
+    completion: '',
+    setters: {
+      setQuery: jest.fn(),
+      setResults: jest.fn(),
+      setIsOpen: jest.fn(),
+      setIsLoading: jest.fn(),
+      setIsStalled: jest.fn(),
+      setError: jest.fn(),
+      setContext: jest.fn(),
+    },
+    internalState: {
+      query: '',
+      isLoading: false,
+      isStalled: false,
+      isOpen: false,
+      error: null,
+      results: [],
+      context: {},
+    },
+    onFocus: jest.fn(),
+    onKeyDown: jest.fn(),
+    onInput: jest.fn(),
+    onReset: jest.fn(),
+    onSubmit: jest.fn(),
+    onInputRef: {
+      current: null,
+    },
+    getInputProps: (options?: object) => ({
+      ...options,
+      id: inputId,
+    }),
+  };
+}
+
 describe('SearchBox', () => {
-  const inputId = 'autocomplete-0-input';
-
-  function getDefaultProps(): SearchBoxProps {
-    return {
-      placeholder: '',
-      autofocus: false,
-      completion: '',
-      internalSetState: jest.fn(),
-      internalState: {
-        query: '',
-        isLoading: false,
-        isStalled: false,
-        isOpen: false,
-        error: null,
-        results: [],
-        context: {},
-      },
-      onFocus: jest.fn(),
-      onKeyDown: jest.fn(),
-      onInput: jest.fn(),
-      onReset: jest.fn(),
-      onSubmit: jest.fn(),
-      onInputRef: {
-        current: null,
-      },
-      getInputProps: (options?: object) => ({
-        ...options,
-        id: inputId,
-      }),
-    };
-  }
-
   test('should generate the correct DOM', () => {
     const props = {
       ...getDefaultProps(),
@@ -261,7 +279,7 @@ describe('SearchBox', () => {
       expect(props.onFocus).toHaveBeenCalledTimes(1);
       expect(props.onFocus).toHaveBeenCalledWith({
         state: expect.any(Object),
-        setState: expect.any(Function),
+        ...settersExpectation,
       });
     });
 

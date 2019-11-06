@@ -437,6 +437,58 @@ Whether the experience is stalled.
 
 The error that happened, `null` if none.
 
+#### `context`
+
+> `object` | defaults to `{}`
+
+The autocomplete context to store data in. It's useful to use custom data in templates.
+
+<details>
+  <summary>Example</summary>
+
+**Storing `nbHits` from the Algolia response**
+
+```js
+autocomplete({
+  // ...
+  getSources({ query, setState }) {
+    return getAlgoliaResults({
+      searchClient,
+      query,
+      searchParameters: [
+        {
+          indexName: 'instant_search',
+          params: {
+            attributesToSnippet: ['description'],
+          },
+        },
+      ],
+    }).then(results => {
+      const productsResults = results[0];
+
+      setState({
+        context: {
+          nbProducts: productsResults.nbHits,
+        },
+      });
+
+      return [
+        {
+          // ...
+          templates: {
+            header({ state }) {
+              return `<h2>Products (${state.context.nbProducts})</h2>`;
+            },
+          },
+        },
+      ];
+    });
+  },
+});
+```
+
+</details>
+
 ### Global templates
 
 In addition to the source templates, Autocomplete.js supports some global templates.

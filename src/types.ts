@@ -57,7 +57,7 @@ export interface AutocompleteState {
   isLoading: boolean;
   isStalled: boolean;
   error: Error | null;
-  metadata: { [key: string]: any };
+  context: { [key: string]: any };
 }
 
 export interface AutocompleteSource {

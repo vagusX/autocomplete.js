@@ -551,7 +551,7 @@ storiesOf('Options', module)
             }
           }
         },
-        getSources({ query }) {
+        getSources({ query, setState }) {
           return getAlgoliaResults({
             searchClient,
             query,
@@ -573,6 +573,12 @@ storiesOf('Options', module)
             const [productsResults, querySuggestionsResults] = results;
             const productsHits = productsResults.hits;
             const querySuggestionsHits = querySuggestionsResults.hits;
+
+            setState({
+              context: {
+                nbProductsHits: productsResults.nbHits,
+              },
+            });
 
             return [
               {
@@ -710,8 +716,11 @@ storiesOf('Options', module)
                   });
                 },
                 templates: {
-                  header: () =>
-                    '<h5 class="algolia-autocomplete-item-header">Products</h5>',
+                  header: ({ state }) => (
+                    <h5 class="algolia-autocomplete-item-header">
+                      Products ({state.context.nbProductsHits})
+                    </h5>
+                  ),
                   suggestion({ suggestion }) {
                     return (
                       <a

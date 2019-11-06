@@ -14,7 +14,7 @@ const data = {
     error: null,
     query: '',
     results: [],
-    metadata: {},
+    context: {},
   },
   setState: jest.fn(),
 };

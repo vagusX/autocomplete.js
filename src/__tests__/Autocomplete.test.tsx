@@ -280,7 +280,7 @@ describe('Autocomplete', () => {
       const { container } = render(<Autocomplete {...props} />);
     });
 
-    test.todo('allows to set the initial metadata');
+    test.todo('allows to set the initial context');
   });
 
   describe('keyboardShortcuts', () => {

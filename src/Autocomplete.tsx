@@ -102,8 +102,8 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
   const [error, setError] = useState<AutocompleteState['error'] | null>(
     initialState.error || null
   );
-  const [metadata, setMetadata] = useState<AutocompleteState['metadata']>(
-    initialState.metadata || {}
+  const [context, setContext] = useState<AutocompleteState['context']>(
+    initialState.context || {}
   );
   const [dropdownRect, setDropdownRect] = useState<
     Pick<ClientRect, 'top' | 'left'> | undefined
@@ -133,8 +133,8 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
     if (nextState.error !== undefined) {
       setError(nextState.error);
     }
-    if (nextState.metadata !== undefined) {
-      setMetadata({ ...metadata, ...nextState.metadata });
+    if (nextState.context !== undefined) {
+      setContext({ ...context, ...nextState.context });
     }
   };
 
@@ -217,7 +217,7 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
       isLoading,
       isStalled,
       error,
-      metadata,
+      context,
     };
   }
 
@@ -566,7 +566,7 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
                 isLoading={isLoading}
                 query={query}
                 error={error}
-                metadata={metadata}
+                context={context}
                 results={results}
                 templates={templates}
                 internalSetState={setState}

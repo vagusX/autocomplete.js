@@ -29,7 +29,7 @@ export const Dropdown = ({
   isLoading,
   query,
   error,
-  metadata,
+  context,
   results,
   internalSetState,
   onClick,
@@ -42,7 +42,7 @@ export const Dropdown = ({
     isLoading,
     query,
     error,
-    metadata,
+    context,
     results,
   };
 

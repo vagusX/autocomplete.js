@@ -22,7 +22,7 @@ describe('SearchBox', () => {
         isOpen: false,
         error: null,
         results: [],
-        metadata: {},
+        context: {},
       },
       onFocus: jest.fn(),
       onKeyDown: jest.fn(),

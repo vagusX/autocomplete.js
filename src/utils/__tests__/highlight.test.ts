@@ -2,6 +2,7 @@ import {
   parseHighlightedAttribute,
   highlightAlgoliaHit,
   reverseHighlightAlgoliaHit,
+  snippetAlgoliaHit,
 } from '../highlight';
 
 describe('highlight', () => {
@@ -68,6 +69,25 @@ describe('highlight', () => {
           hit: { _highlightResult: { title: { value: 'Hello' } } },
         })
       ).toEqual('Hello');
+    });
+  });
+
+  describe('snippetAlgoliaHit', () => {
+    test('returns the highlighted snippet value of the hit', () => {
+      expect(
+        snippetAlgoliaHit({
+          highlightPreTag: '<mark>',
+          highlightPostTag: '</mark>',
+          attribute: 'title',
+          hit: {
+            _snippetResult: {
+              title: {
+                value: '<mark>He</mark>llo t<mark>he</mark>re',
+              },
+            },
+          },
+        })
+      ).toEqual('<mark>He</mark>llo t<mark>he</mark>re');
     });
   });
 });

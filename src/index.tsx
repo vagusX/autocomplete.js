@@ -89,4 +89,5 @@ export { getAlgoliaHits, getAlgoliaResults } from './suggestions';
 export {
   highlightAlgoliaHit,
   reverseHighlightAlgoliaHit,
+  snippetAlgoliaHit,
 } from './utils/highlight';

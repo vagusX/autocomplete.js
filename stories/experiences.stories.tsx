@@ -10,8 +10,9 @@ import { index, configure } from 'instantsearch.js/es/widgets';
 import { withPlayground } from '../.storybook/decorators';
 import autocomplete, {
   highlightAlgoliaHit,
-  version,
   reverseHighlightAlgoliaHit,
+  snippetAlgoliaHit,
+  version,
 } from '../src';
 import { AutocompleteApi } from '../src/types';
 
@@ -95,8 +96,10 @@ storiesOf('Experiences', module).add(
                       color: 'rgba(0, 0, 0, 0.5)',
                     }}
                     dangerouslySetInnerHTML={{
-                      // @TODO: add same highlight function for snippets
-                      __html: suggestion._snippetResult.description.value,
+                      __html: snippetAlgoliaHit({
+                        hit: suggestion,
+                        attribute: 'description',
+                      }),
                     }}
                   />
                 </div>

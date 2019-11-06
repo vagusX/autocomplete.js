@@ -9,6 +9,7 @@ import { withPlayground } from '../.storybook/decorators';
 import autocomplete, {
   highlightAlgoliaHit,
   reverseHighlightAlgoliaHit,
+  snippetAlgoliaHit,
   getAlgoliaHits,
   getAlgoliaResults,
 } from '../src';
@@ -759,9 +760,10 @@ storiesOf('Options', module)
                               color: 'rgba(0, 0, 0, 0.5)',
                             }}
                             dangerouslySetInnerHTML={{
-                              // @TODO: add same highlight function for snippets
-                              __html:
-                                suggestion._snippetResult.description.value,
+                              __html: snippetAlgoliaHit({
+                                hit: suggestion,
+                                attribute: 'description',
+                              }),
                             }}
                           />
                         </div>

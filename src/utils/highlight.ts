@@ -53,10 +53,11 @@ export function parseHighlightedAttribute({
   return elements;
 }
 
-function getPropertyByPath(object: object, path: string): any {
+function getPropertyByPath(hit: object, path: string): string {
   const parts = path.split('.');
+  const value = parts.reduce((current, key) => current && current[key], hit);
 
-  return parts.reduce((current, key) => current && current[key], object);
+  return typeof value === 'string' ? value : '';
 }
 
 interface HighlightOptions {
@@ -67,16 +68,22 @@ interface HighlightOptions {
   ignoreEscape?: string[];
 }
 
-export function highlightAlgoliaHit({
+interface GetHighlightedValue extends HighlightOptions {
+  hitKey: '_highlightResult' | '_snippetResult';
+}
+
+function getHighlightedValue({
   hit,
+  hitKey,
   attribute,
   highlightPreTag = '<mark>',
   highlightPostTag = '</mark>',
   ignoreEscape = [],
-}: HighlightOptions): string {
-  const highlightedValue =
-    (getPropertyByPath(hit, `_highlightResult.${attribute}.value`) as string) ||
-    '';
+}: GetHighlightedValue): string {
+  const highlightedValue = getPropertyByPath(
+    hit,
+    `${hitKey}.${attribute}.value`
+  );
 
   return parseHighlightedAttribute({
     highlightPreTag,
@@ -96,6 +103,20 @@ export function highlightAlgoliaHit({
     .join('');
 }
 
+export function highlightAlgoliaHit(options: HighlightOptions): string {
+  return getHighlightedValue({
+    hitKey: '_highlightResult',
+    ...options,
+  });
+}
+
+export function snippetAlgoliaHit(options: HighlightOptions): string {
+  return getHighlightedValue({
+    hitKey: '_snippetResult',
+    ...options,
+  });
+}
+
 export function reverseHighlightAlgoliaHit({
   hit,
   attribute,
@@ -103,9 +124,10 @@ export function reverseHighlightAlgoliaHit({
   highlightPostTag = '</mark>',
   ignoreEscape = [],
 }: HighlightOptions): string {
-  const highlightedValue =
-    (getPropertyByPath(hit, `_highlightResult.${attribute}.value`) as string) ||
-    '';
+  const highlightedValue = getPropertyByPath(
+    hit,
+    `_highlightResult.${attribute}.value`
+  );
   const parsedHighlightedAttribute = parseHighlightedAttribute({
     highlightPreTag,
     highlightPostTag,

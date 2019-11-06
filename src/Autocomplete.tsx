@@ -1,21 +1,22 @@
 /** @jsx h */
 
-import { h } from 'preact';
-import { useState, useEffect, useRef } from 'preact/hooks';
-import { createPortal } from 'preact/compat';
+import { h, Ref } from 'preact';
+import { createPortal, forwardRef } from 'preact/compat';
+import { useState, useEffect, useRef, useImperativeHandle } from 'preact/hooks';
 import Downshift from 'downshift/preact';
 
 import { flatten, noop } from './utils';
 import { Dropdown } from './Dropdown';
 import { SearchBox } from './SearchBox';
 import {
+  AutocompleteApi,
+  AutocompleteItem,
+  AutocompleteProps,
+  AutocompleteSource,
+  AutocompleteState,
   Environment,
   Result,
   SetState,
-  AutocompleteProps,
-  AutocompleteState,
-  AutocompleteSource,
-  AutocompleteItem,
 } from './types';
 
 function getSourcesResults(options: {
@@ -44,7 +45,7 @@ function getSourcesResults(options: {
   );
 }
 
-export const defaultEnvironment =
+export const defaultEnvironment: Environment =
   typeof window === 'undefined' ? ({} as Environment) : window;
 
 let autocompleteIdCounter = 0;
@@ -56,7 +57,7 @@ function generateId(): string {
   return String(autocompleteIdCounter++);
 }
 
-export function Autocomplete(props: AutocompleteProps) {
+function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
   const {
     container,
     placeholder = '',
@@ -72,6 +73,7 @@ export function Autocomplete(props: AutocompleteProps) {
     environment = defaultEnvironment,
     dropdownContainer = environment.document.body,
     dropdownPosition = 'left',
+    isControlled = false,
     onFocus = noop,
     onClick = noop,
     onKeyDown = noop,
@@ -94,7 +96,7 @@ export function Autocomplete(props: AutocompleteProps) {
   const [isLoading, setIsLoading] = useState<AutocompleteState['isLoading']>(
     initialState.isLoading || false
   );
-  const [isStalled, setisStalled] = useState<AutocompleteState['isStalled']>(
+  const [isStalled, setIsStalled] = useState<AutocompleteState['isStalled']>(
     initialState.isStalled || false
   );
   const [error, setError] = useState<AutocompleteState['error'] | null>(
@@ -110,10 +112,45 @@ export function Autocomplete(props: AutocompleteProps) {
   let setisStalledId: number | null = null;
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  const setState: SetState = nextState => {
+    if (nextState.query !== undefined) {
+      setQuery(nextState.query);
+      performQuery(nextState.query);
+    }
+    if (nextState.results) {
+      setResults(nextState.results);
+    }
+    if (nextState.isOpen !== undefined) {
+      setIsOpen(nextState.isOpen);
+    }
+    // @TODO: are these next states useful to expose for modification?
+    if (nextState.isLoading !== undefined) {
+      setIsLoading(nextState.isLoading);
+    }
+    if (nextState.isStalled !== undefined) {
+      setIsStalled(nextState.isStalled);
+    }
+    if (nextState.error !== undefined) {
+      setError(nextState.error);
+    }
+    if (nextState.metadata !== undefined) {
+      setMetadata({ ...metadata, ...nextState.metadata });
+    }
+  };
+
+  // Expose the component methods to the external API for the autocomplete
+  // object.
+  useImperativeHandle(ref, () => {
+    return {
+      getState,
+      setState,
+    };
+  });
+
   useEffect(() => {
     // Perform the query if coming from the initial state.
     if (initialState.query) {
-      performQuery(initialState.query, isOpen);
+      performQuery(initialState.query, { isOpen });
     }
   }, []);
 
@@ -184,31 +221,6 @@ export function Autocomplete(props: AutocompleteProps) {
     };
   }
 
-  const setState: SetState = nextState => {
-    if (nextState.query !== undefined) {
-      setQuery(nextState.query);
-      performQuery(nextState.query);
-    }
-    if (nextState.results) {
-      setResults(nextState.results);
-    }
-    if (nextState.isOpen !== undefined) {
-      setIsOpen(nextState.isOpen);
-    }
-    if (nextState.isLoading !== undefined) {
-      setIsLoading(nextState.isLoading);
-    }
-    if (nextState.isStalled !== undefined) {
-      setisStalled(nextState.isStalled);
-    }
-    if (nextState.error !== undefined) {
-      setError(nextState.error);
-    }
-    if (nextState.metadata !== undefined) {
-      setMetadata({ ...metadata, ...nextState.metadata });
-    }
-  };
-
   function onResize(): void {
     const nextContainerRect = container.getBoundingClientRect();
     const nextDropdownRect = dropdownContainer.getBoundingClientRect();
@@ -226,10 +238,13 @@ export function Autocomplete(props: AutocompleteProps) {
     setDropdownRect(newDropdownRect);
   }
 
-  function performQuery(query: string, nextIsOpen: boolean = true) {
+  function performQuery(
+    query: string,
+    nextState: Partial<AutocompleteState> = { isOpen: true }
+  ) {
     if (setisStalledId) {
       clearTimeout(setisStalledId);
-      setisStalled(false);
+      setIsStalled(false);
     }
 
     setError(null);
@@ -238,12 +253,14 @@ export function Autocomplete(props: AutocompleteProps) {
     if (query.length < minLength) {
       setIsLoading(false);
       setIsOpen(false);
-      setResults(
-        results.map(result => ({
-          ...result,
-          suggestions: [],
-        }))
-      );
+      if (!isControlled) {
+        setResults(
+          results.map(result => ({
+            ...result,
+            suggestions: [],
+          }))
+        );
+      }
 
       return Promise.resolve();
     }
@@ -251,7 +268,7 @@ export function Autocomplete(props: AutocompleteProps) {
     setIsLoading(true);
 
     setisStalledId = environment.setTimeout(() => {
-      setisStalled(true);
+      setIsStalled(true);
     }, stallThreshold);
 
     return Promise.resolve(
@@ -270,12 +287,14 @@ export function Autocomplete(props: AutocompleteProps) {
         .then(results => {
           if (setisStalledId) {
             clearTimeout(setisStalledId);
-            setisStalled(false);
+            setIsStalled(false);
           }
 
           setIsLoading(false);
-          setIsOpen(nextIsOpen);
-          setResults(results);
+          if (!isControlled) {
+            setResults(results);
+          }
+          setState(nextState);
 
           const hasResults = results.some(
             result => result.suggestions.length > 0
@@ -288,7 +307,7 @@ export function Autocomplete(props: AutocompleteProps) {
         .catch(error => {
           if (setisStalledId) {
             clearTimeout(setisStalledId);
-            setisStalled(false);
+            setIsStalled(false);
           }
 
           setIsLoading(false);
@@ -368,16 +387,7 @@ export function Autocomplete(props: AutocompleteProps) {
 
   const isQueryLongEnough = query.length >= minLength;
   const hasResults = results.some(result => result.suggestions.length > 0);
-  const shouldOpen =
-    isOpen &&
-    // We don't want to open the dropdown when the results
-    // are loading coming from an empty input.
-    // !isStalled &&
-    // However, we do want to leave the dropdown open when it's
-    // already open because there are results displayed. Otherwise,
-    // it would result in a flashy behavior.
-    isQueryLongEnough &&
-    hasResults;
+  const shouldOpen = isOpen && isQueryLongEnough && hasResults;
 
   return (
     <Downshift
@@ -394,7 +404,7 @@ export function Autocomplete(props: AutocompleteProps) {
 
         const { suggestion, suggestionValue, source } = item;
 
-        performQuery(suggestionValue, false).then(() => {
+        performQuery(suggestionValue).then(() => {
           if (source.onSelect) {
             const currentState = getState();
 
@@ -508,7 +518,11 @@ export function Autocomplete(props: AutocompleteProps) {
                     });
 
                     if (query !== nextQuery) {
-                      performQuery(nextQuery);
+                      onInput({
+                        query: nextQuery,
+                        state: getState(),
+                        setState,
+                      });
 
                       setHighlightedIndex(defaultHighlightedIndex);
                     }
@@ -526,11 +540,8 @@ export function Autocomplete(props: AutocompleteProps) {
               }}
               onReset={event => {
                 event.preventDefault();
-                setQuery('');
 
-                if (minLength === 0) {
-                  performQuery('');
-                }
+                onInput({ query: '', state: getState(), setState });
 
                 if (inputRef.current) {
                   inputRef.current.focus();
@@ -571,3 +582,5 @@ export function Autocomplete(props: AutocompleteProps) {
     </Downshift>
   );
 }
+
+export const Autocomplete = forwardRef(AutocompleteRaw);

@@ -1,10 +1,10 @@
 /** @jsx h */
 
-import { h, render } from 'preact';
+import { h, render, createRef } from 'preact';
 
 import { Autocomplete, defaultEnvironment } from './Autocomplete';
-import { AutocompleteProps } from './types';
 import { getHTMLElement } from './utils';
+import { AutocompleteProps, AutocompleteApi } from './types';
 
 interface AutocompleteOptions
   extends Omit<AutocompleteProps, 'container' | 'dropdownContainer'> {
@@ -20,7 +20,7 @@ interface AutocompleteOptions
   dropdownContainer?: string | HTMLElement;
 }
 
-function autocomplete(options: AutocompleteOptions) {
+function autocomplete(options: AutocompleteOptions): AutocompleteApi {
   const {
     container,
     dropdownContainer,
@@ -36,12 +36,15 @@ function autocomplete(options: AutocompleteOptions) {
     initialState,
     templates,
     getSources,
+    isControlled,
     onInput,
     onClick,
     onKeyDown,
     onError,
     onEmpty,
   } = options || {};
+
+  const autocompleteRef = createRef();
 
   const containerElement = getHTMLElement(container);
   const dropdownContainerElement = dropdownContainer
@@ -50,6 +53,7 @@ function autocomplete(options: AutocompleteOptions) {
 
   render(
     <Autocomplete
+      ref={autocompleteRef}
       container={containerElement}
       dropdownContainer={dropdownContainerElement}
       dropdownPosition={dropdownPosition}
@@ -64,6 +68,7 @@ function autocomplete(options: AutocompleteOptions) {
       getSources={getSources}
       templates={templates}
       environment={environment}
+      isControlled={isControlled}
       onInput={onInput}
       onClick={onClick}
       onError={onError}
@@ -72,6 +77,8 @@ function autocomplete(options: AutocompleteOptions) {
     />,
     containerElement
   );
+
+  return autocompleteRef.current;
 }
 
 export default autocomplete;

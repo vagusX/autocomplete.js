@@ -188,6 +188,12 @@ export interface AutocompleteProps {
    */
   environment?: Environment;
   /**
+   * Whether the autocomplete experience is controlled.
+   *
+   * @default false
+   */
+  isControlled?: boolean;
+  /**
    * Called when the input is focused.
    */
   onFocus?: (options: EventHandlerOptions) => void;
@@ -221,3 +227,8 @@ export interface AutocompleteProps {
 }
 
 export type RequiredAutocompleteProps = Required<AutocompleteProps>;
+
+export interface AutocompleteApi {
+  getState(): AutocompleteState;
+  setState: SetState;
+}

@@ -38,6 +38,7 @@ function autocomplete(options: AutocompleteOptions): AutocompleteApi {
     getSources,
     isControlled,
     onInput,
+    onFocus,
     onClick,
     onKeyDown,
     onError,
@@ -70,6 +71,7 @@ function autocomplete(options: AutocompleteOptions): AutocompleteApi {
       environment={environment}
       isControlled={isControlled}
       onInput={onInput}
+      onFocus={onFocus}
       onClick={onClick}
       onError={onError}
       onEmpty={onEmpty}

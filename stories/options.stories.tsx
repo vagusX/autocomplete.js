@@ -137,9 +137,9 @@ const createSource = (items: any[], { templates = {}, limit = 10 } = {}) => ({
   },
 });
 
-storiesOf('Autocomplete', module)
+storiesOf('Options', module)
   .add(
-    'with static values',
+    'Static values',
     withPlayground(({ container, dropdownContainer }) => {
       autocomplete({
         container,
@@ -152,7 +152,7 @@ storiesOf('Autocomplete', module)
     })
   )
   .add(
-    'with initial state',
+    'Initial state',
     withPlayground(({ container, dropdownContainer }) => {
       autocomplete({
         container,
@@ -168,7 +168,7 @@ storiesOf('Autocomplete', module)
     })
   )
   .add(
-    'with multiple sources',
+    'Multiple sources',
     withPlayground(({ container, dropdownContainer }) => {
       autocomplete({
         container,
@@ -227,7 +227,7 @@ storiesOf('Autocomplete', module)
     })
   )
   .add(
-    'with minimal query length',
+    'Minimal query length to 3',
     withPlayground(({ container, dropdownContainer }) => {
       autocomplete({
         container,
@@ -241,7 +241,7 @@ storiesOf('Autocomplete', module)
     })
   )
   .add(
-    'with menu opening by default',
+    'Menu opening on focus',
     withPlayground(({ container, dropdownContainer }) => {
       autocomplete({
         container,
@@ -255,7 +255,7 @@ storiesOf('Autocomplete', module)
     })
   )
   .add(
-    'with keyboard shortcuts',
+    'Keyboard shortcuts',
     withPlayground(({ container, dropdownContainer }) => {
       autocomplete({
         container,
@@ -269,7 +269,7 @@ storiesOf('Autocomplete', module)
     })
   )
   .add(
-    'without default selection',
+    'No default selection',
     withPlayground(({ container, dropdownContainer }) => {
       autocomplete({
         container,
@@ -288,7 +288,7 @@ storiesOf('Autocomplete', module)
     })
   )
   .add(
-    'with deferred values',
+    'Deferred values',
     withPlayground(({ container, dropdownContainer }) => {
       autocomplete({
         container,
@@ -350,7 +350,7 @@ storiesOf('Autocomplete', module)
     })
   )
   .add(
-    'with deferred values but no `stallThreshold`',
+    'Deferred values without stall threshold',
     withPlayground(({ container, dropdownContainer }) => {
       autocomplete({
         container,
@@ -411,7 +411,7 @@ storiesOf('Autocomplete', module)
     })
   )
   .add(
-    'with completion',
+    'Completion',
     withPlayground(({ container, dropdownContainer }) => {
       autocomplete({
         container,
@@ -425,7 +425,7 @@ storiesOf('Autocomplete', module)
     })
   )
   .add(
-    'with RTL',
+    'RTL',
     withPlayground(({ container, dropdownContainer }) => {
       container.dir = 'rtl';
 
@@ -440,7 +440,7 @@ storiesOf('Autocomplete', module)
     })
   )
   .add(
-    'with recent searches',
+    'Recent searches',
     withPlayground(({ container, dropdownContainer }) => {
       const recentSearches = new RecentSearches({
         limit: 3,
@@ -499,7 +499,7 @@ storiesOf('Autocomplete', module)
     })
   )
   .add(
-    'with hits',
+    'Hits',
     withPlayground(({ container, dropdownContainer }) => {
       const recentSearches = new RecentSearches({
         limit: 3,

@@ -529,6 +529,7 @@ This function comes with default Algolia search parameters:
   <summary>Example</summary>
 
 ```js
+import autocomplete, { getAlgoliaHits } from 'autocomplete.js';
 import algoliasearch from 'algoliasearch';
 
 const searchClient = algoliasearch(
@@ -580,6 +581,7 @@ This function comes with default Algolia search parameters:
   <summary>Example</summary>
 
 ```js
+import autocomplete, { getAlgoliaResults } from 'autocomplete.js';
 import algoliasearch from 'algoliasearch';
 
 const searchClient = algoliasearch(
@@ -628,6 +630,8 @@ Highlights and escapes the value of a record.
 <summary>Example</summary>
 
 ```js
+import autocomplete, { highlightAlgoliaHit } from 'autocomplete.js';
+
 autocomplete({
   // ...
   templates: {
@@ -654,6 +658,8 @@ It's useful when following the pattern of [Query Suggestions](https://www.algoli
 <summary>Example</summary>
 
 ```js
+import autocomplete, { reverseHighlightAlgoliaHit } from 'autocomplete.js';
+
 autocomplete({
   // ...
   templates: {
@@ -661,6 +667,32 @@ autocomplete({
       return reverseHighlightAlgoliaHit({
         hit: suggestion,
         attribute: 'query',
+      });
+    },
+  },
+});
+```
+
+</details>
+
+### `snippetAlgoliaHit`
+
+Highlights and escapes the snippet value of a record.
+
+<details>
+
+<summary>Example</summary>
+
+```js
+import autocomplete, { snippetAlgoliaHit } from 'autocomplete.js';
+
+autocomplete({
+  // ...
+  templates: {
+    suggestion({ suggestion }) {
+      return snippetAlgoliaHit({
+        hit: suggestion,
+        attribute: 'name',
       });
     },
   },

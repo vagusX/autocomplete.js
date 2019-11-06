@@ -321,18 +321,28 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
     });
   }
 
-  function getSourceFromHighlightedIndex(
+  // We don't have access to the Autocomplete source when we call `onKeyDown`
+  // or `onClick` because those are native browser events.
+  // However, we can get the source from the suggestion index.
+  function getSourceFromSuggestionIndex(
     highlightedIndex: number
   ): AutocompleteSource | undefined {
-    const resultsSizes = results
-      .map(result => result.suggestions)
-      .reduce<number[]>((acc, suggestions) => {
-        acc.push(suggestions.length + acc.reduce((a, b) => a + b, 0));
+    // Given 3 sources with respectively 1, 2 and 3 suggestions: [1, 2, 3]
+    // We want to get the accumulated counts:
+    // [1, 1 + 2, 1 + 2 + 3] = [1, 3, 3 + 3] = [1, 3, 6]
+    const accumulatedSuggestionsCount = results
+      .map(result => result.suggestions.length)
+      .reduce<number[]>((acc, suggestionCount, index) => {
+        const previousValue = acc[index - 1] || 0;
+        const nextValue = previousValue + suggestionCount;
+
+        acc.push(nextValue);
 
         return acc;
       }, []);
 
-    const resultIndex = resultsSizes.reduce((acc, current) => {
+    // Based on the accumulated counts, we can infer the index of the result.
+    const resultIndex = accumulatedSuggestionsCount.reduce((acc, current) => {
       if (current <= highlightedIndex) {
         return acc + 1;
       }
@@ -353,7 +363,7 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
     const suggestion = flatten(results.map(result => result.suggestions))[
       Math.max(0, highlightedIndex)
     ];
-    const source = getSourceFromHighlightedIndex(Math.max(0, highlightedIndex));
+    const source = getSourceFromSuggestionIndex(Math.max(0, highlightedIndex));
 
     if (!suggestion || !source) {
       return '';
@@ -474,7 +484,7 @@ function AutocompleteRaw(props: AutocompleteProps, ref: Ref<AutocompleteApi>) {
                 const suggestion = flatten(
                   results.map(result => result.suggestions)
                 )[Math.max(0, highlightedIndex)];
-                const source = getSourceFromHighlightedIndex(
+                const source = getSourceFromSuggestionIndex(
                   Math.max(0, highlightedIndex)
                 );
 

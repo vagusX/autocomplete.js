@@ -5,7 +5,7 @@ import { storiesOf } from '@storybook/html';
 import * as algoliasearch from 'algoliasearch';
 import instantsearch from 'instantsearch.js';
 import { connectAutocomplete } from 'instantsearch.js/es/connectors';
-import { index, configure,  } from 'instantsearch.js/es/widgets';
+import { index, configure } from 'instantsearch.js/es/widgets';
 
 import { withPlayground } from '../.storybook/decorators';
 import autocomplete, {
@@ -235,7 +235,8 @@ storiesOf('Experiences', module).add(
             minLength: 0,
             showCompletion: true,
             defaultHighlightedIndex: -1,
-            onInput({ query }) {
+            onInput({ query, setIsOpen }) {
+              setIsOpen(true);
               refine(query);
             },
             onKeyDown(event, { suggestion, setIsOpen }) {

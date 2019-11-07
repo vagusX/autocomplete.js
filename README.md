@@ -180,6 +180,40 @@ The initial state to apply when the page is loaded.
 
 Refer to the "[Global Templates](#global-templates)" section.
 
+#### `transformResultsRender`
+
+> `(results: JSX.Element[]) => JSX.Element | JSX.Element[]`
+
+Called before rendering the results.
+
+Useful to wrap results in containers to organize the display.
+
+<details>
+
+<summary>Example</summary>
+
+```js
+autocomplete({
+  // ...
+  transformResultsRender(results) {
+    const [recentSearches, querySuggestions, products] = results;
+
+    return (
+      <div style={{ display: 'flex' }}>
+        <div style={{ flex: 1 }}>
+          {recentSearches}
+          {querySuggestions}
+        </div>
+
+        <div style={{ flex: 2 }}>{products}</div>
+      </div>
+    );
+  },
+});
+```
+
+</details>
+
 #### `environment`
 
 > `typeof window` | defaults to `window`
@@ -229,25 +263,28 @@ This function is useful to alter the behavior when a special key is held.
 <summary>Example</summary>
 
 ```js
-onKeyDown(event, { suggestion, state, setIsOpen }) {
-  if (!suggestion || !suggestion.url) {
-    return;
-  }
-
-  if (event.key === 'Enter') {
-    if (event.metaKey || event.ctrlKey) {
-      setIsOpen(true);
-
-      const windowReference = window.open(suggestion.url, '_blank');
-      windowReference.focus();
-    } else if (event.shiftKey) {
-      window.open(suggestion.url, '_blank');
-    } else if (event.altKey) {
-    } else {
-      window.location.assign(suggestion.url);
+autocomplete({
+  // ...
+  onKeyDown(event, { suggestion, state, setIsOpen }) {
+    if (!suggestion || !suggestion.url) {
+      return;
     }
-  }
-}
+
+    if (event.key === 'Enter') {
+      if (event.metaKey || event.ctrlKey) {
+        setIsOpen(true);
+
+        const windowReference = window.open(suggestion.url, '_blank');
+        windowReference.focus();
+      } else if (event.shiftKey) {
+        window.open(suggestion.url, '_blank');
+      } else if (event.altKey) {
+      } else {
+        window.location.assign(suggestion.url);
+      }
+    }
+  },
+});
 ```
 
 </details>

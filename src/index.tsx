@@ -35,6 +35,7 @@ function autocomplete(options: AutocompleteOptions): AutocompleteApi {
     autofocus,
     initialState,
     templates,
+    transformResultsRender,
     getSources,
     onInput,
     onFocus,
@@ -67,6 +68,7 @@ function autocomplete(options: AutocompleteOptions): AutocompleteApi {
       initialState={initialState}
       getSources={getSources}
       templates={templates}
+      transformResultsRender={transformResultsRender}
       environment={environment}
       onInput={onInput}
       onFocus={onFocus}

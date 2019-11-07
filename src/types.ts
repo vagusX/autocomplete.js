@@ -179,6 +179,11 @@ export interface AutocompleteProps {
    */
   templates?: AutocompleteTemplates;
   /**
+   * Called before rendering the results.
+   * Useful to wrap results in containers to organize the display.
+   */
+  transformResultsRender?(results: JSX.Element[]): JSX.Element | JSX.Element[];
+  /**
    * The environment from where your JavaScript is running.
    * Useful if you're using Autocomplete.js in a different context than
    * `window`.

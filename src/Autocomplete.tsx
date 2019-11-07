@@ -325,10 +325,11 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
     stallThreshold = 300,
     keyboardShortcuts = [],
     getSources,
-    templates = {},
     environment = defaultEnvironment,
     dropdownContainer = environment.document.body,
     dropdownPosition = 'left',
+    templates = {},
+    transformResultsRender = (results: Result[]) => results,
     onFocus = noop,
     onClick = noop,
     onKeyDown = noop,
@@ -692,6 +693,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                 context={context}
                 results={results}
                 templates={templates}
+                transformResultsRender={transformResultsRender}
                 setters={setters}
                 onClick={onClick}
                 getMenuProps={getMenuProps}

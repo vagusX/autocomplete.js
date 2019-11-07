@@ -15,6 +15,7 @@ interface DropdownProps extends AutocompleteState {
   hidden: boolean;
   templates: RequiredAutocompleteProps['templates'];
   onClick: RequiredAutocompleteProps['onClick'];
+  transformResultsRender: RequiredAutocompleteProps['transformResultsRender'];
   setters: AutocompleteSetters;
   getItemProps(options?: object): any;
   getMenuProps(options?: object): any;
@@ -23,7 +24,6 @@ interface DropdownProps extends AutocompleteState {
 export const Dropdown = ({
   position,
   hidden,
-  templates,
   isOpen,
   isStalled,
   isLoading,
@@ -31,6 +31,8 @@ export const Dropdown = ({
   error,
   context,
   results,
+  templates,
+  transformResultsRender,
   setters,
   onClick,
   getItemProps,
@@ -58,102 +60,104 @@ export const Dropdown = ({
       style={position}
       hidden={hidden}
     >
-      <Template
-        tagName="header"
-        data={{
-          state,
-          ...setters,
-        }}
-        template={templates.header}
-        rootProps={{
-          className: 'algolia-autocomplete-header',
-        }}
-      />
-
       <div className="algolia-autocomplete-dropdown-container">
-        {results.map(result => {
-          const { source, suggestions } = result;
+        <Template
+          tagName="header"
+          data={{
+            state,
+            ...setters,
+          }}
+          template={templates.header}
+          rootProps={{
+            className: 'algolia-autocomplete-header',
+          }}
+        />
 
-          return (
-            <section className="algolia-autocomplete-results">
-              <Template
-                tagName="header"
-                data={{
-                  state,
-                  ...setters,
-                }}
-                template={source.templates.header}
-              />
+        {transformResultsRender(
+          results.map(result => {
+            const { source, suggestions } = result;
 
-              {!isLoading && suggestions.length === 0 ? (
+            return (
+              <section className="algolia-autocomplete-results">
                 <Template
+                  tagName="header"
                   data={{
                     state,
                     ...setters,
                   }}
-                  template={source.templates.empty}
+                  template={source.templates.header}
                 />
-              ) : (
-                <ul
-                  {...getMenuProps(
-                    {},
-                    // @TODO: remove `suppressRefError`
-                    // @ts-ignore
-                    // See https://github.com/downshift-js/downshift#getmenuprops
-                    { suppressRefError: true }
-                  )}
-                >
-                  {suggestions.map(suggestion => {
-                    const item: AutocompleteItem = {
-                      suggestionValue: source.getInputValue({
-                        suggestion,
-                        state,
-                      }),
-                      suggestion,
-                      source,
-                    };
 
-                    return (
-                      <Template
-                        tagName="li"
-                        rootProps={{
-                          className: 'algolia-autocomplete-item',
-                          ...getItemProps({
-                            item,
-                            tabIndex: 0,
-                            onClick: (event: MouseEvent) =>
-                              onClick(event, {
-                                suggestion: item.suggestion,
-                                suggestionValue: item.suggestionValue,
-                                source: item.source,
-                                state,
-                                ...setters,
-                              }),
-                          }),
-                        }}
-                        data={{
+                {!state.isLoading && suggestions.length === 0 ? (
+                  <Template
+                    data={{
+                      state,
+                      ...setters,
+                    }}
+                    template={source.templates.empty}
+                  />
+                ) : (
+                  <ul
+                    {...getMenuProps(
+                      {},
+                      // @TODO: remove `suppressRefError`
+                      // @ts-ignore
+                      // See https://github.com/downshift-js/downshift#getmenuprops
+                      { suppressRefError: true }
+                    )}
+                  >
+                    {suggestions.map(suggestion => {
+                      const item: AutocompleteItem = {
+                        suggestionValue: source.getInputValue({
                           suggestion,
                           state,
-                          ...setters,
-                        }}
-                        template={source.templates.suggestion}
-                      />
-                    );
-                  })}
-                </ul>
-              )}
+                        }),
+                        suggestion,
+                        source,
+                      };
 
-              <Template
-                tagName="footer"
-                data={{
-                  state,
-                  ...setters,
-                }}
-                template={source.templates.footer}
-              />
-            </section>
-          );
-        })}
+                      return (
+                        <Template
+                          tagName="li"
+                          rootProps={{
+                            className: 'algolia-autocomplete-item',
+                            ...getItemProps({
+                              item,
+                              tabIndex: 0,
+                              onClick: (event: MouseEvent) =>
+                                onClick(event, {
+                                  suggestion: item.suggestion,
+                                  suggestionValue: item.suggestionValue,
+                                  source: item.source,
+                                  state,
+                                  ...setters,
+                                }),
+                            }),
+                          }}
+                          data={{
+                            suggestion,
+                            state,
+                            ...setters,
+                          }}
+                          template={source.templates.suggestion}
+                        />
+                      );
+                    })}
+                  </ul>
+                )}
+
+                <Template
+                  tagName="footer"
+                  data={{
+                    state,
+                    ...setters,
+                  }}
+                  template={source.templates.footer}
+                />
+              </section>
+            );
+          })
+        )}
 
         <Template
           tagName="footer"

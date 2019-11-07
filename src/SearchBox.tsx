@@ -100,6 +100,7 @@ export function SearchBox(props: SearchBoxProps) {
             autoCapitalize: 'off',
             spellCheck: 'false',
             maxLength: '512',
+            'aria-expanded': props.internalState.isOpen,
             value: props.internalState.query,
             onInput: props.onInput,
             onKeyDown: props.onKeyDown,

@@ -397,9 +397,13 @@ Called when an item is selected.
 
 ### State
 
-The Autocomplete.js state drives the behavior of the experience. It can be initially set with [`initialState`](#initial-state) and it's is passed to all templates. Each state has a setter that can be used in the lifecycle of Autocomplete.js.
+The Autocomplete.js state drives the behavior of the experience.
 
-#### `query`
+#### Getters
+
+The state can be initially set with [`initialState`](#initial-state) and it's is passed to all templates.
+
+##### `query`
 
 > `string` | defaults to `''`
 
@@ -407,7 +411,7 @@ The query.
 
 Can be set with `setQuery`.
 
-#### `results`
+##### `results`
 
 > `Array<Result[]>` | defaults to `[]`
 
@@ -415,7 +419,7 @@ The results of all the sources.
 
 Can be set with `setResults`.
 
-#### `isOpen`
+##### `isOpen`
 
 > `boolean` | defaults to `false`
 
@@ -423,7 +427,7 @@ Whether the dropdown is open.
 
 Can be set with `setIsOpen`.
 
-#### `isLoading`
+##### `isLoading`
 
 > `boolean` | defaults to `false`
 
@@ -431,7 +435,7 @@ Whether the experience is loading.
 
 Can be set with `setIsLoading`.
 
-#### `isStalled`
+##### `isStalled`
 
 > `boolean` | defaults to `false`
 
@@ -439,7 +443,7 @@ Whether the experience is stalled.
 
 Can be set with `setIsStalled`.
 
-#### `error`
+##### `error`
 
 > `null | Error` | defaults to `null`
 
@@ -447,13 +451,57 @@ The error that happened, `null` if none.
 
 Can be set with `setError`.
 
-#### `context`
+##### `context`
 
 > `object` | defaults to `{}`
 
 The autocomplete context to store data in. It's useful to use custom data in templates.
 
-Can be set with `setContext`.
+#### Setters
+
+Each state has a setter that can be used in the lifecycle of Autocomplete.js.
+
+##### `setQuery`
+
+> `(value: string | ((prevState: string) => string)) => void`
+
+Sets the `query` value in the state.
+
+##### `setResults`
+
+> `(value: Result[] | ((prevState: Result[]) => Result[])) => void`
+
+Sets the `results` value in the state.
+
+##### `setIsOpen`
+
+> `(value: boolean | ((prevState: boolean) => boolean)) => void`
+
+Sets the `isOpen` value in the state.
+
+##### `setIsLoading`
+
+> `(value: boolean | ((prevState: boolean) => boolean)) => void`
+
+Sets the `isLoading` value in the state.
+
+##### `setIsStalled`
+
+> `(value: boolean | ((prevState: boolean) => boolean)) => void`
+
+Sets the `isStalled` value in the state.
+
+##### `setError`
+
+> `(value: Error | null | ((prevState: Error | null) => Error | null)) => void`
+
+Sets the `error` value in the state.
+
+##### `setContext`
+
+> `(value: object | ((prevState: object) => object)) => void`
+
+Sets the `context` value in the state.
 
 <details>
   <summary>Example</summary>

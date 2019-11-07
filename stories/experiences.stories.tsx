@@ -5,7 +5,7 @@ import { storiesOf } from '@storybook/html';
 import * as algoliasearch from 'algoliasearch';
 import instantsearch from 'instantsearch.js';
 import { connectAutocomplete } from 'instantsearch.js/es/connectors';
-import { index, configure, searchBox } from 'instantsearch.js/es/widgets';
+import { index, configure,  } from 'instantsearch.js/es/widgets';
 
 import { withPlayground } from '../.storybook/decorators';
 import autocomplete, {
@@ -21,11 +21,9 @@ storiesOf('Experiences', module).add(
   withPlayground(({ container, dropdownContainer }) => {
     const autocompleteContainer = document.createElement('div');
     const hitsContainer = document.createElement('div');
-    const searchBoxContainer = document.createElement('div');
 
     container.appendChild(autocompleteContainer);
     container.appendChild(hitsContainer);
-    container.appendChild(searchBoxContainer);
 
     const searchClient = algoliasearch(
       'latency',
@@ -285,9 +283,6 @@ storiesOf('Experiences', module).add(
         }),
         autocompleteWidget({
           container: autocompleteContainer,
-        }),
-        searchBox({
-          container: searchBoxContainer,
         }),
       ]),
     ]);

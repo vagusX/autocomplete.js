@@ -202,7 +202,7 @@ function getCompletion({
     return '';
   }
 
-  const currentSuggestion = source.getSuggestionValue({
+  const currentSuggestion = source.getInputValue({
     suggestion,
     state,
   });
@@ -578,7 +578,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                 if (suggestion && source) {
                   onKeyDown(event, {
                     suggestion,
-                    suggestionValue: source.getSuggestionValue({
+                    suggestionValue: source.getInputValue({
                       suggestion,
                       state: currentState,
                     }),
@@ -611,7 +611,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                   if (shouldOpen && suggestion && source) {
                     event.preventDefault();
 
-                    const nextQuery = source.getSuggestionValue({
+                    const nextQuery = source.getInputValue({
                       suggestion,
                       state: getState(),
                     });

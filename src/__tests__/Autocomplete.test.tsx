@@ -16,7 +16,7 @@ function createEnvironment() {
 }
 
 const defaultSource = {
-  getSuggestionValue: ({ suggestion }) => suggestion.value,
+  getInputValue: ({ suggestion }) => suggestion.value,
   templates: {
     suggestion({ suggestion }) {
       return suggestion.value;
@@ -274,7 +274,7 @@ describe('Autocomplete', () => {
         getSources() {
           return [
             {
-              getSuggestionValue: () => '',
+              getInputValue: () => '',
               getSuggestions: () => fruits,
               templates: {
                 suggestion: () => '',

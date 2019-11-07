@@ -51,7 +51,7 @@ autocomplete({
             item.value.toLocaleLowerCase().includes(query.toLocaleLowerCase())
           );
         },
-        getSuggestionValue({ suggestion }) {
+        getInputValue({ suggestion }) {
           return suggestion.value;
         },
         templates: {
@@ -268,7 +268,7 @@ Called when the input changes.
 
 An Autocomplete source refers to an object with the following properties:
 
-#### `getSuggestionValue`
+#### `getInputValue`
 
 > `(options: { suggestion: Suggestion, state: State }) => string`
 
@@ -283,7 +283,7 @@ If you do not wish to update the input value when an item is selected, you can r
 const items = [{ value: 'Apple' }, { value: 'Banana' }];
 
 const source = {
-  getSuggestionValue: ({ suggestion }) => suggestion.value,
+  getInputValue: ({ suggestion }) => suggestion.value,
   // ...
 };
 ```

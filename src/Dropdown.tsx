@@ -105,7 +105,7 @@ export const Dropdown = ({
                 >
                   {suggestions.map(suggestion => {
                     const item: AutocompleteItem = {
-                      suggestionValue: source.getSuggestionValue({
+                      suggestionValue: source.getInputValue({
                         suggestion,
                         state,
                       }),

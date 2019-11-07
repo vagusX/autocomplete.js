@@ -21,7 +21,7 @@ const searchClient = algoliasearch(
 );
 
 const querySuggestionsSource = {
-  getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
+  getInputValue: ({ suggestion }) => suggestion.query + ' ',
   getSuggestions({ query }) {
     return getAlgoliaHits({
       searchClient,
@@ -119,7 +119,7 @@ const createSource = (items: any[], { templates = {}, limit = 10 } = {}) => ({
       )
       .slice(0, limit);
   },
-  getSuggestionValue: ({ suggestion }) => suggestion.value,
+  getInputValue: ({ suggestion }) => suggestion.value,
   templates: {
     suggestion: ({ suggestion }) => (
       <div style={{ display: 'flex' }}>
@@ -311,7 +311,7 @@ storiesOf('Options', module)
                 }, 400);
               });
             },
-            getSuggestionValue: ({ suggestion }) => suggestion.value,
+            getInputValue: ({ suggestion }) => suggestion.value,
             templates: {
               header: () =>
                 '<h5 class="algolia-autocomplete-item-header">Fruits</h5> ',
@@ -334,7 +334,7 @@ storiesOf('Options', module)
                 }, 600);
               });
             },
-            getSuggestionValue: ({ suggestion }) => suggestion.value,
+            getInputValue: ({ suggestion }) => suggestion.value,
             templates: {
               header: () =>
                 '<h5 class="algolia-autocomplete-item-header">artists</h5>',
@@ -372,7 +372,7 @@ storiesOf('Options', module)
                 }, 400);
               });
             },
-            getSuggestionValue: ({ suggestion }) => suggestion.value,
+            getInputValue: ({ suggestion }) => suggestion.value,
             templates: {
               header: () =>
                 '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
@@ -395,7 +395,7 @@ storiesOf('Options', module)
                 }, 600);
               });
             },
-            getSuggestionValue: ({ suggestion }) => suggestion.value,
+            getInputValue: ({ suggestion }) => suggestion.value,
             templates: {
               header: () =>
                 '<h5 class="algolia-autocomplete-item-header">artists</h5>',
@@ -454,7 +454,7 @@ storiesOf('Options', module)
         getSources() {
           return [
             {
-              getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
+              getInputValue: ({ suggestion }) => suggestion.query + ' ',
               getSuggestions({ query }) {
                 if (query) {
                   return [];
@@ -572,7 +572,7 @@ storiesOf('Options', module)
 
             return [
               {
-                getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
+                getInputValue: ({ suggestion }) => suggestion.query + ' ',
                 getSuggestions({ query }) {
                   if (query) {
                     return [];
@@ -610,7 +610,7 @@ storiesOf('Options', module)
                 },
               },
               {
-                getSuggestionValue: ({ suggestion }) => suggestion.query + ' ',
+                getInputValue: ({ suggestion }) => suggestion.query + ' ',
                 getSuggestions() {
                   return querySuggestionsHits;
                 },
@@ -686,7 +686,7 @@ storiesOf('Options', module)
                 },
               },
               {
-                getSuggestionValue: ({ state }) => state.query,
+                getInputValue: ({ state }) => state.query,
                 getSuggestions() {
                   return productsHits;
                 },

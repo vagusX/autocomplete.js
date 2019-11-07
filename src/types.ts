@@ -68,7 +68,7 @@ export interface AutocompleteSource {
   /**
    * Function called to get the value of the suggestion. The value is used to fill the search box.
    */
-  getSuggestionValue({
+  getInputValue({
     suggestion,
     state,
   }: {
@@ -93,7 +93,7 @@ export interface AutocompleteSource {
 
 export interface AutocompleteItem {
   suggestion: Suggestion;
-  suggestionValue: ReturnType<AutocompleteSource['getSuggestionValue']>;
+  suggestionValue: ReturnType<AutocompleteSource['getInputValue']>;
   source: AutocompleteSource;
 }
 
@@ -103,7 +103,7 @@ export interface EventHandlerOptions extends AutocompleteSetters {
 
 export interface ItemEventHandlerOptions extends EventHandlerOptions {
   suggestion: Suggestion;
-  suggestionValue: ReturnType<AutocompleteSource['getSuggestionValue']>;
+  suggestionValue: ReturnType<AutocompleteSource['getInputValue']>;
   source: AutocompleteSource;
 }
 

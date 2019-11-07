@@ -101,7 +101,7 @@ The container for the autocomplete search box.
 
 #### `getSources`
 
-> `(options: { query: string }) => Source[]` | **required**
+> `(options: { query: string }) => Source[] | Promise<AutocompleteSource[]>`
 
 Called to fetch the [sources](#sources).
 
@@ -292,7 +292,7 @@ const source = {
 
 #### `getSuggestions`
 
-> `(options: { query }) => Suggestion[]` | **required**
+> `(options: { query }) => Suggestion[] | Promise<Suggestion[]>` | **required**
 
 Called when the input changes. You can use this function to filter/search the items based on the query.
 

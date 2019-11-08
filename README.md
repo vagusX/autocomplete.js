@@ -630,6 +630,24 @@ The template to display before all sources.
 
 The template to display after all sources.
 
+#### `submitIcon`
+
+> `(options: { state: AutocompleteState, ...setters }) => string | JSX.Element`
+
+The template for the submit icon.
+
+#### `resetIcon`
+
+> `(options: { state: AutocompleteState, ...setters }) => string | JSX.Element`
+
+The template for the reset icon. The template for the submit icon.
+
+#### `loadingIcon`
+
+> `(options: { state: AutocompleteState, ...setters }) => string | JSX.Element`
+
+The template for the loading icon.
+
 ## Top-level API
 
 ### `autocomplete`

@@ -2,19 +2,26 @@
 
 import { h, Ref } from 'preact';
 
+import { Template } from './Template';
 import {
   AutocompleteState,
   RequiredAutocompleteProps,
   AutocompleteSetters,
 } from './types';
 
+type SearchBoxTemplates = Pick<
+  RequiredAutocompleteProps['templates'],
+  'submitIcon' | 'resetIcon' | 'loadingIcon'
+>;
+
 export interface SearchBoxProps {
   placeholder: RequiredAutocompleteProps['placeholder'];
   autofocus: RequiredAutocompleteProps['autofocus'];
+  templates: SearchBoxTemplates;
   completion: string;
   internalState: AutocompleteState;
   setters: AutocompleteSetters;
-  onKeyDown: (event: KeyboardEvent) => void;
+  onKeyDown: (event: InputEvent) => void;
   onInput: (event: KeyboardEvent) => void;
   onFocus: RequiredAutocompleteProps['onFocus'];
   onReset: (event: MouseEvent) => void;
@@ -42,39 +49,51 @@ export function SearchBox(props: SearchBoxProps) {
         htmlFor={props.getInputProps().id}
         className="algolia-autocomplete-magnifierLabel"
       >
-        <svg viewBox="0 0 18 18">
-          <path
-            d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
-            stroke="currentColor"
-            strokeWidth="1.78"
-            fill="none"
-            fillRule="evenodd"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <Template
+          data={{ state: props.internalState, ...props.setters }}
+          template={props.templates.submitIcon}
+          defaultTemplate={() => (
+            <svg viewBox="0 0 18 18">
+              <path
+                d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
+                stroke="currentColor"
+                strokeWidth="1.78"
+                fill="none"
+                fillRule="evenodd"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        />
       </label>
 
       <div className="algolia-autocomplete-loadingIndicator">
-        <svg viewBox="0 0 38 38" stroke="currentColor" strokeOpacity=".5">
-          <g fill="none" fillRule="evenodd">
-            <g transform="translate(1 1)" strokeWidth="2">
-              <circle strokeOpacity=".3" cx="18" cy="18" r="18" />
-              <path d="M36 18c0-9.94-8.06-18-18-18">
-                {/*
-                // @ts-ignore */}
-                <animateTransform
-                  attributeName="transform"
-                  type="rotate"
-                  from="0 18 18"
-                  to="360 18 18"
-                  dur="1s"
-                  repeatCount="indefinite"
-                />
-              </path>
-            </g>
-          </g>
-        </svg>
+        <Template
+          data={{ state: props.internalState, ...props.setters }}
+          template={props.templates.loadingIcon}
+          defaultTemplate={() => (
+            <svg viewBox="0 0 38 38" stroke="currentColor" strokeOpacity=".5">
+              <g fill="none" fillRule="evenodd">
+                <g transform="translate(1 1)" strokeWidth="2">
+                  <circle strokeOpacity=".3" cx="18" cy="18" r="18" />
+                  <path d="M36 18c0-9.94-8.06-18-18-18">
+                    {/*
+                    // @ts-ignore */}
+                    <animateTransform
+                      attributeName="transform"
+                      type="rotate"
+                      from="0 18 18"
+                      to="360 18 18"
+                      dur="1s"
+                      repeatCount="indefinite"
+                    />
+                  </path>
+                </g>
+              </g>
+            </svg>
+          )}
+        />
       </div>
 
       <div className="algolia-autocomplete-searchbox">
@@ -128,13 +147,19 @@ export function SearchBox(props: SearchBoxProps) {
         hidden={props.internalState.query.length === 0}
         onClick={props.onReset}
       >
-        <svg viewBox="0 0 10 10">
-          <path
-            d="M5 4.12L8.93.18a.62.62 0 1 1 .89.89L5.88 5l3.94 3.93a.62.62 0 1 1-.89.89L5 5.88 1.07 9.82a.62.62 0 1 1-.89-.89L4.12 5 .18 1.07a.62.62 0 1 1 .89-.89L5 4.12z"
-            fill="currentColor"
-            fillRule="evenodd"
-          />
-        </svg>
+        <Template
+          data={{ state: props.internalState, ...props.setters }}
+          template={props.templates.resetIcon}
+          defaultTemplate={() => (
+            <svg viewBox="0 0 10 10">
+              <path
+                d="M5 4.12L8.93.18a.62.62 0 1 1 .89.89L5.88 5l3.94 3.93a.62.62 0 1 1-.89.89L5 5.88 1.07 9.82a.62.62 0 1 1-.89-.89L4.12 5 .18 1.07a.62.62 0 1 1 .89-.89L5 4.12z"
+                fill="currentColor"
+                fillRule="evenodd"
+              />
+            </svg>
+          )}
+        />
       </button>
     </form>
   );

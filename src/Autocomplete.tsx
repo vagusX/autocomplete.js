@@ -534,6 +534,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                 results,
                 state: getState(),
               })}
+              templates={templates}
               internalState={getState()}
               setters={setters}
               onInputRef={inputRef}

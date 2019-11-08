@@ -28,6 +28,18 @@ interface AutocompleteTemplates {
    * The template to display after all sources.
    */
   footer?: Template;
+  /**
+   * The template for the submit icon.
+   */
+  submitIcon?: Template;
+  /**
+   * The template for the reset icon.
+   */
+  resetIcon?: Template;
+  /**
+   * The template for the loading icon.
+   */
+  loadingIcon?: Template;
 }
 
 interface AutocompleteSourceTemplates {

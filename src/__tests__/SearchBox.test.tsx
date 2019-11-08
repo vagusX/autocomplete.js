@@ -23,6 +23,7 @@ function getDefaultProps(): SearchBoxProps {
     placeholder: '',
     autofocus: false,
     completion: '',
+    templates: {},
     setters: {
       setQuery: jest.fn(),
       setResults: jest.fn(),
@@ -101,6 +102,54 @@ describe('SearchBox', () => {
       const input = getByPlaceholderText('Search placeholder');
 
       expect(input).toBeInTheDocument();
+    });
+  });
+
+  describe('templates', () => {
+    test('should allow custom submit templates', () => {
+      const props = {
+        ...getDefaultProps(),
+        templates: {
+          submitIcon: () => '<span>Submit</span>',
+        },
+      };
+
+      const { container } = render(<SearchBox {...props} />);
+      const submit = container.querySelector(
+        '.algolia-autocomplete-magnifierLabel'
+      );
+
+      expect(submit).toContainHTML('<span>Submit</span>');
+    });
+
+    test('should allow custom reset templates', () => {
+      const props = {
+        ...getDefaultProps(),
+        templates: {
+          resetIcon: () => '<span>Reset</span>',
+        },
+      };
+
+      const { container } = render(<SearchBox {...props} />);
+      const submit = container.querySelector('.algolia-autocomplete-reset');
+
+      expect(submit).toContainHTML('<span>Reset</span>');
+    });
+
+    test('should allow custom loading templates', () => {
+      const props = {
+        ...getDefaultProps(),
+        templates: {
+          loadingIcon: () => '<span>Loading</span>',
+        },
+      };
+
+      const { container } = render(<SearchBox {...props} />);
+      const submit = container.querySelector(
+        '.algolia-autocomplete-loadingIndicator'
+      );
+
+      expect(submit).toContainHTML('<span>Loading</span>');
     });
   });
 

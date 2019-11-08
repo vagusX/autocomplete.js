@@ -17,7 +17,6 @@ Autocomplete.js is a JavaScript library that creates a fast and fully-featured a
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Features](#features)
 - [Usage](#usage)
 - [Installation](#installation)
@@ -253,7 +252,7 @@ Useful if you're using Autocomplete.js in a different context than [`window`](ht
 
 #### `onFocus`
 
-> `(options) => void`
+> `(options: { state: AutocompleteState, ...setters }) => void`
 
 Called when the input is focused.
 
@@ -261,7 +260,7 @@ This function is also called when the input is clicked while already having the 
 
 #### `onError`
 
-> `(options) => void` | defaults to `({ state }) => throw state.error`
+> `(options: { state: AutocompleteState, ...setters }) => void` | defaults to `({ state }) => throw state.error`
 
 Called when an error is thrown while getting the suggestions.
 
@@ -273,7 +272,7 @@ When an error is caught:
 
 #### `onClick`
 
-> `(event: MouseEvent, options) => void`
+> `(event: MouseEvent, options: { state: AutocompleteState, ...setters, suggestion: any, suggestionValue: string }) => void`
 
 Called when a [`click` event](https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event) is fired on an item.
 
@@ -281,7 +280,7 @@ This function is useful to alter the behavior when a special key is held (e.g. k
 
 #### `onKeyDown`
 
-> `(event: KeyboardEvent, options) => void`
+> `(event: KeyboardEvent, options: { state: AutocompleteState, ...setters, suggestion?: any, suggestionValue?: string }) => void`
 
 Called when a [`keydown` event](https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event) is fired.
 
@@ -360,7 +359,7 @@ const source = {
 
 #### `getSuggestions`
 
-> `(options: { query }) => Suggestion[] | Promise<Suggestion[]>` | **required**
+> `(options: { query: string, state: AutocompleteState, ...setters }) => Suggestion[] | Promise<Suggestion[]>` | **required**
 
 Called when the input changes. You can use this function to filter/search the items based on the query.
 
@@ -459,7 +458,7 @@ const source = {
 
 #### `onSelect`
 
-> `(options) => void`
+> `(options: { state: AutocompleteState, ...setters }) => void`
 
 Called when an item is selected.
 

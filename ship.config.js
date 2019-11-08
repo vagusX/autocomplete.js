@@ -7,8 +7,8 @@ module.exports = {
   mergeStrategy: {
     toSameBranch: ['next'],
   },
-  publishCommand() {
-    return 'yarn publish --access public';
+  publishCommand({ tag }) {
+    return `yarn publish --access public --tag ${tag}`;
   },
   versionUpdated({ version, dir }) {
     // Bump the string version in the version file

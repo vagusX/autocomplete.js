@@ -227,10 +227,6 @@ export interface AutocompleteProps {
    */
   onError?: (options: EventHandlerOptions) => void;
   /**
-   * Called when there are no results.
-   */
-  onEmpty?: (options: EventHandlerOptions) => void;
-  /**
    * Called when the input changes.
    */
   onInput?: (

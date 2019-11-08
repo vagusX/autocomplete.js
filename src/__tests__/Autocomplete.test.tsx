@@ -451,38 +451,6 @@ describe('Autocomplete', () => {
     });
   });
 
-  describe.skip('onEmpty', () => {
-    test('is called when there are no results', () => {
-      const props = {
-        ...getDefaultProps(),
-        onEmpty: jest.fn(),
-        getSources: () => [
-          {
-            ...defaultSource,
-            getSuggestions({ query }) {
-              return [{ value: 'Apple' }].filter(
-                suggestion => suggestion.value === query
-              );
-            },
-          },
-        ],
-      };
-
-      const { container } = render(<Autocomplete {...props} />);
-      const input = container.querySelector<HTMLInputElement>(
-        '.algolia-autocomplete-input'
-      );
-
-      userEvent.type(input, 'Appl');
-
-      expect(props.onEmpty).toHaveBeenCalledTimes(4);
-
-      userEvent.type(input, 'Apple');
-
-      expect(props.onEmpty).toHaveBeenCalledTimes(4);
-    });
-  });
-
   describe.skip('onError', () => {
     test('is called when fetching the suggestions fails', () => {
       const testError = new Error('Test error');

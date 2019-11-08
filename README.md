@@ -319,12 +319,6 @@ autocomplete({
 
 </details>
 
-#### `onEmpty`
-
-> `(options: { state: AutocompleteState }) => void`
-
-Called when there are no results.
-
 #### `onInput`
 
 > `(options: { query: string, state: AutocompleteState }) => void`

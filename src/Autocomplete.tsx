@@ -50,7 +50,6 @@ function defaultOnInput({
   stallThreshold,
   state,
   setters,
-  onEmpty,
   onError,
   onResults,
 }: {
@@ -61,7 +60,6 @@ function defaultOnInput({
   stallThreshold: RequiredAutocompleteProps['stallThreshold'];
   state: AutocompleteState;
   setters: AutocompleteSetters;
-  onEmpty: RequiredAutocompleteProps['onEmpty'];
   onError: RequiredAutocompleteProps['onError'];
   onResults: (options: EventHandlerOptions) => void;
 }) {
@@ -118,10 +116,6 @@ function defaultOnInput({
         setters.setResults(results);
 
         onResults({ state, ...setters });
-
-        if (!hasResults(results)) {
-          onEmpty({ state, ...setters });
-        }
       })
       .catch(error => {
         if (lastStallId) {
@@ -338,7 +332,6 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
     onFocus = noop,
     onClick = noop,
     onKeyDown = noop,
-    onEmpty = noop,
     onError = ({ state }) => {
       throw state.error;
     },
@@ -352,7 +345,6 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
         state: getState(),
         onResults,
         setters,
-        onEmpty,
         onError,
       }),
     // State.

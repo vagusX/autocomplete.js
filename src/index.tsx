@@ -42,7 +42,6 @@ function autocomplete(options: AutocompleteOptions): AutocompleteApi {
     onClick,
     onKeyDown,
     onError,
-    onEmpty,
   } = options || {};
 
   const autocompleteRef = createRef();
@@ -74,7 +73,6 @@ function autocomplete(options: AutocompleteOptions): AutocompleteApi {
       onFocus={onFocus}
       onClick={onClick}
       onError={onError}
-      onEmpty={onEmpty}
       onKeyDown={onKeyDown}
     />,
     containerElement

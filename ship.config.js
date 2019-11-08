@@ -7,7 +7,10 @@ module.exports = {
   mergeStrategy: {
     toSameBranch: ['next'],
   },
-  versionUpdated: ({ version, dir }) => {
+  publishCommand() {
+    return 'yarn publish --access public';
+  },
+  versionUpdated({ version, dir }) {
     // Bump the string version in the version file
     const versionPath = path.resolve(dir, 'src/version.ts');
     fs.writeFileSync(versionPath, `export const version = '${version}';\n`);

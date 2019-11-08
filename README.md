@@ -321,7 +321,7 @@ autocomplete({
 
 #### `onInput`
 
-> `(options: { query: string, state: AutocompleteState }) => void`
+> `(options: { query: string, state: AutocompleteState, ...setters }) => void | Promise <void | { state: AutocompleteState }>`
 
 Called when the input changes.
 

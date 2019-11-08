@@ -23,7 +23,6 @@ import {
   RequiredAutocompleteProps,
   Environment,
   Result,
-  EventHandlerOptions,
 } from './types';
 
 export const defaultEnvironment: Environment =
@@ -34,7 +33,7 @@ let autocompleteIdCounter = 0;
 /**
  * Generates a unique ID for an instance of an Autocomplete DownShift instance.
  */
-function generateId(): string {
+function generateAutocompleteId(): string {
   return String(autocompleteIdCounter++);
 }
 
@@ -51,7 +50,6 @@ function defaultOnInput({
   state,
   setters,
   onError,
-  onResults,
 }: {
   query: string;
   getSources: AutocompleteProps['getSources'];
@@ -61,8 +59,7 @@ function defaultOnInput({
   state: AutocompleteState;
   setters: AutocompleteSetters;
   onError: RequiredAutocompleteProps['onError'];
-  onResults: (options: EventHandlerOptions) => void;
-}) {
+}): ReturnType<RequiredAutocompleteProps['onInput']> {
   if (!getSources) {
     throw new Error(
       "The option `getSources()` is required if you don't use `onInput()`."
@@ -115,7 +112,7 @@ function defaultOnInput({
         setters.setIsOpen(true);
         setters.setResults(results);
 
-        onResults({ state, ...setters });
+        return { state };
       })
       .catch(error => {
         if (lastStallId) {
@@ -130,6 +127,8 @@ function defaultOnInput({
           state,
           ...setters,
         });
+
+        return { state };
       });
   });
 }
@@ -335,7 +334,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
     onError = ({ state }) => {
       throw state.error;
     },
-    onInput = ({ query, onResults = noop }) =>
+    onInput = ({ query }) =>
       defaultOnInput({
         query,
         getSources,
@@ -343,7 +342,6 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
         environment,
         stallThreshold,
         state: getState(),
-        onResults,
         setters,
         onError,
       }),
@@ -469,7 +467,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
 
   return (
     <Downshift
-      id={`autocomplete-${generateId()}`}
+      id={`autocomplete-${generateAutocompleteId()}`}
       environment={environment}
       defaultHighlightedIndex={defaultHighlightedIndex}
       itemToString={(item: AutocompleteItem) => {
@@ -482,25 +480,26 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
 
         const { suggestion, suggestionValue, source } = item;
 
-        onInput({
-          query: suggestionValue,
-          state: getState(),
-          onResults({ setIsOpen }) {
-            if (!source.onSelect) {
-              setIsOpen(false);
-            } else {
-              const currentState = getState();
+        Promise.resolve(
+          onInput({
+            query: suggestionValue,
+            state: getState(),
+            ...setters,
+          })
+        ).then(() => {
+          if (!source.onSelect) {
+            setIsOpen(false);
+          } else {
+            const currentState = getState();
 
-              source.onSelect({
-                suggestion,
-                suggestionValue,
-                source,
-                state: currentState,
-                ...setters,
-              });
-            }
-          },
-          ...setters,
+            source.onSelect({
+              suggestion,
+              suggestionValue,
+              source,
+              state: currentState,
+              ...setters,
+            });
+          }
         });
       }}
       onOuterClick={() => {

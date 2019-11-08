@@ -232,9 +232,8 @@ export interface AutocompleteProps {
   onInput?: (
     options: EventHandlerOptions & {
       query: string;
-      onResults?: (options: EventHandlerOptions) => void;
     }
-  ) => void;
+  ) => void | Promise<void | { state: AutocompleteState }>;
 }
 
 export type RequiredAutocompleteProps = Required<AutocompleteProps>;

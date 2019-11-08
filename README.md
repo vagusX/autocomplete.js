@@ -29,6 +29,8 @@ Autocomplete.js is a JavaScript library that creates a fast and fully-featured a
   - [`autocomplete`](#autocomplete)
   - [Algolia presets](#algolia-presets)
 - [Design](#design)
+  - [Search box](#search-box)
+  - [Dropdown](#dropdown)
 - [Examples](#examples)
 - [Browser support](#browser-support)
 - [Contributing](#contributing)
@@ -859,7 +861,121 @@ autocomplete({
 
 ## Design
 
-<!-- TODO -->
+### Search box
+
+<details>
+
+<summary>HTML output</summary>
+
+```html
+<div
+  class="algolia-autocomplete"
+  role="combobox"
+  aria-haspopup="listbox"
+  aria-labelledby="autocomplete-0-label"
+>
+  <form role="search" novalidate="" class="algolia-autocomplete-form">
+    <label
+      for="autocomplete-0-input"
+      class="algolia-autocomplete-magnifierLabel"
+    >
+      <svg>
+        ...
+      </svg>
+    </label>
+
+    <div class="algolia-autocomplete-loadingIndicator">
+      <svg>
+        ...
+      </svg>
+    </div>
+
+    <div class="algolia-autocomplete-searchbox">
+      <input
+        id="autocomplete-0-input"
+        class="algolia-autocomplete-input"
+        aria-autocomplete="list"
+        aria-labelledby="autocomplete-0-label"
+        autocomplete="off"
+        placeholder="Search…"
+        type="search"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        maxlength="512"
+      />
+    </div>
+
+    <button
+      type="reset"
+      title="Clear the query"
+      class="algolia-autocomplete-reset"
+      hidden="true"
+    >
+      <svg>
+        ...
+      </svg>
+    </button>
+  </form>
+</div>
+```
+
+</details>
+
+### Dropdown
+
+<details>
+
+<summary>HTML output</summary>
+
+```html
+<div class="algolia-autocomplete-dropdown">
+  <div class="algolia-autocomplete-dropdown-container">
+    <header class="algolia-autocomplete-header">
+      Global header
+    </header>
+
+    <section class="algolia-autocomplete-suggestions">
+      <header class="algolia-autocomplete-suggestions-header">
+        <h2>Fruits</h2>
+      </header>
+
+      <ul
+        id="autocomplete-0-menu"
+        role="listbox"
+        aria-labelledby="autocomplete-0-label"
+      >
+        <li
+          class="algolia-autocomplete-suggestions-item"
+          id="autocomplete-0-item-0"
+          role="option"
+          tabindex="0"
+        >
+          Apple
+        </li>
+        <li
+          class="algolia-autocomplete-suggestions-item"
+          id="autocomplete-0-item-1"
+          role="option"
+          tabindex="0"
+        >
+          Banana
+        </li>
+      </ul>
+
+      <footer class="algolia-autocomplete-suggestions-footer">
+        Showing 2 out of 10 fruits
+      </footer>
+    </section>
+
+    <footer class="algolia-autocomplete-footer">
+      Global footer
+    </footer>
+  </div>
+</div>
+```
+
+</details>
 
 ## Examples
 

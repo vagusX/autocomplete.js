@@ -27,7 +27,11 @@ Autocomplete.js is a JavaScript library that creates a fast and fully-featured a
   - [Global templates](#global-templates)
 - [Top-level API](#top-level-api)
   - [`autocomplete`](#autocomplete)
-  - [Algolia presets](#algolia-presets)
+  - [`getAlgoliaHits`](#getalgoliahits)
+  - [`getAlgoliaResults`](#getalgoliaresults)
+  - [`highlightAlgoliaHit`](#highlightalgoliahit)
+  - [`reverseHighlightAlgoliaHit`](#reversehighlightalgoliahit)
+  - [`snippetAlgoliaHit`](#snippetalgoliahit)
 - [Design](#design)
   - [Search box](#search-box)
   - [Dropdown](#dropdown)
@@ -660,11 +664,7 @@ autocompleteSearch.setError(app.error);
 autocompleteSearch.setContext(app.context);
 ```
 
-### Algolia presets
-
-Autocomplete.js comes with presets to facilitate the integration with [Algolia](http://algolia.com/).
-
-#### `getAlgoliaHits`
+### `getAlgoliaHits`
 
 > `(options: { searchClient: SearchClient, query: string, searchParameters: SearchParameters[] }) => Promise<Response['hits']>`
 
@@ -716,7 +716,7 @@ autocomplete({
 
 </details>
 
-#### `getAlgoliaResults`
+### `getAlgoliaResults`
 
 > `(options: { searchClient: SearchClient, query: string, searchParameters: SearchParameters[] }) => Promise<MultiResponse['results']>`
 
@@ -772,7 +772,7 @@ autocomplete({
 
 </details>
 
-#### `highlightAlgoliaHit`
+### `highlightAlgoliaHit`
 
 Highlights and escapes the value of a record.
 
@@ -798,7 +798,7 @@ autocomplete({
 
 </details>
 
-#### `reverseHighlightAlgoliaHit`
+### `reverseHighlightAlgoliaHit`
 
 This function reverse-highlights and escapes the value of a record.
 
@@ -826,7 +826,7 @@ autocomplete({
 
 </details>
 
-#### `snippetAlgoliaHit`
+### `snippetAlgoliaHit`
 
 Highlights and escapes the snippet value of a record.
 

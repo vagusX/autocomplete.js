@@ -14,9 +14,9 @@ export interface SearchBoxProps {
   completion: string;
   internalState: AutocompleteState;
   setters: AutocompleteSetters;
-  onInput: (event: any) => void;
-  onFocus: RequiredAutocompleteProps['onFocus'];
   onKeyDown: (event: KeyboardEvent) => void;
+  onInput: (event: KeyboardEvent) => void;
+  onFocus: RequiredAutocompleteProps['onFocus'];
   onReset: (event: MouseEvent) => void;
   onSubmit: (event: Event) => void;
   onInputRef: Ref<HTMLInputElement | null>;

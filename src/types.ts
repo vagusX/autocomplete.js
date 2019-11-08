@@ -248,4 +248,4 @@ export interface AutocompleteSetters {
   setContext: StateUpdater<AutocompleteState['context']>;
 }
 
-export interface AutocompleteApi extends AutocompleteSetters {}
+export type AutocompleteApi = AutocompleteSetters;

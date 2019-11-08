@@ -14,12 +14,12 @@ const createSearchClient = () => {
           {
             hits: [{ value: '1' }, { value: '2' }, { value: '3' }],
             nbHits: 3,
-          } as Response,
+          },
           {
             hits: [{ value: '1 (bis)' }, { value: '2 (bis)' }],
             nbHits: 2,
-          } as Response,
-        ],
+          },
+        ] as Response[],
       })
     ),
     searchForFacetValues: jest.fn(),

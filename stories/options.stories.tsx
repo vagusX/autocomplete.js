@@ -63,11 +63,11 @@ const querySuggestionsSource = {
                 <path
                   d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
                   stroke="currentColor"
-                  stroke-width="1.78"
+                  strokeWidth="1.78"
                   fill="none"
-                  fill-rule="evenodd"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  fillRule="evenodd"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 ></path>
               </svg>
             </div>
@@ -521,6 +521,20 @@ storiesOf('Options', module)
         minLength: 0,
         showCompletion: true,
         defaultHighlightedIndex: -1,
+        transformResultsRender(results) {
+          const [recentSearches, querySuggestions, products] = results;
+
+          return (
+            <div style={{ display: 'flex' }}>
+              <div style={{ flex: 1, marginRight: '1rem' }}>
+                {recentSearches}
+                {querySuggestions}
+              </div>
+
+              <div style={{ flex: 2 }}>{products}</div>
+            </div>
+          );
+        },
         onClick(event, { setIsOpen }) {
           if (
             event.metaKey ||
@@ -650,11 +664,11 @@ storiesOf('Options', module)
                               <path
                                 d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
                                 stroke="currentColor"
-                                stroke-width="1.78"
+                                strokeWidth="1.78"
                                 fill="none"
-                                fill-rule="evenodd"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                                fillRule="evenodd"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                               ></path>
                             </svg>
                           </div>
@@ -713,7 +727,7 @@ storiesOf('Options', module)
                 },
                 templates: {
                   header: ({ state }) => (
-                    <h5 class="suggestions-header">
+                    <h5 className="suggestions-header">
                       Products ({state.context.nbProductsHits})
                     </h5>
                   ),

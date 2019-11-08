@@ -10,6 +10,35 @@ Autocomplete.js is a JavaScript library that creates a fast and fully-featured a
 
 [![Version](https://img.shields.io/npm/v/autocomplete.js.svg?style=flat-square)](https://www.npmjs.com/package/autocomplete.js) [![jsDelivr Hits](https://data.jsdelivr.com/v1/package/npm/autocomplete.js/badge?style=flat-square)](https://www.jsdelivr.com/package/npm/autocomplete.js) [![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 
+<details>
+
+<summary><strong>Contents</strong></summary>
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [Features](#features)
+- [Usage](#usage)
+- [Installation](#installation)
+- [API](#api)
+  - [Options](#options)
+  - [Sources](#sources)
+  - [State](#state)
+  - [Global templates](#global-templates)
+- [Top-level API](#top-level-api)
+  - [`autocomplete`](#autocomplete)
+  - [Algolia presets](#algolia-presets)
+- [Design](#design)
+- [Examples](#examples)
+- [Browser support](#browser-support)
+- [Contributing](#contributing)
+- [License](#license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+</details>
+
 ## Features
 
 - Displays suggestions as you type
@@ -65,6 +94,8 @@ autocomplete({
 });
 ```
 
+You can learn more about the [options](#options) and the [top-level API](#top-level-api).
+
 ## Installation
 
 **🚧 This version of Autocomplete.js is not yet published.**
@@ -91,8 +122,6 @@ If you do not wish to use a package manager, you can use standalone endpoints:
 
 ### Options
 
-**🚧 This version of Autocomplete.js is in development.** You can temporarily refer to the [TypeScript definitions](https://github.com/francoischalifour/autocomplete.js/blob/next/src/Autocomplete.tsx) for full options description.
-
 #### `container`
 
 > `string | HTMLElement` | **required**
@@ -101,7 +130,7 @@ The container for the autocomplete search box.
 
 #### `getSources`
 
-> `(options: { query: string }) => Source[] | Promise<AutocompleteSource[]>`
+> `(options: { query: string }) => AutocompleteSource[] | Promise<AutocompleteSource[]>`
 
 Called to fetch the [sources](#sources).
 
@@ -291,15 +320,17 @@ autocomplete({
 
 #### `onEmpty`
 
-> `(options) => void`
+> `(options: { state: AutocompleteState }) => void`
 
 Called when there are no results.
 
 #### `onInput`
 
-> `(options) => void`
+> `(options: { query: string, state: AutocompleteState }) => void`
 
 Called when the input changes.
+
+This turns experience is "controlled" mode. You'll be in charge of updating the state with the [top-level API](#autocomplete).
 
 ### Sources
 
@@ -307,7 +338,7 @@ An Autocomplete source refers to an object with the following properties:
 
 #### `getInputValue`
 
-> `(options: { suggestion: Suggestion, state: State }) => string`
+> `(options: { suggestion: Suggestion, state: AutocompleteState }) => string`
 
 Called to get the value of the suggestion. The value is used to fill the search box.
 
@@ -357,25 +388,25 @@ Templates to use for the source. A template supports strings and JSX elements.
 
 ##### `header`
 
-> `(options: { state: State }) => string | JSX.Element`
+> `(options: { state: AutocompleteState, ...setters }) => string | JSX.Element`
 
 The template to display before the suggestions.
 
 ##### `suggestion`
 
-> `(options: { suggestion: Suggestion, state: State }) => string | JSX.Element`
+> `(options: { suggestion: Suggestion, state: AutocompleteState, ...setters }) => string | JSX.Element`
 
 The template for each suggestion.
 
 ##### `footer`
 
-> `(options: { state: State }) => string | JSX.Element`
+> `(options: { state: AutocompleteState, ...setters }) => string | JSX.Element`
 
 The template to display after the suggestions.
 
 ##### `empty`
 
-> `(options: { state: State }) => string | JSX.Element`
+> `(options: { state: AutocompleteState, ...setters }) => string | JSX.Element`
 
 The template to display when there are no suggestions.
 
@@ -446,15 +477,24 @@ The state can be initially set with [`initialState`](#initial-state) and it's is
 
 The query.
 
-Can be set with `setQuery`.
-
 ##### `results`
 
-> `Array<Result[]>` | defaults to `[]`
+> `Result[]` | defaults to `[]`
 
 The results of all the sources.
 
-Can be set with `setResults`.
+<details>
+
+<summary><code>Result</code> definition</summary>
+
+```ts
+interface Result {
+  source: AutocompleteSource;
+  suggestions: any[];
+}
+```
+
+</details>
 
 ##### `isOpen`
 
@@ -462,15 +502,11 @@ Can be set with `setResults`.
 
 Whether the dropdown is open.
 
-Can be set with `setIsOpen`.
-
 ##### `isLoading`
 
 > `boolean` | defaults to `false`
 
 Whether the experience is loading.
-
-Can be set with `setIsLoading`.
 
 ##### `isStalled`
 
@@ -478,15 +514,11 @@ Can be set with `setIsLoading`.
 
 Whether the experience is stalled.
 
-Can be set with `setIsStalled`.
-
 ##### `error`
 
 > `null | Error` | defaults to `null`
 
 The error that happened, `null` if none.
-
-Can be set with `setError`.
 
 ##### `context`
 
@@ -502,43 +534,43 @@ Each state has a setter that can be used in the lifecycle of Autocomplete.js.
 
 > `(value: string | ((prevState: string) => string)) => void`
 
-Sets the `query` value in the state.
+Sets the [`query`](#query) value in the state.
 
 ##### `setResults`
 
 > `(value: Result[] | ((prevState: Result[]) => Result[])) => void`
 
-Sets the `results` value in the state.
+Sets the [`results`](#results) value in the state.
 
 ##### `setIsOpen`
 
 > `(value: boolean | ((prevState: boolean) => boolean)) => void`
 
-Sets the `isOpen` value in the state.
+Sets the [`isOpen`](#isopen) value in the state.
 
 ##### `setIsLoading`
 
 > `(value: boolean | ((prevState: boolean) => boolean)) => void`
 
-Sets the `isLoading` value in the state.
+Sets the [`isLoading`](isLoading) value in the state.
 
 ##### `setIsStalled`
 
 > `(value: boolean | ((prevState: boolean) => boolean)) => void`
 
-Sets the `isStalled` value in the state.
+Sets the [`isStalled`](isStalled) value in the state.
 
 ##### `setError`
 
 > `(value: Error | null | ((prevState: Error | null) => Error | null)) => void`
 
-Sets the `error` value in the state.
+Sets the [`error`](error) value in the state.
 
 ##### `setContext`
 
 > `(value: object | ((prevState: object) => object)) => void`
 
-Sets the `context` value in the state.
+Sets the [`context`](context) value in the state.
 
 <details>
   <summary>Example</summary>
@@ -590,25 +622,55 @@ In addition to the source templates, Autocomplete.js supports some global templa
 
 #### `header`
 
-> `(options: { state: State }) => string | JSX.Element`
+> `(options: { state: AutocompleteState, ...setters }) => string | JSX.Element`
 
 The template to display before all sources.
 
 #### `footer`
 
-> `(options: { state: State }) => string | JSX.Element`
+> `(options: { state: AutocompleteState, ...setters }) => string | JSX.Element`
 
 The template to display after all sources.
 
-## Design
+## Top-level API
 
-<!-- TODO -->
+### `autocomplete`
 
-## Presets
+`autocomplete` is the default export from the `autocomplete.js` package. It is the main function that starts the autocomplete experience and accepts [options](#options).
+
+The `autocomplete` function returns an API that allows you to turn Autocomplete.js in a "controlled" mode. It returns all the [setters](#setters) so that you update the state of the experience.
+
+```js
+// Instantiate Autocomplete.js
+const autocompleteSearch = autocomplete({
+  // options
+});
+
+// Retrieve the state of your app that you want to forward to Autocomplete.js
+const app = getAppState();
+
+// Update the state of Autocomplete.js based on your app state
+autocompleteSearch.setQuery(app.query);
+autocompleteSearch.setResults(
+  app.indices.map(index => {
+    return {
+      source: getSource({ index }),
+      suggestions: index.hits,
+    };
+  })
+);
+autocompleteSearch.setIsOpen(app.isOpen);
+autocompleteSearch.setIsLoading(app.isLoading);
+autocompleteSearch.setIsStalled(app.isStalled);
+autocompleteSearch.setError(app.error);
+autocompleteSearch.setContext(app.context);
+```
+
+### Algolia presets
 
 Autocomplete.js comes with presets to facilitate the integration with [Algolia](http://algolia.com/).
 
-### `getAlgoliaHits`
+#### `getAlgoliaHits`
 
 > `(options: { searchClient: SearchClient, query: string, searchParameters: SearchParameters[] }) => Promise<Response['hits']>`
 
@@ -660,7 +722,7 @@ autocomplete({
 
 </details>
 
-### `getAlgoliaResults`
+#### `getAlgoliaResults`
 
 > `(options: { searchClient: SearchClient, query: string, searchParameters: SearchParameters[] }) => Promise<MultiResponse['results']>`
 
@@ -716,7 +778,7 @@ autocomplete({
 
 </details>
 
-### `highlightAlgoliaHit`
+#### `highlightAlgoliaHit`
 
 Highlights and escapes the value of a record.
 
@@ -742,7 +804,7 @@ autocomplete({
 
 </details>
 
-### `reverseHighlightAlgoliaHit`
+#### `reverseHighlightAlgoliaHit`
 
 This function reverse-highlights and escapes the value of a record.
 
@@ -770,7 +832,7 @@ autocomplete({
 
 </details>
 
-### `snippetAlgoliaHit`
+#### `snippetAlgoliaHit`
 
 Highlights and escapes the snippet value of a record.
 
@@ -795,6 +857,10 @@ autocomplete({
 ```
 
 </details>
+
+## Design
+
+<!-- TODO -->
 
 ## Examples
 

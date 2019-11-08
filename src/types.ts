@@ -233,7 +233,12 @@ export interface AutocompleteProps {
   /**
    * Called when the input changes.
    */
-  onInput?: (options: EventHandlerOptions & { query: string }) => void;
+  onInput?: (
+    options: EventHandlerOptions & {
+      query: string;
+      onResults?: (options: EventHandlerOptions) => void;
+    }
+  ) => void;
 }
 
 export type RequiredAutocompleteProps = Required<AutocompleteProps>;

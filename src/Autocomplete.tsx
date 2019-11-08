@@ -17,12 +17,13 @@ import { SearchBox } from './SearchBox';
 import {
   AutocompleteSetters,
   AutocompleteItem,
-  AutocompleteProps,
   AutocompleteSource,
   AutocompleteState,
+  AutocompleteProps,
+  RequiredAutocompleteProps,
   Environment,
   Result,
-  RequiredAutocompleteProps,
+  EventHandlerOptions,
 } from './types';
 
 export const defaultEnvironment: Environment =
@@ -51,6 +52,7 @@ function defaultOnInput({
   setters,
   onEmpty,
   onError,
+  onResults,
 }: {
   query: string;
   getSources: AutocompleteProps['getSources'];
@@ -61,6 +63,7 @@ function defaultOnInput({
   setters: AutocompleteSetters;
   onEmpty: RequiredAutocompleteProps['onEmpty'];
   onError: RequiredAutocompleteProps['onError'];
+  onResults: (options: EventHandlerOptions) => void;
 }) {
   if (!getSources) {
     throw new Error(
@@ -113,6 +116,8 @@ function defaultOnInput({
         setters.setIsLoading(false);
         setters.setIsOpen(true);
         setters.setResults(results);
+
+        onResults({ state, ...setters });
 
         if (!hasResults(results)) {
           onEmpty({ state, ...setters });
@@ -329,7 +334,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
     dropdownContainer = environment.document.body,
     dropdownPosition = 'left',
     templates = {},
-    transformResultsRender = (results: Result[]) => results,
+    transformResultsRender = (results: JSX.Element[]) => results,
     onFocus = noop,
     onClick = noop,
     onKeyDown = noop,
@@ -337,7 +342,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
     onError = ({ state }) => {
       throw state.error;
     },
-    onInput = ({ query }) =>
+    onInput = ({ query, onResults = noop }) =>
       defaultOnInput({
         query,
         getSources,
@@ -345,6 +350,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
         environment,
         stallThreshold,
         state: getState(),
+        onResults,
         setters,
         onEmpty,
         onError,
@@ -487,22 +493,23 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
         onInput({
           query: suggestionValue,
           state: getState(),
+          onResults({ setIsOpen }) {
+            if (!source.onSelect) {
+              setIsOpen(false);
+            } else {
+              const currentState = getState();
+
+              source.onSelect({
+                suggestion,
+                suggestionValue,
+                source,
+                state: currentState,
+                ...setters,
+              });
+            }
+          },
           ...setters,
         });
-
-        if (source.onSelect) {
-          const currentState = getState();
-
-          source.onSelect({
-            suggestion,
-            suggestionValue,
-            source,
-            state: currentState,
-            ...setters,
-          });
-        } else {
-          setIsOpen(false);
-        }
       }}
       onOuterClick={() => {
         setIsOpen(false);

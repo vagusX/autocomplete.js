@@ -78,7 +78,7 @@ export const Dropdown = ({
             const { source, suggestions } = result;
 
             return (
-              <section className="algolia-autocomplete-results">
+              <section className="algolia-autocomplete-suggestions">
                 <Template
                   tagName="header"
                   data={{
@@ -86,6 +86,9 @@ export const Dropdown = ({
                     ...setters,
                   }}
                   template={source.templates.header}
+                  rootProps={{
+                    className: 'algolia-autocomplete-suggestions-header',
+                  }}
                 />
 
                 {!state.isLoading && suggestions.length === 0 ? (
@@ -120,7 +123,7 @@ export const Dropdown = ({
                         <Template
                           tagName="li"
                           rootProps={{
-                            className: 'algolia-autocomplete-item',
+                            className: 'algolia-autocomplete-suggestions-item',
                             ...getItemProps({
                               item,
                               tabIndex: 0,
@@ -153,6 +156,9 @@ export const Dropdown = ({
                     ...setters,
                   }}
                   template={source.templates.footer}
+                  rootProps={{
+                    className: 'algolia-autocomplete-suggestions-footer',
+                  }}
                 />
               </section>
             );

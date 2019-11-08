@@ -144,7 +144,9 @@ storiesOf('Options', module)
         container,
         dropdownContainer,
         placeholder: 'Search for U.S. states… (e.g. "Carolina")',
-        getSources: () => [createSource(states)],
+        getSources() {
+          return [createSource(states)];
+        },
       });
 
       return container;
@@ -160,7 +162,9 @@ storiesOf('Options', module)
         initialState: {
           query: 'Carolina',
         },
-        getSources: () => [createSource(states)],
+        getSources() {
+          return [createSource(states)];
+        },
       });
 
       return container;
@@ -184,7 +188,7 @@ storiesOf('Options', module)
                   header: ({ state }) =>
                     state.results[0].length === 0
                       ? ''
-                      : '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
+                      : '<h5 class="suggestions-header">Fruits</h5>',
                 },
               }),
             ];
@@ -197,7 +201,7 @@ storiesOf('Options', module)
                 header: ({ state }) =>
                   state.results[0].length === 0
                     ? ''
-                    : '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
+                    : '<h5 class="suggestions-header">Fruits</h5>',
               },
             }),
             createSource(artists, {
@@ -206,7 +210,7 @@ storiesOf('Options', module)
                 header: ({ state }) =>
                   state.results[1].length === 0
                     ? ''
-                    : '<h5 class="algolia-autocomplete-item-header">Artists</h5>',
+                    : '<h5 class="suggestions-header">Artists</h5>',
               },
             }),
             createSource(states, {
@@ -215,7 +219,7 @@ storiesOf('Options', module)
                 header: ({ state }) =>
                   state.results[2].length === 0
                     ? ''
-                    : '<h5 class="algolia-autocomplete-item-header">States</h5>',
+                    : '<h5 class="suggestions-header">States</h5>',
               },
             }),
           ];
@@ -233,7 +237,9 @@ storiesOf('Options', module)
         dropdownContainer,
         placeholder: 'Search for fruits (e.g. "apple")',
         minLength: 3,
-        getSources: () => [createSource(fruits)],
+        getSources() {
+          return [createSource(fruits)];
+        },
       });
 
       return container;
@@ -247,7 +253,9 @@ storiesOf('Options', module)
         dropdownContainer,
         placeholder: 'Search for fruits (e.g. "banana")',
         minLength: 0,
-        getSources: () => [createSource(fruits)],
+        getSources() {
+          return [createSource(fruits)];
+        },
       });
 
       return container;
@@ -261,7 +269,9 @@ storiesOf('Options', module)
         dropdownContainer,
         placeholder: 'Search… (focus the inner window and type "/" or "a")',
         keyboardShortcuts: ['/', 'a'],
-        getSources: () => [createSource(fruits)],
+        getSources() {
+          return [createSource(fruits)];
+        },
       });
 
       return container;
@@ -275,12 +285,9 @@ storiesOf('Options', module)
         dropdownContainer,
         placeholder: 'Search… (first item is not selected by default)',
         defaultHighlightedIndex: -1,
-        onKeyDown(event) {
-          if (event.key === 'Enter') {
-            window.location.assign('https://google.com');
-          }
+        getSources() {
+          return [createSource(fruits)];
         },
-        getSources: () => [createSource(fruits)],
       });
 
       return container;
@@ -294,55 +301,55 @@ storiesOf('Options', module)
         dropdownContainer,
         placeholder: 'Search…',
         showCompletion: true,
-        getSources: () => [
-          {
-            getSuggestions({ query }) {
-              return new Promise(resolve => {
-                const wait = setTimeout(() => {
-                  clearTimeout(wait);
+        getSources() {
+          return [
+            {
+              getSuggestions({ query }) {
+                return new Promise(resolve => {
+                  const wait = setTimeout(() => {
+                    clearTimeout(wait);
 
-                  resolve(
-                    fruits.filter(fruit =>
-                      fruit.value
-                        .toLocaleLowerCase()
-                        .includes(query.toLocaleLowerCase())
-                    )
-                  );
-                }, 400);
-              });
+                    resolve(
+                      fruits.filter(fruit =>
+                        fruit.value
+                          .toLocaleLowerCase()
+                          .includes(query.toLocaleLowerCase())
+                      )
+                    );
+                  }, 400);
+                });
+              },
+              getInputValue: ({ suggestion }) => suggestion.value,
+              templates: {
+                header: () => '<h5 class="suggestions-header">Fruits</h5> ',
+                suggestion: ({ suggestion }) => suggestion.value,
+                empty: ({ state }) => `No fruits found for "${state.query}".`,
+              },
             },
-            getInputValue: ({ suggestion }) => suggestion.value,
-            templates: {
-              header: () =>
-                '<h5 class="algolia-autocomplete-item-header">Fruits</h5> ',
-              suggestion: ({ suggestion }) => suggestion.value,
-              empty: ({ state }) => `No fruits found for "${state.query}".`,
+            {
+              getSuggestions({ query }) {
+                return new Promise(resolve => {
+                  const wait = setTimeout(() => {
+                    clearTimeout(wait);
+                    resolve(
+                      artists.filter(artist =>
+                        artist.value
+                          .toLocaleLowerCase()
+                          .includes(query.toLocaleLowerCase())
+                      )
+                    );
+                  }, 600);
+                });
+              },
+              getInputValue: ({ suggestion }) => suggestion.value,
+              templates: {
+                header: () => '<h5 class="suggestions-header">artists</h5>',
+                suggestion: ({ suggestion }) => suggestion.value,
+                empty: ({ state }) => `No artists found for "${state.query}".`,
+              },
             },
-          },
-          {
-            getSuggestions({ query }) {
-              return new Promise(resolve => {
-                const wait = setTimeout(() => {
-                  clearTimeout(wait);
-                  resolve(
-                    artists.filter(artist =>
-                      artist.value
-                        .toLocaleLowerCase()
-                        .includes(query.toLocaleLowerCase())
-                    )
-                  );
-                }, 600);
-              });
-            },
-            getInputValue: ({ suggestion }) => suggestion.value,
-            templates: {
-              header: () =>
-                '<h5 class="algolia-autocomplete-item-header">artists</h5>',
-              suggestion: ({ suggestion }) => suggestion.value,
-              empty: ({ state }) => `No artists found for "${state.query}".`,
-            },
-          },
-        ],
+          ];
+        },
       });
 
       return container;
@@ -356,54 +363,54 @@ storiesOf('Options', module)
         dropdownContainer,
         placeholder: 'Search (the loader spins right away)',
         stallThreshold: 0,
-        getSources: () => [
-          {
-            getSuggestions({ query }) {
-              return new Promise(resolve => {
-                const wait = setTimeout(() => {
-                  clearTimeout(wait);
-                  resolve(
-                    fruits.filter(fruit =>
-                      fruit.value
-                        .toLocaleLowerCase()
-                        .includes(query.toLocaleLowerCase())
-                    )
-                  );
-                }, 400);
-              });
+        getSources() {
+          return [
+            {
+              getSuggestions({ query }) {
+                return new Promise(resolve => {
+                  const wait = setTimeout(() => {
+                    clearTimeout(wait);
+                    resolve(
+                      fruits.filter(fruit =>
+                        fruit.value
+                          .toLocaleLowerCase()
+                          .includes(query.toLocaleLowerCase())
+                      )
+                    );
+                  }, 400);
+                });
+              },
+              getInputValue: ({ suggestion }) => suggestion.value,
+              templates: {
+                header: () => '<h5 class="suggestions-header">Fruits</h5>',
+                suggestion: ({ suggestion }) => suggestion.value,
+                empty: ({ state }) => `No fruits found for "${state.query}".`,
+              },
             },
-            getInputValue: ({ suggestion }) => suggestion.value,
-            templates: {
-              header: () =>
-                '<h5 class="algolia-autocomplete-item-header">Fruits</h5>',
-              suggestion: ({ suggestion }) => suggestion.value,
-              empty: ({ state }) => `No fruits found for "${state.query}".`,
+            {
+              getSuggestions({ query }) {
+                return new Promise(resolve => {
+                  const wait = setTimeout(() => {
+                    clearTimeout(wait);
+                    resolve(
+                      artists.filter(artist =>
+                        artist.value
+                          .toLocaleLowerCase()
+                          .includes(query.toLocaleLowerCase())
+                      )
+                    );
+                  }, 600);
+                });
+              },
+              getInputValue: ({ suggestion }) => suggestion.value,
+              templates: {
+                header: () => '<h5 class="suggestions-header">artists</h5>',
+                suggestion: ({ suggestion }) => suggestion.value,
+                empty: ({ state }) => `No artists found for "${state.query}".`,
+              },
             },
-          },
-          {
-            getSuggestions({ query }) {
-              return new Promise(resolve => {
-                const wait = setTimeout(() => {
-                  clearTimeout(wait);
-                  resolve(
-                    artists.filter(artist =>
-                      artist.value
-                        .toLocaleLowerCase()
-                        .includes(query.toLocaleLowerCase())
-                    )
-                  );
-                }, 600);
-              });
-            },
-            getInputValue: ({ suggestion }) => suggestion.value,
-            templates: {
-              header: () =>
-                '<h5 class="algolia-autocomplete-item-header">artists</h5>',
-              suggestion: ({ suggestion }) => suggestion.value,
-              empty: ({ state }) => `No artists found for "${state.query}".`,
-            },
-          },
-        ],
+          ];
+        },
       });
 
       return container;
@@ -417,7 +424,9 @@ storiesOf('Options', module)
         dropdownContainer,
         placeholder: 'Search…',
         showCompletion: true,
-        getSources: () => [querySuggestionsSource],
+        getSources() {
+          return [querySuggestionsSource];
+        },
       });
 
       return container;
@@ -432,7 +441,9 @@ storiesOf('Options', module)
         container,
         dropdownContainer,
         placeholder: 'Search…',
-        getSources: () => [querySuggestionsSource],
+        getSources() {
+          return [querySuggestionsSource];
+        },
       });
 
       return container;
@@ -701,7 +712,7 @@ storiesOf('Options', module)
                 },
                 templates: {
                   header: ({ state }) => (
-                    <h5 class="algolia-autocomplete-item-header">
+                    <h5 class="suggestions-header">
                       Products ({state.context.nbProductsHits})
                     </h5>
                   ),

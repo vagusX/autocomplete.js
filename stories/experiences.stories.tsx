@@ -52,7 +52,7 @@ storiesOf('Experiences', module).add(
           header() {
             return (
               index.hits.length > 0 && (
-                <h5 class="algolia-autocomplete-item-header">{header}</h5>
+                <h5 class="suggestions-header">{header}</h5>
               )
             );
           },

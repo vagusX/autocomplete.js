@@ -36,7 +36,7 @@
     "type-check": "tsc --noEmit",
     "website:build": "yarn run build && yarn run storybook:build",
     "prepublishOnly": "yarn run build",
-    "publish": "yarn publish --access public",
+    "release": "yarn publish --access public",
     "release:prepare": "shipjs prepare",
     "release:trigger": "shipjs trigger"
   },

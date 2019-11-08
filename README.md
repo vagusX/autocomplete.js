@@ -99,14 +99,12 @@ You can learn more about the [options](#options) and the [top-level API](#top-le
 
 ## Installation
 
-**🚧 This version of Autocomplete.js is not yet published.**
-
 Autocomplete.js is available on the [npm](https://www.npmjs.com/) registry.
 
 ```sh
-yarn add autocomplete.js
+yarn add @francoischalifour/autocomplete.js
 # or
-npm install autocomplete.js
+npm install @francoischalifour/autocomplete.js
 ```
 
 If you do not wish to use a package manager, you can use standalone endpoints:

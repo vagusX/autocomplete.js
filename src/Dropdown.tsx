@@ -74,11 +74,14 @@ export const Dropdown = ({
         />
 
         {transformResultsRender(
-          results.map(result => {
+          results.map((result, index) => {
             const { source, suggestions } = result;
 
             return (
-              <section className="algolia-autocomplete-suggestions">
+              <section
+                key={`result-${index}`}
+                className="algolia-autocomplete-suggestions"
+              >
                 <Template
                   tagName="header"
                   data={{
@@ -109,7 +112,7 @@ export const Dropdown = ({
                       { suppressRefError: true }
                     )}
                   >
-                    {suggestions.map(suggestion => {
+                    {suggestions.map((suggestion, index) => {
                       const item: AutocompleteItem = {
                         suggestionValue: source.getInputValue({
                           suggestion,
@@ -123,6 +126,7 @@ export const Dropdown = ({
                         <Template
                           tagName="li"
                           rootProps={{
+                            key: `suggestion-${index}`,
                             className: 'algolia-autocomplete-suggestions-item',
                             ...getItemProps({
                               item,

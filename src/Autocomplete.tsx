@@ -29,6 +29,7 @@ export const defaultEnvironment: Environment =
   typeof window === 'undefined' ? ({} as Environment) : window;
 
 let autocompleteIdCounter = 0;
+let lastStallId: number | null = null;
 
 /**
  * Generates a unique ID for an instance of an Autocomplete DownShift instance.
@@ -44,7 +45,6 @@ function hasResults(results: Result[]): boolean {
 function defaultOnInput({
   query,
   getSources,
-  lastStallId,
   environment,
   stallThreshold,
   state,
@@ -53,7 +53,6 @@ function defaultOnInput({
 }: {
   query: string;
   getSources: AutocompleteProps['getSources'];
-  lastStallId: number | null;
   environment: RequiredAutocompleteProps['environment'];
   stallThreshold: RequiredAutocompleteProps['stallThreshold'];
   state: AutocompleteState;
@@ -310,8 +309,6 @@ interface ControlledAutocompleteProps
 }
 
 function ControlledAutocomplete(props: ControlledAutocompleteProps) {
-  let lastStallId: number | null = null;
-
   const {
     // Props.
     container,
@@ -338,7 +335,6 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
       defaultOnInput({
         query,
         getSources,
-        lastStallId,
         environment,
         stallThreshold,
         state: getState(),

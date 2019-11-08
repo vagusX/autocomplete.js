@@ -17,5 +17,6 @@ module.exports = {
     'no-shadow': 0,
     'prefer-template': 0,
     'jest/no-disabled-tests': 0,
+    'react/prop-types': 0,
   },
 };

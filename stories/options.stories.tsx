@@ -549,6 +549,7 @@ storiesOf('Options', module)
             } else if (event.shiftKey) {
               window.open(suggestion.url, '_blank');
             } else if (event.altKey) {
+              // Keep native browser behavior
             } else {
               window.location.assign(suggestion.url);
             }

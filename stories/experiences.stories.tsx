@@ -52,7 +52,7 @@ storiesOf('Experiences', module).add(
           header() {
             return (
               index.hits.length > 0 && (
-                <h5 class="suggestions-header">{header}</h5>
+                <h5 className="suggestions-header">{header}</h5>
               )
             );
           },
@@ -194,28 +194,14 @@ storiesOf('Experiences', module).add(
           return hitsSource({ index, header: 'News', attribute: 'title' });
         case 'instant_search_demo_query_suggestions':
           return querySuggestionsSource({ index, onRefine });
+        default:
+          throw new Error(
+            `No source defined for the index "${index.indexName}".`
+          );
       }
     }
 
     let autocompleteSearch: AutocompleteApi;
-
-    // Object.defineProperty(autocompleteState, 'query', {
-    //   get() {
-    //     return '';
-    //   },
-    //   set(query) {
-    //     autocompleteSearch.setQuery(query);
-    //   },
-    // });
-
-    // Object.defineProperty(autocompleteState, 'results', {
-    //   get() {
-    //     return [];
-    //   },
-    //   set(results) {
-    //     autocompleteSearch.setResults(results);
-    //   },
-    // });
 
     const autocompleteWidget = connectAutocomplete(
       (renderOptions, isFirstRender: boolean) => {
@@ -253,6 +239,7 @@ storiesOf('Experiences', module).add(
                 } else if (event.shiftKey) {
                   window.open(suggestion.url, '_blank');
                 } else if (event.altKey) {
+                  // Keep native browser behavior
                 } else {
                   window.location.assign(suggestion.url);
                 }

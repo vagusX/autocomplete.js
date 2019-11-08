@@ -35,8 +35,6 @@
     "watch": "babel src --root-mode upward --extensions '.js,.ts,.tsx' --ignore '**/__tests__/**/*','**/__mocks__/**/*','**/__fixtures__/**/*' --out-dir dist/es --quiet --watch",
     "type-check": "tsc --noEmit",
     "website:build": "yarn run build && yarn run storybook:build",
-    "prepublishOnly": "yarn run build",
-    "release": "yarn publish --access public",
     "release:prepare": "shipjs prepare",
     "release:trigger": "shipjs trigger"
   },

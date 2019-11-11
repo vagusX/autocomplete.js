@@ -71,16 +71,16 @@ export interface AutocompleteState {
   context: { [key: string]: any };
 }
 
-interface SuggestionsOptions extends AutocompleteSetters {
+export interface SuggestionsOptions extends AutocompleteSetters {
   query: string;
   state: AutocompleteState;
 }
 
-export interface AutocompleteSource {
+export interface PublicAutocompleteSource {
   /**
    * Function called to get the value of the suggestion. The value is used to fill the search box.
    */
-  getInputValue({
+  getInputValue?({
     suggestion,
     state,
   }: {
@@ -103,6 +103,10 @@ export interface AutocompleteSource {
   onSelect?: (options: ItemEventHandlerOptions) => void;
 }
 
+export type AutocompleteSource = {
+  [P in keyof PublicAutocompleteSource]-?: PublicAutocompleteSource[P];
+};
+
 export interface AutocompleteItem {
   suggestion: Suggestion;
   suggestionValue: ReturnType<AutocompleteSource['getInputValue']>;
@@ -119,23 +123,17 @@ export interface ItemEventHandlerOptions extends EventHandlerOptions {
   source: AutocompleteSource;
 }
 
-export interface AutocompleteProps {
+export interface PublicAutocompleteProps {
   /**
    * The container for the autocomplete search box.
    */
   container: HTMLElement;
   /**
-   * The sources to get the suggestions from.
-   */
-  getSources?(
-    options: SuggestionsOptions
-  ): AutocompleteSource[] | Promise<AutocompleteSource[]>;
-  /**
    * The container for the autocomplete dropdown.
    *
    * @default environment.document.body
    */
-  dropdownContainer?: HTMLElement;
+  dropdownContainer: HTMLElement;
   /**
    * The dropdown position related to the container.
    * Possible values are `"left"` and `"right"`.
@@ -191,6 +189,12 @@ export interface AutocompleteProps {
    */
   templates?: AutocompleteTemplates;
   /**
+   * The sources to get the suggestions from.
+   */
+  getSources?(
+    options: SuggestionsOptions
+  ): PublicAutocompleteSource[] | Promise<PublicAutocompleteSource[]>;
+  /**
    * Called before rendering the results.
    * Useful to wrap results in containers to organize the display.
    */
@@ -203,18 +207,6 @@ export interface AutocompleteProps {
    * @default window
    */
   environment?: Environment;
-  /**
-   * Whether the autocomplete experience is controlled.
-   *
-   * @default false
-   */
-  isControlled?: boolean;
-  /**
-   * The state to inject in Autocomplete.js.
-   * If this option is provided, Autocomplete.js is in controlled mode and
-   * you're responsible for updating the query and the results.
-   */
-  state?: Pick<AutocompleteState, 'query' | 'results'>;
   /**
    * Called when the input is focused.
    */
@@ -248,7 +240,25 @@ export interface AutocompleteProps {
   ) => void | Promise<void | { state: AutocompleteState }>;
 }
 
-export type RequiredAutocompleteProps = Required<AutocompleteProps>;
+export interface AutocompleteOptions
+  extends Omit<PublicAutocompleteProps, 'container' | 'dropdownContainer'> {
+  /**
+   * The container for the autocomplete search box.
+   */
+  container: string | HTMLElement;
+  /**
+   * The container for the autocomplete dropdown.
+   *
+   * @default environment.document.body
+   */
+  dropdownContainer?: string | HTMLElement;
+}
+
+export interface AutocompleteProps extends Required<PublicAutocompleteProps> {
+  getSources(options: SuggestionsOptions): Promise<AutocompleteSource[]>;
+  state: AutocompleteState;
+  setters: AutocompleteSetters;
+}
 
 export interface AutocompleteSetters {
   setQuery: StateUpdater<AutocompleteState['query']>;

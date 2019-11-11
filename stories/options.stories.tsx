@@ -712,7 +712,6 @@ storiesOf('Options', module)
                 },
               },
               {
-                getInputValue: ({ state }) => state.query,
                 getSuggestions() {
                   return productsHits;
                 },

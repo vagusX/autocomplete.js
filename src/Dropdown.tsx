@@ -6,16 +6,16 @@ import { Template } from './Template';
 import {
   AutocompleteItem,
   AutocompleteState,
-  RequiredAutocompleteProps,
+  AutocompleteProps,
   AutocompleteSetters,
 } from './types';
 
 interface DropdownProps extends AutocompleteState {
   position: Pick<ClientRect, 'left' | 'top'> | undefined;
   hidden: boolean;
-  templates: RequiredAutocompleteProps['templates'];
-  onClick: RequiredAutocompleteProps['onClick'];
-  transformResultsRender: RequiredAutocompleteProps['transformResultsRender'];
+  templates: AutocompleteProps['templates'];
+  onClick: AutocompleteProps['onClick'];
+  transformResultsRender: AutocompleteProps['transformResultsRender'];
   setters: AutocompleteSetters;
   getItemProps(options?: object): any;
   getMenuProps(options?: object): any;

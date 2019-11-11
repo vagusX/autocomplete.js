@@ -3,25 +3,25 @@
 import { h, Ref } from 'preact';
 import { createPortal, forwardRef } from 'preact/compat';
 import {
-  useState,
   useEffect,
-  useRef,
   useImperativeHandle,
+  useState,
+  useRef,
   StateUpdater,
 } from 'preact/hooks';
 import Downshift from 'downshift/preact';
 
-import { flatten, noop } from './utils';
 import { Dropdown } from './Dropdown';
 import { SearchBox } from './SearchBox';
+import { flatten, noop } from './utils';
 import {
   AutocompleteSetters,
   AutocompleteItem,
   AutocompleteSource,
   AutocompleteState,
   AutocompleteProps,
-  RequiredAutocompleteProps,
   Environment,
+  PublicAutocompleteProps,
   Result,
 } from './types';
 
@@ -53,18 +53,12 @@ function defaultOnInput({
 }: {
   query: string;
   getSources: AutocompleteProps['getSources'];
-  environment: RequiredAutocompleteProps['environment'];
-  stallThreshold: RequiredAutocompleteProps['stallThreshold'];
+  environment: AutocompleteProps['environment'];
+  stallThreshold: AutocompleteProps['stallThreshold'];
   state: AutocompleteState;
   setters: AutocompleteSetters;
-  onError: RequiredAutocompleteProps['onError'];
-}): ReturnType<RequiredAutocompleteProps['onInput']> {
-  if (!getSources) {
-    throw new Error(
-      "The option `getSources()` is required if you don't use `onInput()`."
-    );
-  }
-
+  onError: AutocompleteProps['onError'];
+}): ReturnType<AutocompleteProps['onInput']> {
   if (lastStallId) {
     clearTimeout(lastStallId);
     setters.setIsStalled(false);
@@ -78,13 +72,11 @@ function defaultOnInput({
     setters.setIsStalled(true);
   }, stallThreshold);
 
-  return Promise.resolve(
-    getSources({
-      query,
-      state,
-      ...setters,
-    })
-  ).then(sources => {
+  return getSources({
+    query,
+    state,
+    ...setters,
+  }).then(sources => {
     return Promise.all(
       sources.map(source => {
         return Promise.resolve(
@@ -224,11 +216,83 @@ function getCompletion({
   return '';
 }
 
+function getSanitizedSources(
+  getSources: PublicAutocompleteProps['getSources']
+): AutocompleteProps['getSources'] {
+  if (!getSources) {
+    return () => Promise.resolve([]);
+  }
+
+  return options => {
+    return Promise.resolve(getSources(options)).then(sources =>
+      Promise.all(
+        sources.map(source => {
+          return Promise.resolve({
+            getInputValue({ state }) {
+              return state.query;
+            },
+            onSelect({ setIsOpen }) {
+              setIsOpen(false);
+            },
+            ...source,
+          });
+        })
+      )
+    );
+  };
+}
+
 function UncontrolledAutocomplete(
-  props: AutocompleteProps,
+  props: PublicAutocompleteProps,
   ref: Ref<AutocompleteSetters>
 ) {
-  const { initialState = {} } = props;
+  if (!props.getSources && !props.onInput) {
+    throw new Error(
+      'The `getSources()` option is required when not using `onInput()`.'
+    );
+  }
+
+  const {
+    container,
+    placeholder = '',
+    minLength = 1,
+    showCompletion = false,
+    autofocus = false,
+    defaultHighlightedIndex = 0,
+    stallThreshold = 300,
+    keyboardShortcuts = [],
+    getSources = getSanitizedSources(props.getSources),
+    environment = defaultEnvironment,
+    dropdownContainer = environment.document.body,
+    dropdownPosition = 'left',
+    templates = {},
+    initialState = {},
+    transformResultsRender = (results: JSX.Element[]) => results,
+    onFocus = noop,
+    onClick = noop,
+    onKeyDown = noop,
+    onError = ({ state }) => {
+      throw state.error;
+    },
+    onInput = ({ query }) =>
+      defaultOnInput({
+        query,
+        getSources: getSanitizedSources(props.getSources),
+        environment,
+        stallThreshold,
+        state: getState(),
+        setters: {
+          setQuery,
+          setResults,
+          setIsOpen,
+          setIsLoading,
+          setIsStalled,
+          setError,
+          setContext,
+        },
+        onError,
+      }),
+  } = props;
 
   const [query, setQuery] = useState<AutocompleteState['query']>(
     initialState.query || ''
@@ -260,6 +324,18 @@ function UncontrolledAutocomplete(
       };
     });
 
+  function getState(): AutocompleteState {
+    return {
+      query,
+      results,
+      isOpen,
+      isLoading,
+      isStalled,
+      error,
+      context,
+    };
+  }
+
   // Expose the component setters to the external API.
   useImperativeHandle(ref, () => {
     return {
@@ -275,7 +351,29 @@ function UncontrolledAutocomplete(
 
   return (
     <ControlledAutocomplete
+      // Props.
       {...props}
+      getSources={getSanitizedSources(getSources)}
+      environment={environment}
+      container={container}
+      placeholder={placeholder}
+      minLength={minLength}
+      showCompletion={showCompletion}
+      autofocus={autofocus}
+      defaultHighlightedIndex={defaultHighlightedIndex}
+      stallThreshold={stallThreshold}
+      keyboardShortcuts={keyboardShortcuts}
+      dropdownContainer={dropdownContainer}
+      dropdownPosition={dropdownPosition}
+      templates={templates}
+      initialState={initialState}
+      transformResultsRender={transformResultsRender}
+      onFocus={onFocus}
+      onClick={onClick}
+      onKeyDown={onKeyDown}
+      onError={onError}
+      onInput={onInput}
+      // State.
       query={query}
       setQuery={setQuery}
       results={results}
@@ -290,6 +388,16 @@ function UncontrolledAutocomplete(
       setError={setError}
       context={context}
       setContext={setContext}
+      state={getState()}
+      setters={{
+        setQuery,
+        setResults,
+        setIsOpen,
+        setIsLoading,
+        setIsStalled,
+        setError,
+        setContext,
+      }}
     />
   );
 }
@@ -312,36 +420,24 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
   const {
     // Props.
     container,
-    placeholder = '',
-    minLength = 1,
-    showCompletion = false,
-    autofocus = false,
-    defaultHighlightedIndex = 0,
-    stallThreshold = 300,
-    keyboardShortcuts = [],
-    getSources,
-    environment = defaultEnvironment,
-    dropdownContainer = environment.document.body,
-    dropdownPosition = 'left',
-    templates = {},
-    transformResultsRender = (results: JSX.Element[]) => results,
-    onFocus = noop,
-    onClick = noop,
-    onKeyDown = noop,
-    onError = ({ state }) => {
-      throw state.error;
-    },
-    onInput = ({ query }) =>
-      defaultOnInput({
-        query,
-        getSources,
-        environment,
-        stallThreshold,
-        state: getState(),
-        setters,
-        onError,
-      }),
+    placeholder,
+    minLength,
+    showCompletion,
+    autofocus,
+    defaultHighlightedIndex,
+    keyboardShortcuts,
+    environment,
+    dropdownContainer,
+    dropdownPosition,
+    templates,
+    transformResultsRender,
+    onFocus,
+    onClick,
+    onKeyDown,
+    onInput,
     // State.
+    state,
+    setters,
     query,
     setQuery,
     results,
@@ -355,7 +451,6 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
     error,
     setError,
     context,
-    setContext,
   } = props;
 
   const [dropdownRect, setDropdownRect] = useState<
@@ -363,16 +458,6 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
   >(undefined);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const setters = {
-    setQuery,
-    setResults,
-    setIsOpen,
-    setIsLoading,
-    setIsStalled,
-    setError,
-    setContext,
-  };
 
   useEffect(() => {
     function onGlobalKeyDown(event: KeyboardEvent): void {
@@ -429,18 +514,6 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
     onResize();
   }, [container, dropdownContainer]);
 
-  function getState(): AutocompleteState {
-    return {
-      query,
-      results,
-      isOpen,
-      isLoading,
-      isStalled,
-      error,
-      context,
-    };
-  }
-
   function onResize(): void {
     const nextContainerRect = container.getBoundingClientRect();
     const nextDropdownRect = dropdownContainer.getBoundingClientRect();
@@ -479,23 +552,17 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
         Promise.resolve(
           onInput({
             query: suggestionValue,
-            state: getState(),
+            state,
             ...setters,
           })
         ).then(() => {
-          if (!source.onSelect) {
-            setIsOpen(false);
-          } else {
-            const currentState = getState();
-
-            source.onSelect({
-              suggestion,
-              suggestionValue,
-              source,
-              state: currentState,
-              ...setters,
-            });
-          }
+          source.onSelect({
+            suggestion,
+            suggestionValue,
+            source,
+            state,
+            ...setters,
+          });
         });
       }}
       onOuterClick={() => {
@@ -532,10 +599,10 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                 showCompletion,
                 query,
                 results,
-                state: getState(),
+                state,
               })}
               templates={templates}
-              internalState={getState()}
+              internalState={state}
               setters={setters}
               onInputRef={inputRef}
               getInputProps={getInputProps}
@@ -549,18 +616,18 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                   if (!hasResults(results)) {
                     onInput({
                       query,
-                      state: getState(),
+                      state,
                       ...setters,
                     });
                   }
                 }
 
                 onFocus({
-                  state: getState(),
+                  state,
                   ...setters,
                 });
               }}
-              onKeyDown={(event: KeyboardEvent) => {
+              onKeyDown={event => {
                 const suggestion = flatten(
                   results.map(result => result.suggestions)
                 )[Math.max(0, highlightedIndex)];
@@ -569,21 +636,19 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                   results,
                 });
 
-                const currentState = getState();
-
                 if (suggestion && source) {
                   onKeyDown(event, {
                     suggestion,
                     suggestionValue: source.getInputValue({
                       suggestion,
-                      state: currentState,
+                      state,
                     }),
                     source,
-                    state: currentState,
+                    state,
                     ...setters,
                   });
                 } else {
-                  onKeyDown(event, { state: currentState, ...setters });
+                  onKeyDown(event, { state, ...setters });
                 }
 
                 if (event.key === 'Escape') {
@@ -592,7 +657,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                   if (!shouldOpen) {
                     onInput({
                       query: '',
-                      state: getState(),
+                      state,
                       ...setters,
                     });
                   }
@@ -609,13 +674,13 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
 
                     const nextQuery = source.getInputValue({
                       suggestion,
-                      state: getState(),
+                      state,
                     });
 
                     if (query !== nextQuery) {
                       onInput({
                         query: nextQuery,
-                        state: getState(),
+                        state,
                         ...setters,
                       });
 
@@ -624,7 +689,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                   }
                 }
               }}
-              onInput={(event: KeyboardEvent) => {
+              onInput={(event: InputEvent) => {
                 const query = (event.target as HTMLInputElement).value;
 
                 if (query.length >= minLength) {
@@ -632,7 +697,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
 
                   onInput({
                     query,
-                    state: getState(),
+                    state,
                     ...setters,
                   });
                 } else {
@@ -658,7 +723,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
 
                 onInput({
                   query: '',
-                  state: getState(),
+                  state,
                   ...setters,
                 });
 

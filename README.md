@@ -336,7 +336,7 @@ An Autocomplete source refers to an object with the following properties:
 
 #### `getInputValue`
 
-> `(options: { suggestion: Suggestion, state: AutocompleteState }) => string`
+> `(options: { suggestion: Suggestion, state: AutocompleteState }) => string` | defaults to `({ state }) => state.query`
 
 Called to get the value of the suggestion. The value is used to fill the search box.
 
@@ -457,7 +457,7 @@ const source = {
 
 #### `onSelect`
 
-> `(options: { state: AutocompleteState, ...setters }) => void`
+> `(options: { state: AutocompleteState, ...setters }) => void` | defaults to `({ setIsOpen }) => setIsOpen(false)`
 
 Called when an item is selected.
 

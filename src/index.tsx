@@ -4,44 +4,30 @@ import { h, render, createRef } from 'preact';
 
 import { Autocomplete, defaultEnvironment } from './Autocomplete';
 import { getHTMLElement } from './utils';
-import { AutocompleteProps, AutocompleteApi } from './types';
-
-interface AutocompleteOptions
-  extends Omit<AutocompleteProps, 'container' | 'dropdownContainer'> {
-  /**
-   * The container for the autocomplete search box.
-   */
-  container: string | HTMLElement;
-  /**
-   * The container for the autocomplete dropdown.
-   *
-   * @default environment.document.body
-   */
-  dropdownContainer?: string | HTMLElement;
-}
+import { AutocompleteOptions, AutocompleteApi } from './types';
 
 function autocomplete(options: AutocompleteOptions): AutocompleteApi {
   const {
+    autofocus,
     container,
+    defaultHighlightedIndex,
     dropdownContainer,
     dropdownPosition,
     environment = defaultEnvironment,
-    placeholder,
-    stallThreshold,
-    defaultHighlightedIndex,
+    getSources,
+    initialState,
     keyboardShortcuts,
     minLength,
+    onClick,
+    onError,
+    onFocus,
+    onInput,
+    onKeyDown,
+    placeholder,
     showCompletion,
-    autofocus,
-    initialState,
+    stallThreshold,
     templates,
     transformResultsRender,
-    getSources,
-    onInput,
-    onFocus,
-    onClick,
-    onKeyDown,
-    onError,
   } = options || {};
 
   const autocompleteRef = createRef();

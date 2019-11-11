@@ -5,25 +5,25 @@ import { h, Ref } from 'preact';
 import { Template } from './Template';
 import {
   AutocompleteState,
-  RequiredAutocompleteProps,
+  AutocompleteProps,
   AutocompleteSetters,
 } from './types';
 
 type SearchBoxTemplates = Pick<
-  RequiredAutocompleteProps['templates'],
+  AutocompleteProps['templates'],
   'submitIcon' | 'resetIcon' | 'loadingIcon'
 >;
 
 export interface SearchBoxProps {
-  placeholder: RequiredAutocompleteProps['placeholder'];
-  autofocus: RequiredAutocompleteProps['autofocus'];
+  placeholder: AutocompleteProps['placeholder'];
+  autofocus: AutocompleteProps['autofocus'];
   templates: SearchBoxTemplates;
   completion: string;
   internalState: AutocompleteState;
   setters: AutocompleteSetters;
-  onKeyDown: (event: InputEvent) => void;
-  onInput: (event: KeyboardEvent) => void;
-  onFocus: RequiredAutocompleteProps['onFocus'];
+  onKeyDown: (event: KeyboardEvent) => void;
+  onInput: (event: InputEvent) => void;
+  onFocus: AutocompleteProps['onFocus'];
   onReset: (event: MouseEvent) => void;
   onSubmit: (event: Event) => void;
   onInputRef: Ref<HTMLInputElement | null>;

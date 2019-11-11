@@ -39,9 +39,6 @@ storiesOf('Experiences', module).add(
 
     function hitsSource({ index, header, attribute }) {
       return {
-        getInputValue({ state }) {
-          return state.query;
-        },
         getSuggestions() {
           return index.hits;
         },
@@ -114,9 +111,6 @@ storiesOf('Experiences', module).add(
           onRefine(suggestionValue);
 
           setIsOpen(true);
-        },
-        getInputValue({ suggestion }) {
-          return suggestion.query;
         },
         getSuggestions() {
           return index.hits;

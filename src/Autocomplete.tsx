@@ -23,6 +23,7 @@ import {
   Environment,
   PublicAutocompleteProps,
   Result,
+  PublicAutocompleteSource,
 } from './types';
 
 export const defaultEnvironment: Environment =
@@ -165,7 +166,7 @@ function getSourceFromSuggestionIndex({
 
   const result: Result | undefined = results[resultIndex];
 
-  return result ? result.source : undefined;
+  return result ? normalizeSource(result.source) : undefined;
 }
 
 function getCompletion({
@@ -222,7 +223,22 @@ function getCompletion({
   return '';
 }
 
-function getSanitizedSources(
+function normalizeSource(source: PublicAutocompleteSource): AutocompleteSource {
+  return {
+    getInputValue({ state }) {
+      return state.query;
+    },
+    getSuggestionUrl() {
+      return undefined;
+    },
+    onSelect({ setIsOpen }) {
+      setIsOpen(false);
+    },
+    ...source,
+  };
+}
+
+function getNormalizedSources(
   getSources: PublicAutocompleteProps['getSources']
 ): AutocompleteProps['getSources'] {
   if (!getSources) {
@@ -233,18 +249,7 @@ function getSanitizedSources(
     return Promise.resolve(getSources(options)).then(sources =>
       Promise.all(
         sources.map(source => {
-          return Promise.resolve({
-            getInputValue({ state }) {
-              return state.query;
-            },
-            getSuggestionUrl() {
-              return undefined;
-            },
-            onSelect({ setIsOpen }) {
-              setIsOpen(false);
-            },
-            ...source,
-          });
+          return Promise.resolve(normalizeSource(source));
         })
       )
     );
@@ -291,7 +296,7 @@ function UncontrolledAutocomplete(
     defaultHighlightedIndex = 0,
     stallThreshold = 300,
     keyboardShortcuts = [],
-    getSources = getSanitizedSources(props.getSources),
+    getSources = getNormalizedSources(props.getSources),
     environment = defaultEnvironment,
     navigator = {
       navigate({ suggestionUrl }) {
@@ -322,7 +327,7 @@ function UncontrolledAutocomplete(
     onInput = ({ query }) =>
       defaultOnInput({
         query,
-        getSources: getSanitizedSources(props.getSources),
+        getSources: getNormalizedSources(props.getSources),
         environment,
         stallThreshold,
         state: getState(),
@@ -342,7 +347,7 @@ function UncontrolledAutocomplete(
   const [query, setQuery] = useState<AutocompleteState['query']>(
     initialState.query || ''
   );
-  const [results, setResults] = useState<AutocompleteState['results']>(
+  const [results, internalSetResults] = useState<AutocompleteState['results']>(
     initialState.results || []
   );
   const [isOpen, setIsOpen] = useState<boolean>(initialState.isOpen || false);
@@ -355,19 +360,35 @@ function UncontrolledAutocomplete(
   const [error, setError] = useState<AutocompleteState['error'] | null>(
     initialState.error || null
   );
-  const [context, setContext] = useState<AutocompleteState['context']>(
+  const [context, internalSetContext] = useState<AutocompleteState['context']>(
     initialState.context || {}
   );
 
-  const setMergedContext: StateUpdater<
-    AutocompleteState['context']
-  > = context =>
-    setContext(previousContext => {
+  const setResults: StateUpdater<AutocompleteState['results']> = newResults => {
+    const nextResults =
+      typeof newResults === 'function' ? newResults(results) : newResults;
+
+    internalSetResults(
+      nextResults.map(result => {
+        return {
+          source: normalizeSource(result.source),
+          suggestions: result.suggestions,
+        };
+      })
+    );
+  };
+
+  const setContext: StateUpdater<AutocompleteState['context']> = newContext => {
+    const nextContext =
+      typeof newContext === 'function' ? newContext(context) : newContext;
+
+    internalSetContext(previousContext => {
       return {
         ...previousContext,
-        ...context,
+        ...nextContext,
       };
     });
+  };
 
   function getState(): AutocompleteState {
     return {
@@ -390,7 +411,7 @@ function UncontrolledAutocomplete(
       setIsLoading,
       setIsStalled,
       setError,
-      setContext: setMergedContext,
+      setContext,
     };
   });
 
@@ -398,7 +419,7 @@ function UncontrolledAutocomplete(
     <ControlledAutocomplete
       // Props.
       {...props}
-      getSources={getSanitizedSources(getSources)}
+      getSources={getNormalizedSources(getSources)}
       environment={environment}
       container={container}
       placeholder={placeholder}

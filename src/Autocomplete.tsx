@@ -793,9 +793,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                   );
                 }
               }}
-              onReset={event => {
-                event.preventDefault();
-
+              onReset={() => {
                 onInput({
                   query: '',
                   state,

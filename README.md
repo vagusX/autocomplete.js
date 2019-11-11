@@ -254,6 +254,41 @@ The environment from where your JavaScript is running.
 
 Useful if you're using Autocomplete.js in a different context than [`window`](https://developer.mozilla.org/en-US/docs/Web/API/Window).
 
+#### `navigator`
+
+> `Navigator`
+
+API used to redirect users when a suggestion link is open programmatically (using keyboard navigation). It defines how a URL should be open in the current tab, in a new tab and in a new window.
+
+The source needs to specify [`getSuggestionUrl`](#getsuggestionurl) for the suggestion URL to be provided.
+
+<details>
+
+<summary>Example</summary>
+
+```js
+autocomplete({
+  // ...
+  navigator: {
+    navigate({ suggestionUrl }) {
+      environment.location.assign(suggestionUrl);
+    },
+    navigateNewTab({ suggestionUrl }) {
+      const windowReference = environment.open(suggestionUrl, '_blank');
+
+      if (windowReference) {
+        windowReference.focus();
+      }
+    },
+    navigateNewWindow({ suggestionUrl }) {
+      environment.open(suggestionUrl, '_blank');
+    },
+  },
+});
+```
+
+</details>
+
 #### `onFocus`
 
 > `(options: { state: AutocompleteState, ...setters }) => void`
@@ -284,7 +319,7 @@ This function is useful to alter the behavior when a special key is held (e.g. k
 
 #### `onKeyDown`
 
-> `(event: KeyboardEvent, options: { state: AutocompleteState, ...setters, suggestion?: any, suggestionValue?: string }) => void`
+> `(event: KeyboardEvent, options: { state: AutocompleteState, ...setters, suggestion?: any, suggestionValue?: string, suggestionUrl?: string }) => void` | defaults to an accessible behavior
 
 Called when a [`keydown` event](https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event) is fired.
 
@@ -297,15 +332,13 @@ This function is useful to alter the behavior when a special key is held.
 ```js
 autocomplete({
   // ...
-  onKeyDown(event, { suggestion, state, setIsOpen }) {
-    if (!suggestion || !suggestion.url) {
+  onKeyDown(event, { suggestionUrl, suggestion }) {
+    if (!suggestionUrl) {
       return;
     }
 
     if (event.key === 'Enter') {
       if (event.metaKey || event.ctrlKey) {
-        setIsOpen(true);
-
         const windowReference = window.open(suggestion.url, '_blank');
         windowReference.focus();
       } else if (event.shiftKey) {
@@ -350,6 +383,29 @@ const items = [{ value: 'Apple' }, { value: 'Banana' }];
 
 const source = {
   getInputValue: ({ suggestion }) => suggestion.value,
+  // ...
+};
+```
+
+</details>
+
+#### `getSuggestionUrl`
+
+> `(options: { suggestion: Suggestion, state: AutocompleteState }) => string | undefined`
+
+Called to get the URL of the suggestion. The value is used to add keyboard accessibility features to allow to open suggestions in the current tab, in a new tab or in a new window.
+
+<details>
+  <summary>Example</summary>
+
+```js
+const items = [
+  { value: 'Google', url: 'https://google.com' },
+  { value: 'Amazon', url: 'https://amazon.com' },
+];
+
+const source = {
+  getSuggestionUrl: ({ suggestion }) => suggestion.url,
   // ...
 };
 ```

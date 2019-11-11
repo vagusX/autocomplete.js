@@ -535,40 +535,6 @@ storiesOf('Options', module)
             </div>
           );
         },
-        onClick(event, { setIsOpen }) {
-          if (
-            event.metaKey ||
-            event.ctrlKey ||
-            event.shiftKey ||
-            event.altKey
-          ) {
-            setIsOpen(true);
-          } else {
-            setIsOpen(false);
-          }
-        },
-        onKeyDown(event, { suggestion, state, setIsOpen }) {
-          if (!suggestion || !suggestion.url) {
-            return;
-          }
-
-          if (event.key === 'Enter') {
-            recentSearches.setRecentSearch(state.query);
-
-            if (event.metaKey || event.ctrlKey) {
-              setIsOpen(true);
-
-              const windowReference = window.open(suggestion.url, '_blank');
-              windowReference!.focus();
-            } else if (event.shiftKey) {
-              window.open(suggestion.url, '_blank');
-            } else if (event.altKey) {
-              // Keep native browser behavior
-            } else {
-              window.location.assign(suggestion.url);
-            }
-          }
-        },
         getSources({ query, setContext }) {
           return getAlgoliaResults({
             searchClient,
@@ -715,14 +681,15 @@ storiesOf('Options', module)
                 getSuggestions() {
                   return productsHits;
                 },
-                onSelect({ state, setIsOpen }) {
+                getSuggestionUrl({ suggestion }) {
+                  return suggestion.url;
+                },
+                onSelect({ state }) {
                   const query = state.query;
 
                   if (query.length >= 3) {
                     recentSearches.setRecentSearch(query);
                   }
-
-                  setIsOpen(true);
                 },
                 templates: {
                   header: ({ state }) => (

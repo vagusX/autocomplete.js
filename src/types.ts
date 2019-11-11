@@ -14,6 +14,10 @@ export interface Environment {
   removeEventListener: Window['removeEventListener'];
   setTimeout: Window['setTimeout'];
   document: Window['document'];
+  location: {
+    assign: Location['assign'];
+  };
+  open: Window['open'];
 }
 
 /**
@@ -78,7 +82,7 @@ export interface SuggestionsOptions extends AutocompleteSetters {
 
 export interface PublicAutocompleteSource {
   /**
-   * Function called to get the value of the suggestion. The value is used to fill the search box.
+   * Get the string value of the suggestion. The value is used to fill the search box.
    */
   getInputValue?({
     suggestion,
@@ -87,6 +91,17 @@ export interface PublicAutocompleteSource {
     suggestion: Suggestion;
     state: AutocompleteState;
   }): string;
+  /**
+   * Get the URL of a suggestion. The value is used to create default navigation features for
+   * `onClick` and `onKeyDown`.
+   */
+  getSuggestionUrl?({
+    suggestion,
+    state,
+  }: {
+    suggestion: Suggestion;
+    state: AutocompleteState;
+  }): string | undefined;
   /**
    * Function called when the input changes. You can use this function to filter/search the items based on the query.
    */
@@ -110,6 +125,7 @@ export type AutocompleteSource = {
 export interface AutocompleteItem {
   suggestion: Suggestion;
   suggestionValue: ReturnType<AutocompleteSource['getInputValue']>;
+  suggestionUrl: ReturnType<AutocompleteSource['getSuggestionUrl']>;
   source: AutocompleteSource;
 }
 
@@ -120,6 +136,7 @@ export interface EventHandlerOptions extends AutocompleteSetters {
 export interface ItemEventHandlerOptions extends EventHandlerOptions {
   suggestion: Suggestion;
   suggestionValue: ReturnType<AutocompleteSource['getInputValue']>;
+  suggestionUrl: ReturnType<AutocompleteSource['getSuggestionUrl']>;
   source: AutocompleteSource;
 }
 
@@ -207,6 +224,35 @@ export interface PublicAutocompleteProps {
    * @default window
    */
   environment?: Environment;
+  /**
+   * Navigator's API to redirect the user when a link should be open.
+   */
+  navigator?: {
+    /**
+     * Called when a URL should be open in the current page.
+     */
+    navigate: ({
+      suggestionUrl: string,
+      suggestion: Suggestion,
+      state: AutocompleteState,
+    }) => void;
+    /**
+     * Called when a URL should be open in a new tab.
+     */
+    navigateNewTab: ({
+      suggestionUrl: string,
+      suggestion: Suggestion,
+      state: AutocompleteState,
+    }) => void;
+    /**
+     * Called when a URL should be open in a new window.
+     */
+    navigateNewWindow: ({
+      suggestionUrl: string,
+      suggestion: Suggestion,
+      state: AutocompleteState,
+    }) => void;
+  };
   /**
    * Called when the input is focused.
    */

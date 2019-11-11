@@ -124,6 +124,12 @@ function defaultOnInput({
   });
 }
 
+const defaultOnClick: AutocompleteProps['onClick'] = (event, { setIsOpen }) => {
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+    setIsOpen(true);
+  }
+};
+
 // We don't have access to the Autocomplete source when we call `onKeyDown`
 // or `onClick` because those are native browser events.
 // However, we can get the source from the suggestion index.
@@ -231,6 +237,9 @@ function getSanitizedSources(
             getInputValue({ state }) {
               return state.query;
             },
+            getSuggestionUrl() {
+              return undefined;
+            },
             onSelect({ setIsOpen }) {
               setIsOpen(false);
             },
@@ -252,6 +261,27 @@ function UncontrolledAutocomplete(
     );
   }
 
+  const defaultOnKeyDown: AutocompleteProps['onKeyDown'] = (
+    event,
+    { suggestionUrl, suggestion, state }
+  ) => {
+    if (!suggestionUrl) {
+      return;
+    }
+
+    if (event.key === 'Enter') {
+      if (event.metaKey || event.ctrlKey) {
+        navigator.navigateNewTab({ suggestionUrl, suggestion, state });
+      } else if (event.shiftKey) {
+        navigator.navigateNewWindow({ suggestionUrl, suggestion, state });
+      } else if (event.altKey) {
+        // Keep native browser behavior
+      } else {
+        navigator.navigate({ suggestionUrl, suggestion, state });
+      }
+    }
+  };
+
   const {
     container,
     placeholder = '',
@@ -263,14 +293,29 @@ function UncontrolledAutocomplete(
     keyboardShortcuts = [],
     getSources = getSanitizedSources(props.getSources),
     environment = defaultEnvironment,
+    navigator = {
+      navigate({ suggestionUrl }) {
+        environment.location.assign(suggestionUrl);
+      },
+      navigateNewTab({ suggestionUrl }) {
+        const windowReference = environment.open(suggestionUrl, '_blank');
+
+        if (windowReference) {
+          windowReference.focus();
+        }
+      },
+      navigateNewWindow({ suggestionUrl }) {
+        environment.open(suggestionUrl, '_blank');
+      },
+    },
     dropdownContainer = environment.document.body,
     dropdownPosition = 'left',
     templates = {},
     initialState = {},
     transformResultsRender = (results: JSX.Element[]) => results,
     onFocus = noop,
-    onClick = noop,
-    onKeyDown = noop,
+    onClick = defaultOnClick,
+    onKeyDown = defaultOnKeyDown,
     onError = ({ state }) => {
       throw state.error;
     },
@@ -368,6 +413,7 @@ function UncontrolledAutocomplete(
       templates={templates}
       initialState={initialState}
       transformResultsRender={transformResultsRender}
+      navigator={navigator}
       onFocus={onFocus}
       onClick={onClick}
       onKeyDown={onKeyDown}
@@ -547,7 +593,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
           return;
         }
 
-        const { suggestion, suggestionValue, source } = item;
+        const { suggestion, suggestionValue, suggestionUrl, source } = item;
 
         Promise.resolve(
           onInput({
@@ -559,6 +605,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
           source.onSelect({
             suggestion,
             suggestionValue,
+            suggestionUrl,
             source,
             state,
             ...setters,
@@ -640,6 +687,10 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                   onKeyDown(event, {
                     suggestion,
                     suggestionValue: source.getInputValue({
+                      suggestion,
+                      state,
+                    }),
+                    suggestionUrl: source.getSuggestionUrl({
                       suggestion,
                       state,
                     }),

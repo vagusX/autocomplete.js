@@ -27,6 +27,7 @@ function autocomplete(options: AutocompleteOptions): AutocompleteApi {
     showCompletion,
     stallThreshold,
     templates,
+    navigator,
     transformResultsRender,
   } = options || {};
 
@@ -55,6 +56,7 @@ function autocomplete(options: AutocompleteOptions): AutocompleteApi {
       templates={templates}
       transformResultsRender={transformResultsRender}
       environment={environment}
+      navigator={navigator}
       onInput={onInput}
       onFocus={onFocus}
       onClick={onClick}

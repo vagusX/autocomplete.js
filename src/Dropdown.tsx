@@ -118,6 +118,10 @@ export const Dropdown = ({
                           suggestion,
                           state,
                         }),
+                        suggestionUrl: source.getSuggestionUrl({
+                          suggestion,
+                          state,
+                        }),
                         suggestion,
                         source,
                       };
@@ -135,6 +139,7 @@ export const Dropdown = ({
                                 onClick(event, {
                                   suggestion: item.suggestion,
                                   suggestionValue: item.suggestionValue,
+                                  suggestionUrl: item.suggestionUrl,
                                   source: item.source,
                                   state,
                                   ...setters,

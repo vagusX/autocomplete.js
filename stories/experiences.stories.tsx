@@ -219,26 +219,6 @@ storiesOf('Experiences', module).add(
               setIsOpen(true);
               refine(query);
             },
-            onKeyDown(event, { suggestion, setIsOpen }) {
-              if (!suggestion || !suggestion.url) {
-                return;
-              }
-
-              if (event.key === 'Enter') {
-                if (event.metaKey || event.ctrlKey) {
-                  setIsOpen(true);
-
-                  const windowReference = window.open(suggestion.url, '_blank');
-                  windowReference!.focus();
-                } else if (event.shiftKey) {
-                  window.open(suggestion.url, '_blank');
-                } else if (event.altKey) {
-                  // Keep native browser behavior
-                } else {
-                  window.location.assign(suggestion.url);
-                }
-              }
-            },
           });
         }
 

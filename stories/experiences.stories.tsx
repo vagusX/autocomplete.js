@@ -112,6 +112,9 @@ storiesOf('Experiences', module).add(
 
           setIsOpen(true);
         },
+        getInputValue({ suggestion }) {
+          return suggestion.query;
+        },
         getSuggestions() {
           return index.hits;
         },

@@ -127,6 +127,7 @@ function defaultOnInput({
 
 const defaultOnClick: AutocompleteProps['onClick'] = (event, { setIsOpen }) => {
   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+    (event as any).preventDownshiftDefault = true;
     setIsOpen(true);
   }
 };
@@ -276,8 +277,10 @@ function UncontrolledAutocomplete(
 
     if (event.key === 'Enter') {
       if (event.metaKey || event.ctrlKey) {
+        (event as any).preventDownshiftDefault = true;
         navigator.navigateNewTab({ suggestionUrl, suggestion, state });
       } else if (event.shiftKey) {
+        (event as any).preventDownshiftDefault = true;
         navigator.navigateNewWindow({ suggestionUrl, suggestion, state });
       } else if (event.altKey) {
         // Keep native browser behavior

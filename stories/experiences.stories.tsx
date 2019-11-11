@@ -42,8 +42,8 @@ storiesOf('Experiences', module).add(
         getSuggestions() {
           return index.hits;
         },
-        onSelect({ setIsOpen }) {
-          setIsOpen(true);
+        getSuggestionUrl({ suggestion }) {
+          return suggestion.url;
         },
         templates: {
           header() {

@@ -20,7 +20,7 @@ interface TemplateProps<TData = {}> {
   defaultTemplate?: Template<TData>;
 }
 
-function convertToPreactElement(children: ComponentChildren) {
+function convertToPreactChildren(children: ComponentChildren) {
   const elements = toChildArray(children);
 
   return elements.map(element => {
@@ -39,7 +39,7 @@ function convertToPreactElement(children: ComponentChildren) {
         ...element.props,
         children:
           element.props.children &&
-          convertToPreactElement(element.props.children),
+          convertToPreactChildren(element.props.children),
       },
     };
   });
@@ -68,5 +68,5 @@ export const Template = <TData extends {}>({
 
   const element = createElement(tagName, rootProps, content);
 
-  return convertToPreactElement(element);
+  return convertToPreactChildren(element);
 };

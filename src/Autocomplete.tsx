@@ -307,14 +307,18 @@ function UncontrolledAutocomplete(
         environment.location.assign(suggestionUrl);
       },
       navigateNewTab({ suggestionUrl }) {
-        const windowReference = environment.open(suggestionUrl, '_blank');
+        const windowReference = environment.open(
+          suggestionUrl,
+          '_blank',
+          'noopener'
+        );
 
         if (windowReference) {
           windowReference.focus();
         }
       },
       navigateNewWindow({ suggestionUrl }) {
-        environment.open(suggestionUrl, '_blank');
+        environment.open(suggestionUrl, '_blank', 'noopener');
       },
     },
     dropdownContainer = environment.document.body,

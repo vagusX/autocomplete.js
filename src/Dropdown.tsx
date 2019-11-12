@@ -128,9 +128,9 @@ export const Dropdown = ({
 
                       return (
                         <Template
+                          key={`suggestion-${index}`}
                           tagName="li"
                           rootProps={{
-                            key: `suggestion-${index}`,
                             className: 'algolia-autocomplete-suggestions-item',
                             ...getItemProps({
                               item,

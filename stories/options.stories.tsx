@@ -508,6 +508,225 @@ storiesOf('Options', module)
     })
   )
   .add(
+    'Templating with columns',
+    withPlayground(({ container, dropdownContainer }) => {
+      autocomplete({
+        container,
+        dropdownContainer,
+        placeholder: 'Search…',
+        minLength: 0,
+        showCompletion: true,
+        defaultHighlightedIndex: -1,
+        transformResultsRender(results) {
+          const [querySuggestions, products, articles] = results;
+
+          return (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <div>{querySuggestions}</div>
+
+              <div style={{ display: 'flex' }}>
+                <div style={{ flex: 1 }}>{products}</div>
+                <div style={{ flex: 1 }}>{articles}</div>
+              </div>
+            </div>
+          );
+        },
+        getSources({ query, setContext }) {
+          return getAlgoliaResults({
+            searchClient,
+            query,
+            searchParameters: [
+              {
+                indexName: 'instant_search_demo_query_suggestions',
+                params: {
+                  hitsPerPage: 3,
+                },
+              },
+              {
+                indexName: 'instant_search',
+                params: {
+                  attributesToSnippet: ['description'],
+                },
+              },
+              {
+                indexName: 'instant_search_media',
+                params: {
+                  attributesToSnippet: ['description'],
+                },
+              },
+            ],
+          }).then(results => {
+            const [
+              querySuggestionsResults,
+              productsResults,
+              articlesResults,
+            ] = results;
+            const querySuggestionsHits = querySuggestionsResults.hits;
+            const productsHits = productsResults.hits;
+            const articlesHits = articlesResults.hits;
+
+            setContext({
+              nbProductsHits: productsResults.nbHits,
+              nbArticlesHits: articlesResults.nbHits,
+            });
+
+            return [
+              {
+                getInputValue: ({ suggestion }) => suggestion.query + ' ',
+                getSuggestions() {
+                  return querySuggestionsHits;
+                },
+                onSelect({ setIsOpen }) {
+                  setIsOpen(true);
+                },
+                templates: {
+                  suggestion({ suggestion }) {
+                    return (
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <div style={{ display: 'flex' }}>
+                          <div style={{ width: 28 }}>
+                            <svg
+                              viewBox="0 0 18 18"
+                              width={16}
+                              style={{
+                                color: 'rgba(0, 0, 0, 0.3)',
+                              }}
+                            >
+                              <path
+                                d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
+                                stroke="currentColor"
+                                strokeWidth="1.78"
+                                fill="none"
+                                fillRule="evenodd"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              ></path>
+                            </svg>
+                          </div>
+
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: reverseHighlightAlgoliaHit({
+                                hit: suggestion,
+                                attribute: 'query',
+                              }),
+                            }}
+                          />
+                        </div>
+
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            alignItems: 'center',
+                            width: 28,
+                          }}
+                        >
+                          <svg
+                            height="13"
+                            viewBox="0 0 13 13"
+                            width="13"
+                            style={{
+                              color: 'rgba(0, 0, 0, 0.3)',
+                            }}
+                          >
+                            <path
+                              d="m16 7h-12.17l5.59-5.59-1.42-1.41-8 8 8 8 1.41-1.41-5.58-5.59h12.17z"
+                              transform="matrix(.70710678 .70710678 -.70710678 .70710678 6 -5.313708)"
+                              fill="currentColor"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    );
+                  },
+                },
+              },
+              {
+                getSuggestions() {
+                  return productsHits;
+                },
+                getSuggestionUrl({ suggestion }) {
+                  return suggestion.url;
+                },
+                templates: {
+                  header: ({ state }) => (
+                    <h5 className="suggestions-header">
+                      Products ({state.context.nbProductsHits})
+                    </h5>
+                  ),
+                  suggestion({ suggestion }) {
+                    return (
+                      <a
+                        href={suggestion.url}
+                        style={{ display: 'flex', alignItems: 'center' }}
+                      >
+                        <h2
+                          style={{ fontSize: 'inherit', margin: 0 }}
+                          dangerouslySetInnerHTML={{
+                            __html: highlightAlgoliaHit({
+                              hit: suggestion,
+                              attribute: 'name',
+                            }),
+                          }}
+                        />
+                      </a>
+                    );
+                  },
+                },
+              },
+              {
+                getSuggestions() {
+                  return articlesHits;
+                },
+                getSuggestionUrl({ suggestion }) {
+                  return suggestion.url;
+                },
+                templates: {
+                  header: ({ state }) => (
+                    <h5 className="suggestions-header">
+                      Articles ({state.context.nbArticlesHits})
+                    </h5>
+                  ),
+                  suggestion({ suggestion }) {
+                    return (
+                      <a
+                        href={suggestion.url}
+                        style={{ display: 'flex', alignItems: 'center' }}
+                      >
+                        <h2
+                          style={{ fontSize: 'inherit', margin: 0 }}
+                          dangerouslySetInnerHTML={{
+                            __html: highlightAlgoliaHit({
+                              hit: suggestion,
+                              attribute: 'title',
+                            }),
+                          }}
+                        />
+                      </a>
+                    );
+                  },
+                },
+              },
+            ];
+          });
+        },
+      });
+
+      return container;
+    })
+  )
+  .add(
     'Hits',
     withPlayground(({ container, dropdownContainer }) => {
       const recentSearches = new RecentSearches({
@@ -521,20 +740,6 @@ storiesOf('Options', module)
         minLength: 0,
         showCompletion: true,
         defaultHighlightedIndex: -1,
-        transformResultsRender(results) {
-          const [recentSearches, querySuggestions, products] = results;
-
-          return (
-            <div style={{ display: 'flex' }}>
-              <div style={{ flex: 1, marginRight: '1rem' }}>
-                {recentSearches}
-                {querySuggestions}
-              </div>
-
-              <div style={{ flex: 2 }}>{products}</div>
-            </div>
-          );
-        },
         getSources({ query, setContext }) {
           return getAlgoliaResults({
             searchClient,

@@ -959,7 +959,8 @@ storiesOf('Options', module)
 
       return container;
     })
-  ) .add(
+  )
+  .add(
     'Inject classNames on sources',
     withPlayground(({ container, dropdownContainer }) => {
       const recentSearches = new RecentSearches({
@@ -969,10 +970,14 @@ storiesOf('Options', module)
       autocomplete({
         container,
         dropdownContainer,
-        placeholder: 'Search… with injected',
+        placeholder: 'Search… with injected class',
         minLength: 0,
         showCompletion: true,
         defaultHighlightedIndex: -1,
+        transformResultsRender: results => {
+          console.log(results);
+          return results;
+        },
         getSources({ query, setContext }) {
           return getAlgoliaResults({
             searchClient,
@@ -1036,6 +1041,11 @@ storiesOf('Options', module)
                         {suggestion.query}
                       </div>
                     );
+                  },
+                },
+                classNames: {
+                  classNames: {
+                    footer: 'extra-bgc-nebula',
                   },
                 },
               },
@@ -1114,6 +1124,10 @@ storiesOf('Options', module)
                     );
                   },
                 },
+                classNames: {
+                  empty: 'extra-bgc-nebula extra-color-mars-1',
+                  suggestion: 'extra-bgc-nebula',
+                },
               },
               {
                 getSuggestions() {
@@ -1183,6 +1197,9 @@ storiesOf('Options', module)
                       </a>
                     );
                   },
+                },
+                classNames: {
+                  root: 'extra-bgc-nebula extra-color-mars-1',
                 },
               },
             ];

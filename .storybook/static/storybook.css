@@ -17,3 +17,12 @@ body {
   padding-top: 1rem;
   text-transform: uppercase;
 }
+
+/* Used to demo injected classNames appended to the template after the source */
+.extra-bgc-nebula {
+  background-color: #5468ff;
+}
+
+.extra-color-mars-1 {
+  background-color: #ed5a6a;
+}

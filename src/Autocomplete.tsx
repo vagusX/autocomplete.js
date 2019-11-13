@@ -689,7 +689,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                   // If `minLength` is set to 0, and no queries have been
                   // performed yet, you still want to show the results when
                   // you focus the input.
-                  if (!hasResults(results)) {
+                  if (minLength === 0 && !hasResults(results)) {
                     onInput({
                       query,
                       state,
@@ -798,7 +798,9 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                   );
                 }
               }}
-              onReset={() => {
+              onReset={(event: Event) => {
+                event.preventDefault();
+
                 onInput({
                   query: '',
                   state,

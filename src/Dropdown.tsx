@@ -9,6 +9,7 @@ import {
   AutocompleteProps,
   AutocompleteSetters,
 } from './types';
+import { convertToPreactChildren } from './utils';
 
 interface DropdownProps extends AutocompleteState {
   position: Pick<ClientRect, 'left' | 'top'> | undefined;
@@ -73,129 +74,131 @@ export const Dropdown = ({
           }}
         />
 
-        {transformResultsRender(
-          results.map((result, index) => {
-            const { source, suggestions } = result;
+        {convertToPreactChildren(
+          transformResultsRender(
+            results.map((result, index) => {
+              const { source, suggestions } = result;
 
-            return (
-              <section
-                key={`result-${index}`}
-                className={[
-                  'algolia-autocomplete-suggestions',
-                  source.classNames.root,
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-              >
-                <Template
-                  tagName="header"
-                  data={{
-                    state,
-                    ...setters,
-                  }}
-                  template={source.templates.header}
-                  rootProps={{
-                    className: [
-                      'algolia-autocomplete-suggestions-header',
-                      source.classNames.header,
-                    ]
-                      .filter(Boolean)
-                      .join(' '),
-                  }}
-                />
-
-                {!state.isLoading && suggestions.length === 0 ? (
+              return (
+                <section
+                  key={`result-${index}`}
+                  className={[
+                    'algolia-autocomplete-suggestions',
+                    source.classNames.root,
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                >
                   <Template
+                    tagName="header"
                     data={{
                       state,
                       ...setters,
                     }}
-                    template={source.templates.empty}
+                    template={source.templates.header}
                     rootProps={{
-                      className: source.classNames.empty,
+                      className: [
+                        'algolia-autocomplete-suggestions-header',
+                        source.classNames.header,
+                      ]
+                        .filter(Boolean)
+                        .join(' '),
                     }}
                   />
-                ) : (
-                  <ul
-                    {...getMenuProps(
-                      {},
-                      // @TODO: remove `suppressRefError`
-                      // @ts-ignore
-                      // See https://github.com/downshift-js/downshift#getmenuprops
-                      { suppressRefError: true }
-                    )}
-                    className={source.classNames.list}
-                  >
-                    {suggestions.map((suggestion, index) => {
-                      const item: AutocompleteItem = {
-                        suggestionValue: source.getInputValue({
-                          suggestion,
-                          state,
-                        }),
-                        suggestionUrl: source.getSuggestionUrl({
-                          suggestion,
-                          state,
-                        }),
-                        suggestion,
-                        source,
-                      };
 
-                      return (
-                        <Template
-                          key={`suggestion-${index}`}
-                          tagName="li"
-                          rootProps={{
-                            className: [
-                              'algolia-autocomplete-suggestions-item',
-                              source.classNames.suggestion,
-                            ]
-                              .filter(Boolean)
-                              .join(' '),
-                            ...getItemProps({
-                              item,
-                              tabIndex: 0,
-                              onClick: (event: MouseEvent) =>
-                                onClick(event, {
-                                  suggestion: item.suggestion,
-                                  suggestionValue: item.suggestionValue,
-                                  suggestionUrl: item.suggestionUrl,
-                                  source: item.source,
-                                  state,
-                                  ...setters,
-                                }),
-                            }),
-                          }}
-                          data={{
+                  {!state.isLoading && suggestions.length === 0 ? (
+                    <Template
+                      data={{
+                        state,
+                        ...setters,
+                      }}
+                      template={source.templates.empty}
+                      rootProps={{
+                        className: source.classNames.empty,
+                      }}
+                    />
+                  ) : (
+                    <ul
+                      {...getMenuProps(
+                        {},
+                        // @TODO: remove `suppressRefError`
+                        // @ts-ignore
+                        // See https://github.com/downshift-js/downshift#getmenuprops
+                        { suppressRefError: true }
+                      )}
+                      className={source.classNames.list}
+                    >
+                      {suggestions.map((suggestion, index) => {
+                        const item: AutocompleteItem = {
+                          suggestionValue: source.getInputValue({
                             suggestion,
                             state,
-                            ...setters,
-                          }}
-                          template={source.templates.suggestion}
-                        />
-                      );
-                    })}
-                  </ul>
-                )}
+                          }),
+                          suggestionUrl: source.getSuggestionUrl({
+                            suggestion,
+                            state,
+                          }),
+                          suggestion,
+                          source,
+                        };
 
-                <Template
-                  tagName="footer"
-                  data={{
-                    state,
-                    ...setters,
-                  }}
-                  template={source.templates.footer}
-                  rootProps={{
-                    className: [
-                      'algolia-autocomplete-suggestions-footer',
-                      source.classNames.footer,
-                    ]
-                      .filter(Boolean)
-                      .join(' '),
-                  }}
-                />
-              </section>
-            );
-          })
+                        return (
+                          <Template
+                            key={`suggestion-${index}`}
+                            tagName="li"
+                            rootProps={{
+                              className: [
+                                'algolia-autocomplete-suggestions-item',
+                                source.classNames.suggestion,
+                              ]
+                                .filter(Boolean)
+                                .join(' '),
+                              ...getItemProps({
+                                item,
+                                tabIndex: 0,
+                                onClick: (event: MouseEvent) =>
+                                  onClick(event, {
+                                    suggestion: item.suggestion,
+                                    suggestionValue: item.suggestionValue,
+                                    suggestionUrl: item.suggestionUrl,
+                                    source: item.source,
+                                    state,
+                                    ...setters,
+                                  }),
+                              }),
+                            }}
+                            data={{
+                              suggestion,
+                              state,
+                              ...setters,
+                            }}
+                            template={source.templates.suggestion}
+                          />
+                        );
+                      })}
+                    </ul>
+                  )}
+
+                  <Template
+                    tagName="footer"
+                    data={{
+                      state,
+                      ...setters,
+                    }}
+                    template={source.templates.footer}
+                    rootProps={{
+                      className: [
+                        'algolia-autocomplete-suggestions-footer',
+                        source.classNames.footer,
+                      ]
+                        .filter(Boolean)
+                        .join(' '),
+                    }}
+                  />
+                </section>
+              );
+            })
+          )
         )}
 
         <Template

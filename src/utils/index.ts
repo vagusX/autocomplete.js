@@ -1,3 +1,4 @@
+export { convertToPreactChildren } from './convertToPreactChildren';
 export { getHTMLElement } from './getHTMLElement';
 export { flatten } from './flatten';
 export {

@@ -73,6 +73,7 @@ export function getAlgoliaHits({
         return [];
       }
 
+      // @TODO: should `getAlgoliaHits` flatten the hits?
       return flatten(results.map(result => result.hits));
     }
   );

@@ -21,7 +21,7 @@ export interface Environment {
 }
 
 /**
- * Custom ClassNames appended to the template after the source.
+ * Custom class names appended to the template after the source.
  */
 interface ClassNames {
   /**
@@ -147,7 +147,7 @@ export interface PublicAutocompleteSource {
    */
   onSelect?: (options: ItemEventHandlerOptions) => void;
   /**
-   * Classes applied to the template after the source
+   * CSS classes applied to the template of the source
    */
   classNames?: ClassNames;
 }

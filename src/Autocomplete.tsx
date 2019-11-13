@@ -235,6 +235,7 @@ function normalizeSource(source: PublicAutocompleteSource): AutocompleteSource {
     onSelect({ setIsOpen }) {
       setIsOpen(false);
     },
+    classNames: {},
     ...source,
   };
 }

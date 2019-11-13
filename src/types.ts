@@ -21,6 +21,36 @@ export interface Environment {
 }
 
 /**
+ * Custom ClassNames appended to the template after the source.
+ */
+interface ClassNames {
+  /**
+  * The class name appended to the global wrapper.
+  */
+  root?: string;
+  /**
+  * The class name appended to the list wrapper.
+  */
+  list?: string;
+  /**
+   * The class name appended to the empty element.
+   */
+  empty?: string;
+  /**
+   * The class name appended to every suggestion item.
+   */
+  suggestion?: string;
+  /**
+   * The class name appended to the header.
+   */
+  header?: string;
+  /**
+   * The class name appended to the footer.
+   */
+  footer?: string;
+}
+
+/**
  * Global Autocomplete templates.
  */
 interface AutocompleteTemplates {
@@ -116,6 +146,10 @@ export interface PublicAutocompleteSource {
    * Called when an item is selected.
    */
   onSelect?: (options: ItemEventHandlerOptions) => void;
+  /**
+   * Classes applied to the template after the source
+   */
+  classNames?: ClassNames;
 }
 
 export type AutocompleteSource = {

@@ -80,7 +80,12 @@ export const Dropdown = ({
             return (
               <section
                 key={`result-${index}`}
-                className="algolia-autocomplete-suggestions"
+                className={[
+                  'algolia-autocomplete-suggestions',
+                  source.classNames.root,
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
               >
                 <Template
                   tagName="header"
@@ -90,7 +95,12 @@ export const Dropdown = ({
                   }}
                   template={source.templates.header}
                   rootProps={{
-                    className: 'algolia-autocomplete-suggestions-header',
+                    className: [
+                      'algolia-autocomplete-suggestions-header',
+                      source.classNames.header,
+                    ]
+                      .filter(Boolean)
+                      .join(' '),
                   }}
                 />
 
@@ -101,6 +111,9 @@ export const Dropdown = ({
                       ...setters,
                     }}
                     template={source.templates.empty}
+                    rootProps={{
+                      className: source.classNames.empty,
+                    }}
                   />
                 ) : (
                   <ul
@@ -111,6 +124,7 @@ export const Dropdown = ({
                       // See https://github.com/downshift-js/downshift#getmenuprops
                       { suppressRefError: true }
                     )}
+                    className={source.classNames.list}
                   >
                     {suggestions.map((suggestion, index) => {
                       const item: AutocompleteItem = {
@@ -131,7 +145,12 @@ export const Dropdown = ({
                           key={`suggestion-${index}`}
                           tagName="li"
                           rootProps={{
-                            className: 'algolia-autocomplete-suggestions-item',
+                            className: [
+                              'algolia-autocomplete-suggestions-item',
+                              source.classNames.suggestion,
+                            ]
+                              .filter(Boolean)
+                              .join(' '),
                             ...getItemProps({
                               item,
                               tabIndex: 0,
@@ -166,7 +185,12 @@ export const Dropdown = ({
                   }}
                   template={source.templates.footer}
                   rootProps={{
-                    className: 'algolia-autocomplete-suggestions-footer',
+                    className: [
+                      'algolia-autocomplete-suggestions-footer',
+                      source.classNames.footer,
+                    ]
+                      .filter(Boolean)
+                      .join(' '),
                   }}
                 />
               </section>

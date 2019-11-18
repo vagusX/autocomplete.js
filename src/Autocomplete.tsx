@@ -529,7 +529,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
   } = props;
 
   const [dropdownRect, setDropdownRect] = useState<
-    Pick<ClientRect, 'top' | 'left'> | undefined
+    Partial<ClientRect> | undefined
   >(undefined);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -590,17 +590,20 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
   }, [container, dropdownContainer]);
 
   function onResize(): void {
-    const nextContainerRect = container.getBoundingClientRect();
-    const nextDropdownRect = dropdownContainer.getBoundingClientRect();
-
+    const containerRect = container.getBoundingClientRect();
+    const horizontalDropdownRect =
+      dropdownPosition === 'right'
+        ? {
+            right:
+              environment.document.documentElement.clientWidth -
+              (containerRect.left + containerRect.width),
+          }
+        : {
+            left: containerRect.left,
+          };
     const newDropdownRect = {
-      top: nextContainerRect.top + nextContainerRect.height,
-      left:
-        dropdownPosition === 'right'
-          ? nextContainerRect.width +
-            nextContainerRect.left -
-            nextDropdownRect.width
-          : nextContainerRect.left,
+      ...horizontalDropdownRect,
+      top: containerRect.top + containerRect.height,
     };
 
     setDropdownRect(newDropdownRect);

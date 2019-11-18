@@ -573,7 +573,60 @@ Called when an item is selected.
 
 > `ClassNames`
 
-CSS classes applied to the template of the source.
+CSS classes to add to the template of the source.
+
+<details>
+
+<summary>Example</summary>
+
+```js
+const source = {
+  classNames: {
+    root: 'dropdown',
+    list: 'dropdown-menu',
+    suggestion: 'dropdown-item',
+  },
+  // ...
+};
+```
+
+</details>
+
+##### `root`
+
+> `string`
+
+The CSS class to add to the source root.
+
+##### `list`
+
+> `string`
+
+The CSS class to add to the source list.
+
+##### `suggestion`
+
+> `string`
+
+The CSS class to add to each source suggestion.
+
+##### `header`
+
+> `string`
+
+The CSS class to add to the source header.
+
+##### `footer`
+
+> `string`
+
+The CSS class to add to the source footer.
+
+##### `empty`
+
+> `string`
+
+The CSS class to add to the empty source.
 
 ### State
 

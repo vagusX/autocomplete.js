@@ -143,11 +143,55 @@ Called to fetch the [sources](#sources).
 
 The container for the autocomplete dropdown.
 
-#### `dropdownPosition`
+#### `dropdownAlignment`
 
 > `'left' | 'right'` | defaults to `'left'`
 
-The dropdown position related to the container.
+The dropdown alignment related to the container.
+
+#### `getDropdownPosition`
+
+> `(options: { containerRect: ClientRect, dropdownPosition: DropdownPosition }) => DropdownPosition` | defaults to `({ dropdownPosition }) => dropdownPosition`
+
+Called to compute the dropdown position. This function is called at first load and when the window is resized.
+
+<details>
+
+<summary><code>DropdownPosition</code> definition</summary>
+
+```ts
+interface DropdownPosition {
+  top: number;
+  left?: number;
+  right?: number;
+}
+```
+
+</details>
+
+<details>
+
+<summary>Example</summary>
+
+**Removing margins on mobile**
+
+```js
+autocomplete({
+  /// ...
+  getDropdownPosition({ dropdownPosition }) {
+    // Desktop: we want to return the dropdown position as is.
+    if (window.matchMedia('(min-width: 650px)').matches) {
+      return dropdownPosition;
+    }
+
+    // Mobile: we want to return the dropdown position without left or right
+    // margins.
+    return { top: dropdownPosition.top };
+  },
+});
+```
+
+</details>
 
 #### `placeholder`
 

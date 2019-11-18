@@ -12,7 +12,8 @@ function autocomplete(options: AutocompleteOptions): AutocompleteApi {
     container,
     defaultHighlightedIndex,
     dropdownContainer,
-    dropdownPosition,
+    dropdownAlignment,
+    getDropdownPosition,
     environment = defaultEnvironment,
     getSources,
     initialState,
@@ -43,7 +44,8 @@ function autocomplete(options: AutocompleteOptions): AutocompleteApi {
       ref={autocompleteRef}
       container={containerElement}
       dropdownContainer={dropdownContainerElement}
-      dropdownPosition={dropdownPosition}
+      dropdownAlignment={dropdownAlignment}
+      getDropdownPosition={getDropdownPosition}
       placeholder={placeholder}
       stallThreshold={stallThreshold}
       defaultHighlightedIndex={defaultHighlightedIndex}

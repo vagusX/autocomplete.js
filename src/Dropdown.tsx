@@ -50,6 +50,18 @@ export const Dropdown = ({
     results,
   };
 
+  // Sanitize the dropdown position to only extract the number values so that
+  // the style is correct.
+  const positionStyle =
+    position &&
+    Object.keys(position).reduce<{ [key: string]: number }>((acc, current) => {
+      if (typeof position[current] === 'number') {
+        acc[current] = position[current];
+      }
+
+      return acc;
+    }, {});
+
   return (
     <div
       className={[
@@ -59,7 +71,7 @@ export const Dropdown = ({
       ]
         .filter(Boolean)
         .join(' ')}
-      style={{ ...position }}
+      style={positionStyle}
       hidden={hidden}
     >
       <div className="algolia-autocomplete-dropdown-container">

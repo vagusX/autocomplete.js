@@ -171,7 +171,7 @@ describe('Autocomplete', () => {
     test.todo('can be any other string referencing to an HTML element');
   });
 
-  describe('dropdownPosition', () => {
+  describe('dropdownAlignment', () => {
     test.todo('defaults to `"left"`');
     test.todo('can be set to `"right"`');
   });

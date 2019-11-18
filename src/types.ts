@@ -21,9 +21,9 @@ export interface Environment {
 }
 
 export interface DropdownPosition {
-  top: number | string;
-  left: number | string;
-  right: number | string;
+  top: number;
+  left?: number;
+  right?: number;
 }
 
 /**
@@ -197,7 +197,24 @@ export interface PublicAutocompleteProps {
    *
    * @default "left"
    */
-  dropdownPosition?: 'left' | 'right';
+  dropdownAlignment?: 'left' | 'right';
+  /**
+   * Called to compute the position of the dropdown.
+   */
+  getDropdownPosition?(options: {
+    /**
+     * The size and the position of the container computed with
+     * `getBoundingClientRect()`.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
+     */
+    containerRect: ClientRect | DOMRect;
+    /**
+     * The next dropdown position computed based on `dropdownAlignment` and
+     * `containerRect`.
+     */
+    dropdownPosition: DropdownPosition;
+  }): DropdownPosition;
   /**
    * The text that appears in the search box input when there is no query.
    */

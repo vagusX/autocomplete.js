@@ -323,7 +323,8 @@ function UncontrolledAutocomplete(
       },
     },
     dropdownContainer = environment.document.body,
-    dropdownPosition = 'left',
+    dropdownAlignment = 'left',
+    getDropdownPosition = ({ dropdownPosition }) => dropdownPosition,
     templates = {},
     initialState = {},
     transformResultsRender = (results: JSX.Element[]) => results,
@@ -439,7 +440,8 @@ function UncontrolledAutocomplete(
       stallThreshold={stallThreshold}
       keyboardShortcuts={keyboardShortcuts}
       dropdownContainer={dropdownContainer}
-      dropdownPosition={dropdownPosition}
+      dropdownAlignment={dropdownAlignment}
+      getDropdownPosition={getDropdownPosition}
       templates={templates}
       initialState={initialState}
       transformResultsRender={transformResultsRender}
@@ -504,7 +506,8 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
     keyboardShortcuts,
     environment,
     dropdownContainer,
-    dropdownPosition,
+    dropdownAlignment,
+    getDropdownPosition,
     templates,
     transformResultsRender,
     onFocus,
@@ -592,17 +595,22 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
 
   function onResize(): void {
     const containerRect = container.getBoundingClientRect();
-    const newDropdownRect = {
+    const dropdownPosition = {
       top: containerRect.top + containerRect.height,
-      left: dropdownPosition === 'left' ? containerRect.left : '',
+      left: dropdownAlignment === 'left' ? containerRect.left : undefined,
       right:
-        dropdownPosition === 'right'
+        dropdownAlignment === 'right'
           ? environment.document.documentElement.clientWidth -
             (containerRect.left + containerRect.width)
-          : '',
+          : undefined,
     };
 
-    setDropdownRect(newDropdownRect);
+    setDropdownRect(
+      getDropdownPosition({
+        containerRect,
+        dropdownPosition,
+      })
+    );
   }
 
   const isQueryLongEnough = query.length >= minLength;

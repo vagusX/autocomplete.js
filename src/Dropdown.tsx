@@ -8,11 +8,12 @@ import {
   AutocompleteState,
   AutocompleteProps,
   AutocompleteSetters,
+  DropdownPosition,
 } from './types';
 import { convertToPreactChildren } from './utils';
 
 interface DropdownProps extends AutocompleteState {
-  position: Pick<ClientRect, 'left' | 'top'> | undefined;
+  position: DropdownPosition | undefined;
   hidden: boolean;
   templates: AutocompleteProps['templates'];
   onClick: AutocompleteProps['onClick'];
@@ -58,7 +59,7 @@ export const Dropdown = ({
       ]
         .filter(Boolean)
         .join(' ')}
-      style={position}
+      style={{ ...position }}
       hidden={hidden}
     >
       <div className="algolia-autocomplete-dropdown-container">

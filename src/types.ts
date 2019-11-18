@@ -20,6 +20,12 @@ export interface Environment {
   open: Window['open'];
 }
 
+export interface DropdownPosition {
+  top: number | string;
+  left: number | string;
+  right: number | string;
+}
+
 /**
  * Custom class names appended to the template after the source.
  */

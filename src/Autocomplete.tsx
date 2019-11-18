@@ -24,6 +24,7 @@ import {
   PublicAutocompleteProps,
   Result,
   PublicAutocompleteSource,
+  DropdownPosition,
 } from './types';
 
 export const defaultEnvironment: Environment =
@@ -529,7 +530,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
   } = props;
 
   const [dropdownRect, setDropdownRect] = useState<
-    Partial<ClientRect> | undefined
+    DropdownPosition | undefined
   >(undefined);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -591,19 +592,14 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
 
   function onResize(): void {
     const containerRect = container.getBoundingClientRect();
-    const horizontalDropdownRect =
-      dropdownPosition === 'right'
-        ? {
-            right:
-              environment.document.documentElement.clientWidth -
-              (containerRect.left + containerRect.width),
-          }
-        : {
-            left: containerRect.left,
-          };
     const newDropdownRect = {
-      ...horizontalDropdownRect,
       top: containerRect.top + containerRect.height,
+      left: dropdownPosition === 'left' ? containerRect.left : '',
+      right:
+        dropdownPosition === 'right'
+          ? environment.document.documentElement.clientWidth -
+            (containerRect.left + containerRect.width)
+          : '',
     };
 
     setDropdownRect(newDropdownRect);

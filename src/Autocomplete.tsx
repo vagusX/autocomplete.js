@@ -44,6 +44,15 @@ function hasResults(results: Result[]): boolean {
   return results.some(result => result.suggestions.length > 0);
 }
 
+/**
+ * Called by default to decide if the dropdown should open based on the autocomplete state.
+ */
+const defaultShouldDropdownOpen: AutocompleteProps['shouldDropdownOpen'] = ({
+  state,
+}) => {
+  return hasResults(state.results);
+};
+
 function defaultOnInput({
   query,
   getSources,
@@ -352,6 +361,7 @@ function UncontrolledAutocomplete(
         },
         onError,
       }),
+    shouldDropdownOpen = defaultShouldDropdownOpen,
   } = props;
 
   const [query, setQuery] = useState<AutocompleteState['query']>(
@@ -451,6 +461,7 @@ function UncontrolledAutocomplete(
       onKeyDown={onKeyDown}
       onError={onError}
       onInput={onInput}
+      shouldDropdownOpen={shouldDropdownOpen}
       // State.
       query={query}
       setQuery={setQuery}
@@ -514,6 +525,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
     onClick,
     onKeyDown,
     onInput,
+    shouldDropdownOpen,
     // State.
     state,
     setters,
@@ -614,7 +626,8 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
   }
 
   const isQueryLongEnough = query.length >= minLength;
-  const shouldOpen = isOpen && isQueryLongEnough && hasResults(results);
+  const shouldOpen =
+    isOpen && isQueryLongEnough && shouldDropdownOpen({ state });
 
   return (
     <Downshift
@@ -808,15 +821,15 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
               onReset={(event: Event) => {
                 event.preventDefault();
 
+                if (inputRef.current) {
+                  inputRef.current.focus();
+                }
+
                 onInput({
                   query: '',
                   state,
                   ...setters,
                 });
-
-                if (inputRef.current) {
-                  inputRef.current.focus();
-                }
               }}
               onSubmit={(event: Event) => {
                 event.preventDefault();

@@ -407,6 +407,14 @@ Called when the input changes.
 
 This turns experience is "controlled" mode. You'll be in charge of updating the state with the [top-level API](#autocomplete).
 
+#### `shouldDropdownOpen`
+
+> `(options: { state: AutocompleteState }) => boolean` | defaults to `({ state }) => state.results.some(result => result.suggestions.length > 0)`
+
+Called to check whether the dropdown should open based on the Autocomplete state.
+
+The default behavior is to open the dropdown when there are results.
+
 ### Sources
 
 An Autocomplete source refers to an object with the following properties:
@@ -560,6 +568,12 @@ const source = {
 > `(options: { state: AutocompleteState, ...setters }) => void` | defaults to `({ setIsOpen }) => setIsOpen(false)`
 
 Called when an item is selected.
+
+#### `classNames`
+
+> `ClassNames`
+
+CSS classes applied to the template of the source.
 
 ### State
 

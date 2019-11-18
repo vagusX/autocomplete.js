@@ -613,7 +613,6 @@ storiesOf('Options', module)
                               ></path>
                             </svg>
                           </div>
-
                           <div
                             dangerouslySetInnerHTML={{
                               __html: reverseHighlightAlgoliaHit({
@@ -974,10 +973,6 @@ storiesOf('Options', module)
         minLength: 0,
         showCompletion: true,
         defaultHighlightedIndex: -1,
-        transformResultsRender: results => {
-          console.log(results);
-          return results;
-        },
         getSources({ query, setContext }) {
           return getAlgoliaResults({
             searchClient,
@@ -1207,6 +1202,88 @@ storiesOf('Options', module)
         },
       });
 
+      return container;
+    })
+  )
+  .add(
+    'Menu open on empty results',
+    withPlayground(({ container, dropdownContainer }) => {
+      autocomplete({
+        container,
+        dropdownContainer,
+        placeholder: 'Search...',
+        showCompletion: true,
+        defaultHighlightedIndex: -1,
+        shouldDropdownOpen() {
+          return true;
+        },
+        getSources({ query }) {
+          return getAlgoliaResults({
+            searchClient,
+            query,
+            searchParameters: [
+              {
+                indexName: 'instant_search_demo_query_suggestions',
+                params: {
+                  hitsPerPage: 3,
+                },
+              },
+              {
+                indexName: 'instant_search',
+                params: {
+                  attributesToSnippet: ['description'],
+                },
+              },
+            ],
+          }).then(results => {
+            const [querySuggestionsResults, productsResults] = results;
+            const querySuggestionsHits = querySuggestionsResults.hits;
+            const productsHits = productsResults.hits;
+
+            return [
+              {
+                getInputValue: ({ suggestion }) => suggestion.query + ' ',
+                getSuggestions() {
+                  return querySuggestionsHits;
+                },
+                onSelect({ setIsOpen }) {
+                  setIsOpen(true);
+                },
+                templates: {
+                  suggestion({ suggestion }) {
+                    return reverseHighlightAlgoliaHit({
+                      hit: suggestion,
+                      attribute: 'query',
+                    });
+                  },
+                },
+              },
+              {
+                getSuggestions() {
+                  return productsHits;
+                },
+                getSuggestionUrl({ suggestion }) {
+                  return suggestion.url;
+                },
+                templates: {
+                  header() {
+                    return <h5 className="suggestions-header">Products</h5>;
+                  },
+                  suggestion({ suggestion }) {
+                    return highlightAlgoliaHit({
+                      hit: suggestion,
+                      attribute: 'name',
+                    });
+                  },
+                  empty({ state }) {
+                    return <p>No products found for "{state.query}"</p>;
+                  },
+                },
+              },
+            ];
+          });
+        },
+      });
       return container;
     })
   );

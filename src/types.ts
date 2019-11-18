@@ -25,12 +25,12 @@ export interface Environment {
  */
 interface ClassNames {
   /**
-  * The class name appended to the global wrapper.
-  */
+   * The class name appended to the global wrapper.
+   */
   root?: string;
   /**
-  * The class name appended to the list wrapper.
-  */
+   * The class name appended to the list wrapper.
+   */
   list?: string;
   /**
    * The class name appended to the empty element.

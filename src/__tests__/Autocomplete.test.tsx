@@ -12,6 +12,8 @@ function createEnvironment() {
     removeEventListener: jest.fn(),
     setTimeout: jest.fn(),
     document: window.document,
+    location: window.location,
+    open: window.open,
   };
 }
 
@@ -40,6 +42,7 @@ function getDefaultProps() {
 
   return {
     container: environment.document.body,
+    dropdownContainer: environment.document.body,
     environment,
     getSources: () => [
       {
@@ -222,11 +225,7 @@ describe('Autocomplete', () => {
         },
       };
 
-      const { container } = render(<Autocomplete {...props} />);
-      const input = container.querySelector<HTMLInputElement>(
-        '.algolia-autocomplete-input'
-      );
-
+      render(<Autocomplete {...props} />);
       const dropdown = props.environment.document.body.querySelector<
         HTMLElement
       >('.algolia-autocomplete-dropdown');
@@ -269,25 +268,24 @@ describe('Autocomplete', () => {
     });
 
     test.skip('allows to set the initial results', () => {
-      const props = {
-        ...getDefaultProps(),
-        getSources() {
-          return [
-            {
-              getInputValue: () => '',
-              getSuggestions: () => fruits,
-              templates: {
-                suggestion: () => '',
-              },
-            },
-          ];
-        },
-        initialState: {
-          results: [fruits],
-        },
-      };
-
-      const { container } = render(<Autocomplete {...props} />);
+      // const props = {
+      //   ...getDefaultProps(),
+      //   getSources() {
+      //     return [
+      //       {
+      //         getInputValue: () => '',
+      //         getSuggestions: () => fruits,
+      //         templates: {
+      //           suggestion: () => '',
+      //         },
+      //       },
+      //     ];
+      //   },
+      //   initialState: {
+      //     results: [fruits],
+      //   },
+      // };
+      // const { container } = render(<Autocomplete {...props} />);
     });
 
     test.todo('allows to set the initial context');
@@ -378,7 +376,7 @@ describe('Autocomplete', () => {
         },
       };
 
-      const { container, debug } = render(<Autocomplete {...props} />);
+      const { container } = render(<Autocomplete {...props} />);
       const input = container.querySelector<HTMLInputElement>(
         '.algolia-autocomplete-input'
       );

@@ -3,11 +3,11 @@
 import { h, Ref } from 'preact';
 import { createPortal, forwardRef } from 'preact/compat';
 import {
+  StateUpdater,
   useEffect,
   useImperativeHandle,
-  useState,
   useRef,
-  StateUpdater,
+  useState,
 } from 'preact/hooks';
 import Downshift from 'downshift/preact';
 
@@ -27,8 +27,9 @@ import {
   DropdownPosition,
 } from './types';
 
-export const defaultEnvironment: Environment =
-  typeof window === 'undefined' ? ({} as Environment) : window;
+export const defaultEnvironment = (typeof window === 'undefined'
+  ? {}
+  : window) as Environment;
 
 let autocompleteIdCounter = 0;
 let lastStallId: number | null = null;

@@ -18,5 +18,7 @@ module.exports = {
     'prefer-template': 0,
     'jest/no-disabled-tests': 0,
     'react/prop-types': 0,
+    'react/no-unescaped-entities': 0,
+    'eslint-comments/disable-enable-pair': ['error', { allowWholeFile: true }],
   },
 };

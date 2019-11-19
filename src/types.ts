@@ -159,7 +159,7 @@ export interface PublicAutocompleteSource {
 }
 
 export type AutocompleteSource = {
-  [PParam in keyof PublicAutocompleteSource]-?: PublicAutocompleteSource[PParam];
+  [KParam in keyof PublicAutocompleteSource]-?: PublicAutocompleteSource[KParam];
 };
 
 export interface AutocompleteItem {

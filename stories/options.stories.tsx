@@ -20,6 +20,10 @@ const searchClient = algoliasearch(
   '6be0576ff61c053d5f9a3225e2a90f76'
 );
 
+function isEmpty({ state }) {
+  return !state.results.some(result => result.suggestions.length > 0);
+}
+
 const querySuggestionsSource = {
   getInputValue: ({ suggestion }) => suggestion.query + ' ',
   getSuggestions({ query }) {
@@ -113,11 +117,19 @@ const querySuggestionsSource = {
 
 const createSource = (items: any[], { templates = {}, limit = 10 } = {}) => ({
   getSuggestions({ query }) {
-    return items
-      .filter(item =>
-        item.value.toLocaleLowerCase().includes(query.toLocaleLowerCase())
-      )
+    const matchingItems = items
+      .filter(item => {
+        if (!query) {
+          return true;
+        }
+
+        return item.value
+          .toLocaleLowerCase()
+          .includes(query.toLocaleLowerCase());
+      })
       .slice(0, limit);
+
+    return matchingItems;
   },
   getInputValue: ({ suggestion }) => suggestion.value,
   templates: {
@@ -144,6 +156,9 @@ storiesOf('Options', module)
         container,
         dropdownContainer,
         placeholder: 'Search for U.S. states… (e.g. "Carolina")',
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
         getSources() {
           return [createSource(states)];
         },
@@ -162,6 +177,9 @@ storiesOf('Options', module)
         initialState: {
           query: 'Carolina',
         },
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
         getSources() {
           return [createSource(states)];
         },
@@ -179,47 +197,36 @@ storiesOf('Options', module)
         placeholder:
           'Search for states, fruits, artists… (e.g. "Carolina", "Apple", "John")',
         minLength: 0,
-        getSources({ query }) {
-          if (!query) {
-            return [
-              createSource(fruits, {
-                limit: 5,
-                templates: {
-                  header: ({ state }) =>
-                    state.results[0].length === 0
-                      ? ''
-                      : '<h5 class="suggestions-header">Fruits</h5>',
-                },
-              }),
-            ];
-          }
-
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
+        getSources() {
           return [
             createSource(fruits, {
-              limit: 5,
+              limit: 3,
               templates: {
                 header: ({ state }) =>
-                  state.results[0].length === 0
-                    ? ''
-                    : '<h5 class="suggestions-header">Fruits</h5>',
+                  state.results[0].suggestions.length > 0 && (
+                    <h5 className="suggestions-header">Fruits</h5>
+                  ),
               },
             }),
             createSource(artists, {
-              limit: 5,
+              limit: 3,
               templates: {
                 header: ({ state }) =>
-                  state.results[1].length === 0
-                    ? ''
-                    : '<h5 class="suggestions-header">Artists</h5>',
+                  state.results[1].suggestions.length > 0 && (
+                    <h5 className="suggestions-header">Artists</h5>
+                  ),
               },
             }),
             createSource(states, {
-              limit: 5,
+              limit: 3,
               templates: {
                 header: ({ state }) =>
-                  state.results[2].length === 0
-                    ? ''
-                    : '<h5 class="suggestions-header">States</h5>',
+                  state.results[2].suggestions.length > 0 && (
+                    <h5 className="suggestions-header">States</h5>
+                  ),
               },
             }),
           ];
@@ -237,6 +244,9 @@ storiesOf('Options', module)
         dropdownContainer,
         placeholder: 'Search for fruits (e.g. "apple")',
         minLength: 3,
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
         getSources() {
           return [createSource(fruits)];
         },
@@ -253,6 +263,9 @@ storiesOf('Options', module)
         dropdownContainer,
         placeholder: 'Search for fruits (e.g. "banana")',
         minLength: 0,
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
         getSources() {
           return [createSource(fruits)];
         },
@@ -269,6 +282,9 @@ storiesOf('Options', module)
         dropdownContainer,
         placeholder: 'Search… (focus the inner window and type "/" or "a")',
         keyboardShortcuts: ['/', 'a'],
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
         getSources() {
           return [createSource(fruits)];
         },
@@ -285,6 +301,9 @@ storiesOf('Options', module)
         dropdownContainer,
         placeholder: 'Search… (first item is not selected by default)',
         defaultHighlightedIndex: -1,
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
         getSources() {
           return [createSource(fruits)];
         },
@@ -301,6 +320,9 @@ storiesOf('Options', module)
         dropdownContainer,
         placeholder: 'Search…',
         showCompletion: true,
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
         getSources() {
           return [
             {
@@ -363,6 +385,9 @@ storiesOf('Options', module)
         dropdownContainer,
         placeholder: 'Search (the loader spins right away)',
         stallThreshold: 0,
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
         getSources() {
           return [
             {
@@ -424,6 +449,9 @@ storiesOf('Options', module)
         dropdownContainer,
         placeholder: 'Search…',
         showCompletion: true,
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
         getSources() {
           return [querySuggestionsSource];
         },
@@ -441,6 +469,9 @@ storiesOf('Options', module)
         container,
         dropdownContainer,
         placeholder: 'Search…',
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
         getSources() {
           return [querySuggestionsSource];
         },
@@ -462,6 +493,9 @@ storiesOf('Options', module)
         placeholder: 'Search…',
         showCompletion: true,
         minLength: 0,
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
         getSources() {
           return [
             {
@@ -517,6 +551,9 @@ storiesOf('Options', module)
         minLength: 0,
         showCompletion: true,
         defaultHighlightedIndex: -1,
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
         transformResultsRender(results) {
           const [querySuggestions, products, articles] = results;
 
@@ -741,17 +778,13 @@ storiesOf('Options', module)
         minLength: 0,
         showCompletion: true,
         defaultHighlightedIndex: -1,
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
         getSources({ query, setContext }) {
           return getAlgoliaResults({
             searchClient,
             queries: [
-              {
-                indexName: 'instant_search',
-                query,
-                params: {
-                  attributesToSnippet: ['description'],
-                },
-              },
               {
                 indexName: 'instant_search_demo_query_suggestions',
                 query,
@@ -759,11 +792,18 @@ storiesOf('Options', module)
                   hitsPerPage: 3,
                 },
               },
+              {
+                indexName: 'instant_search',
+                query,
+                params: {
+                  attributesToSnippet: ['description'],
+                },
+              },
             ],
           }).then(results => {
-            const [productsResults, querySuggestionsResults] = results;
-            const productsHits = productsResults.hits;
+            const [querySuggestionsResults, productsResults] = results;
             const querySuggestionsHits = querySuggestionsResults.hits;
+            const productsHits = productsResults.hits;
 
             setContext({
               nbProductsHits: productsResults.nbHits,
@@ -965,30 +1005,22 @@ storiesOf('Options', module)
     })
   )
   .add(
-    'Inject classNames on sources',
+    'Custom class names',
     withPlayground(({ container, dropdownContainer }) => {
-      const recentSearches = new RecentSearches({
-        limit: 3,
-      });
-
       autocomplete({
         container,
         dropdownContainer,
-        placeholder: 'Search… with injected class',
+        placeholder: 'Search…',
         minLength: 0,
         showCompletion: true,
         defaultHighlightedIndex: -1,
+        shouldDropdownOpen({ state }) {
+          return !isEmpty({ state });
+        },
         getSources({ query, setContext }) {
           return getAlgoliaResults({
             searchClient,
             queries: [
-              {
-                indexName: 'instant_search',
-                query,
-                params: {
-                  attributesToSnippet: ['description'],
-                },
-              },
               {
                 indexName: 'instant_search_demo_query_suggestions',
                 query,
@@ -996,60 +1028,24 @@ storiesOf('Options', module)
                   hitsPerPage: 3,
                 },
               },
+              {
+                indexName: 'instant_search',
+                query,
+                params: {
+                  attributesToSnippet: ['description'],
+                },
+              },
             ],
           }).then(results => {
-            const [productsResults, querySuggestionsResults] = results;
-            const productsHits = productsResults.hits;
+            const [querySuggestionsResults, productsResults] = results;
             const querySuggestionsHits = querySuggestionsResults.hits;
+            const productsHits = productsResults.hits;
 
             setContext({
               nbProductsHits: productsResults.nbHits,
             });
 
             return [
-              {
-                getInputValue: ({ suggestion }) => suggestion.query + ' ',
-                getSuggestions({ query }) {
-                  if (query) {
-                    return [];
-                  }
-
-                  // Also inject some fake searches for the demo
-                  return [
-                    ...recentSearches.getRecentSearches(),
-                    { query: 'guitar' },
-                    { query: 'amazon' },
-                  ].slice(0, 3);
-                },
-                onSelect({ setIsOpen }) {
-                  setIsOpen(true);
-                },
-                templates: {
-                  suggestion({ suggestion }) {
-                    return (
-                      <div style={{ display: 'flex' }}>
-                        <div style={{ width: 28 }}>
-                          <img
-                            src="https://image.flaticon.com/icons/svg/61/61122.svg"
-                            width="16"
-                            height="16"
-                            style={{
-                              opacity: 0.3,
-                            }}
-                          />
-                        </div>
-
-                        {suggestion.query}
-                      </div>
-                    );
-                  },
-                },
-                classNames: {
-                  classNames: {
-                    footer: 'extra-bgc-nebula',
-                  },
-                },
-              },
               {
                 getInputValue: ({ suggestion }) => suggestion.query + ' ',
                 getSuggestions() {
@@ -1060,69 +1056,10 @@ storiesOf('Options', module)
                 },
                 templates: {
                   suggestion({ suggestion }) {
-                    return (
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                        }}
-                      >
-                        <div style={{ display: 'flex' }}>
-                          <div style={{ width: 28 }}>
-                            <svg
-                              viewBox="0 0 18 18"
-                              width={16}
-                              style={{
-                                color: 'rgba(0, 0, 0, 0.3)',
-                              }}
-                            >
-                              <path
-                                d="M13.14 13.14L17 17l-3.86-3.86A7.11 7.11 0 1 1 3.08 3.08a7.11 7.11 0 0 1 10.06 10.06z"
-                                stroke="currentColor"
-                                strokeWidth="1.78"
-                                fill="none"
-                                fillRule="evenodd"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              ></path>
-                            </svg>
-                          </div>
-
-                          <div
-                            dangerouslySetInnerHTML={{
-                              __html: reverseHighlightAlgoliaHit({
-                                hit: suggestion,
-                                attribute: 'query',
-                              }),
-                            }}
-                          />
-                        </div>
-
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'flex-end',
-                            alignItems: 'center',
-                            width: 28,
-                          }}
-                        >
-                          <svg
-                            height="13"
-                            viewBox="0 0 13 13"
-                            width="13"
-                            style={{
-                              color: 'rgba(0, 0, 0, 0.3)',
-                            }}
-                          >
-                            <path
-                              d="m16 7h-12.17l5.59-5.59-1.42-1.41-8 8 8 8 1.41-1.41-5.58-5.59h12.17z"
-                              transform="matrix(.70710678 .70710678 -.70710678 .70710678 6 -5.313708)"
-                              fill="currentColor"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                    );
+                    return reverseHighlightAlgoliaHit({
+                      hit: suggestion,
+                      attribute: 'query',
+                    });
                   },
                 },
                 classNames: {
@@ -1137,15 +1074,6 @@ storiesOf('Options', module)
                 getSuggestionUrl({ suggestion }) {
                   return suggestion.url;
                 },
-                onSelect({ state, setIsOpen }) {
-                  const query = state.query;
-
-                  if (query.length >= 3) {
-                    recentSearches.setRecentSearch(query);
-                  }
-
-                  setIsOpen(false);
-                },
                 templates: {
                   header: ({ state }) => (
                     <h5 className="suggestions-header">
@@ -1153,52 +1081,10 @@ storiesOf('Options', module)
                     </h5>
                   ),
                   suggestion({ suggestion }) {
-                    return (
-                      <a
-                        href={suggestion.url}
-                        style={{ display: 'flex', alignItems: 'center' }}
-                      >
-                        <div
-                          style={{
-                            flex: 1,
-                            maxWidth: 70,
-                            maxHeight: 70,
-                            paddingRight: '1rem',
-                          }}
-                        >
-                          <img
-                            src={suggestion.image}
-                            alt={suggestion.name}
-                            style={{ maxWidth: '100%', maxHeight: '100%' }}
-                          />
-                        </div>
-
-                        <div style={{ flex: 3 }}>
-                          <h2
-                            style={{ fontSize: 'inherit', margin: 0 }}
-                            dangerouslySetInnerHTML={{
-                              __html: highlightAlgoliaHit({
-                                hit: suggestion,
-                                attribute: 'name',
-                              }),
-                            }}
-                          />
-
-                          <p
-                            style={{
-                              margin: '.5rem 0 0 0',
-                              color: 'rgba(0, 0, 0, 0.5)',
-                            }}
-                            dangerouslySetInnerHTML={{
-                              __html: snippetAlgoliaHit({
-                                hit: suggestion,
-                                attribute: 'description',
-                              }),
-                            }}
-                          />
-                        </div>
-                      </a>
-                    );
+                    return highlightAlgoliaHit({
+                      hit: suggestion,
+                      attribute: 'name',
+                    });
                   },
                 },
                 classNames: {
@@ -1222,9 +1108,6 @@ storiesOf('Options', module)
         placeholder: 'Search...',
         showCompletion: true,
         defaultHighlightedIndex: -1,
-        shouldDropdownOpen() {
-          return true;
-        },
         getSources({ query }) {
           return getAlgoliaResults({
             searchClient,

@@ -47,10 +47,8 @@ function hasResults(results: Result[]): boolean {
 /**
  * Called by default to decide if the dropdown should open based on the autocomplete state.
  */
-const defaultShouldDropdownOpen: AutocompleteProps['shouldDropdownOpen'] = ({
-  state,
-}) => {
-  return hasResults(state.results);
+const defaultShouldDropdownOpen: AutocompleteProps['shouldDropdownOpen'] = () => {
+  return true;
 };
 
 function defaultOnInput({
@@ -703,17 +701,18 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
               getInputProps={getInputProps}
               onFocus={() => {
                 if (isQueryLongEnough) {
-                  setIsOpen(true);
-
-                  // If `minLength` is set to 0, and no queries have been
-                  // performed yet, you still want to show the results when
-                  // you focus the input.
-                  if (minLength === 0 && !hasResults(results)) {
+                  // If there are no results yet, we want to simulate an input
+                  // to trigger a search.
+                  if (!hasResults(results)) {
                     onInput({
                       query,
                       state,
                       ...setters,
                     });
+                  } else {
+                    // If there are results already, we just want to open the
+                    // dropdown.
+                    setIsOpen(true);
                   }
                 }
 
@@ -751,8 +750,10 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                 }
 
                 if (event.key === 'Escape') {
+                  // The first Escape hit should close the dropdown.
                   setIsOpen(false);
 
+                  // The second Escape hit should reset the query.
                   if (!shouldOpen) {
                     onInput({
                       query: '',
@@ -792,8 +793,6 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                 const query = (event.target as HTMLInputElement).value;
 
                 if (query.length >= minLength) {
-                  setIsOpen(true);
-
                   onInput({
                     query,
                     state,

@@ -119,7 +119,7 @@ export const Dropdown = ({
                     }}
                   />
 
-                  {!state.isLoading && suggestions.length === 0 ? (
+                  {suggestions.length === 0 ? (
                     <Template
                       data={{
                         state,

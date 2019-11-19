@@ -819,14 +819,16 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
               onReset={(event: Event) => {
                 event.preventDefault();
 
-                if (inputRef.current) {
-                  inputRef.current.focus();
-                }
-
-                onInput({
-                  query: '',
-                  state,
-                  ...setters,
+                Promise.resolve(
+                  onInput({
+                    query: '',
+                    state,
+                    ...setters,
+                  })
+                ).then(() => {
+                  if (inputRef.current) {
+                    inputRef.current.focus();
+                  }
                 });
               }}
               onSubmit={(event: Event) => {

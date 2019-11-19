@@ -34,10 +34,10 @@ describe('algolia suggestions', () => {
 
       getAlgoliaSource({
         searchClient,
-        query: 'query',
-        searchParameters: [
+        queries: [
           {
             indexName: 'indexName',
+            query: 'query',
           },
         ],
       });
@@ -53,16 +53,17 @@ describe('algolia suggestions', () => {
 
       getAlgoliaSource({
         searchClient,
-        query: 'query',
-        searchParameters: [
+        queries: [
           {
             indexName: 'indexName',
+            query: 'query',
             params: {
               filters: 'lang:en',
             },
           },
           {
             indexName: 'indexName',
+            query: 'query',
             params: {
               filters: 'lang:fr',
             },
@@ -101,8 +102,7 @@ describe('algolia suggestions', () => {
       const searchClient = createSearchClient();
       const results = await getAlgoliaResults({
         searchClient,
-        query: 'query',
-        searchParameters: [{ indexName: 'indexName' }],
+        queries: [{ indexName: 'indexName', query: 'query' }],
       });
 
       expect(results).toHaveLength(2);
@@ -114,8 +114,7 @@ describe('algolia suggestions', () => {
       const searchClient = createSearchClient();
       const hits = await getAlgoliaHits({
         searchClient,
-        query: 'query',
-        searchParameters: [{ indexName: 'indexName' }],
+        queries: [{ indexName: 'indexName', query: 'query' }],
       });
 
       expect(hits).toHaveLength(5);

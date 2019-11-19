@@ -233,7 +233,13 @@ function getCompletion({
     //  - query: 'Gui'
     //  - suggestion: 'guitar'
     //  => completion: 'Guitar'
-    return query + currentSuggestion.slice(query.length);
+    const completion = query + currentSuggestion.slice(query.length);
+
+    if (completion === query) {
+      return '';
+    }
+
+    return completion;
   }
 
   return '';

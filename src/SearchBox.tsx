@@ -101,7 +101,7 @@ export function SearchBox(props: SearchBoxProps) {
           <span
             className="algolia-autocomplete-completion"
             aria-live={'assertive'}
-            aria-suggest={`Press tab to select ${props.completion}`}
+            aria-suggest={`Press tab to select "${props.completion}"`}
           >
             {props.completion}
           </span>

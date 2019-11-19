@@ -25,10 +25,10 @@ const querySuggestionsSource = {
   getSuggestions({ query }) {
     return getAlgoliaHits({
       searchClient,
-      query,
-      searchParameters: [
+      queries: [
         {
           indexName: 'instant_search_demo_query_suggestions',
+          query,
           params: {
             hitsPerPage: 4,
           },
@@ -539,22 +539,24 @@ storiesOf('Options', module)
         getSources({ query, setContext }) {
           return getAlgoliaResults({
             searchClient,
-            query,
-            searchParameters: [
+            queries: [
               {
                 indexName: 'instant_search_demo_query_suggestions',
+                query,
                 params: {
                   hitsPerPage: 3,
                 },
               },
               {
                 indexName: 'instant_search',
+                query,
                 params: {
                   attributesToSnippet: ['description'],
                 },
               },
               {
                 indexName: 'instant_search_media',
+                query,
                 params: {
                   attributesToSnippet: ['description'],
                 },
@@ -742,16 +744,17 @@ storiesOf('Options', module)
         getSources({ query, setContext }) {
           return getAlgoliaResults({
             searchClient,
-            query,
-            searchParameters: [
+            queries: [
               {
                 indexName: 'instant_search',
+                query,
                 params: {
                   attributesToSnippet: ['description'],
                 },
               },
               {
                 indexName: 'instant_search_demo_query_suggestions',
+                query,
                 params: {
                   hitsPerPage: 3,
                 },
@@ -978,16 +981,17 @@ storiesOf('Options', module)
         getSources({ query, setContext }) {
           return getAlgoliaResults({
             searchClient,
-            query,
-            searchParameters: [
+            queries: [
               {
                 indexName: 'instant_search',
+                query,
                 params: {
                   attributesToSnippet: ['description'],
                 },
               },
               {
                 indexName: 'instant_search_demo_query_suggestions',
+                query,
                 params: {
                   hitsPerPage: 3,
                 },
@@ -1224,16 +1228,17 @@ storiesOf('Options', module)
         getSources({ query }) {
           return getAlgoliaResults({
             searchClient,
-            query,
-            searchParameters: [
+            queries: [
               {
                 indexName: 'instant_search_demo_query_suggestions',
+                query,
                 params: {
                   hitsPerPage: 3,
                 },
               },
               {
                 indexName: 'instant_search',
+                query,
                 params: {
                   attributesToSnippet: ['description'],
                 },

@@ -12,27 +12,26 @@ export type SearchClient = Pick<Client, 'search' | 'searchForFacetValues'>;
 
 interface SearchParameters {
   indexName: string;
+  query: string;
   params?: QueryParameters;
 }
 
 interface GetAlgoliaSourceOptions {
   searchClient: SearchClient;
-  query: string;
-  searchParameters: SearchParameters[];
+  queries: SearchParameters[];
 }
 
 export function getAlgoliaSource({
   searchClient,
-  query,
-  searchParameters,
+  queries,
 }: GetAlgoliaSourceOptions) {
   if (typeof (searchClient as Client).addAlgoliaAgent === 'function') {
     (searchClient as Client).addAlgoliaAgent(`autocomplete.js (${version})`);
   }
 
   return searchClient.search(
-    searchParameters.map(parameters => {
-      const { indexName, params } = parameters;
+    queries.map(searchParameters => {
+      const { indexName, query, params } = searchParameters;
 
       return {
         indexName,
@@ -50,31 +49,25 @@ export function getAlgoliaSource({
 
 export function getAlgoliaResults({
   searchClient,
-  query,
-  searchParameters,
+  queries,
 }: GetAlgoliaSourceOptions): Promise<MultiResponse['results']> {
-  return getAlgoliaSource({ searchClient, query, searchParameters }).then(
-    response => {
-      return response.results;
-    }
-  );
+  return getAlgoliaSource({ searchClient, queries }).then(response => {
+    return response.results;
+  });
 }
 
 export function getAlgoliaHits({
   searchClient,
-  query,
-  searchParameters,
+  queries,
 }: GetAlgoliaSourceOptions): Promise<Response['hits']> {
-  return getAlgoliaSource({ searchClient, query, searchParameters }).then(
-    response => {
-      const results = response.results;
+  return getAlgoliaSource({ searchClient, queries }).then(response => {
+    const results = response.results;
 
-      if (!results) {
-        return [];
-      }
-
-      // @TODO: should `getAlgoliaHits` flatten the hits?
-      return flatten(results.map(result => result.hits));
+    if (!results) {
+      return [];
     }
-  );
+
+    // @TODO: should `getAlgoliaHits` flatten the hits?
+    return flatten(results.map(result => result.hits));
+  });
 }

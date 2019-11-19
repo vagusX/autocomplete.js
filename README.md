@@ -748,10 +748,10 @@ autocomplete({
   getSources({ query, setContext }) {
     return getAlgoliaResults({
       searchClient,
-      query,
-      searchParameters: [
+      queries: [
         {
           indexName: 'instant_search',
+          query,
           params: {
             attributesToSnippet: ['description'],
           },
@@ -882,10 +882,10 @@ autocomplete({
         getSuggestions({ query }) {
           return getAlgoliaHits({
             searchClient,
-            query,
-            searchParameters: [
+            queries: [
               {
                 indexName: 'instant_search',
+                query,
                 params: {
                   hitsPerPage: 3,
                 },
@@ -934,10 +934,10 @@ autocomplete({
         getSuggestions({ query }) {
           return getAlgoliaResults({
             searchClient,
-            query,
-            searchParameters: [
+            queries: [
               {
                 indexName: 'instant_search',
+                query,
                 params: {
                   hitsPerPage: 3,
                 },

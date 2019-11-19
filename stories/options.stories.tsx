@@ -888,12 +888,14 @@ storiesOf('Options', module)
                 getSuggestionUrl({ suggestion }) {
                   return suggestion.url;
                 },
-                onSelect({ state }) {
+                onSelect({ state, setIsOpen }) {
                   const query = state.query;
 
                   if (query.length >= 3) {
                     recentSearches.setRecentSearch(query);
                   }
+
+                  setIsOpen(false);
                 },
                 templates: {
                   header: ({ state }) => (
@@ -1131,12 +1133,14 @@ storiesOf('Options', module)
                 getSuggestionUrl({ suggestion }) {
                   return suggestion.url;
                 },
-                onSelect({ state }) {
+                onSelect({ state, setIsOpen }) {
                   const query = state.query;
 
                   if (query.length >= 3) {
                     recentSearches.setRecentSearch(query);
                   }
+
+                  setIsOpen(false);
                 },
                 templates: {
                   header: ({ state }) => (

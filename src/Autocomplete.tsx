@@ -135,10 +135,9 @@ function defaultOnInput({
   });
 }
 
-const defaultOnClick: AutocompleteProps['onClick'] = (event, { setIsOpen }) => {
+const defaultOnClick: AutocompleteProps['onClick'] = event => {
   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
     (event as any).preventDownshiftDefault = true;
-    setIsOpen(true);
   }
 };
 

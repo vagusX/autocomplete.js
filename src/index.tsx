@@ -67,7 +67,8 @@ function autocomplete(options: AutocompleteOptions): AutocompleteApi {
       onKeyDown={onKeyDown}
       shouldDropdownOpen={shouldDropdownOpen}
     />,
-    containerElement
+    containerElement,
+    containerElement.lastElementChild!
   );
 
   return autocompleteRef.current;

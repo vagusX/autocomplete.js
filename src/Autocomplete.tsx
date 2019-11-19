@@ -76,6 +76,13 @@ function defaultOnInput({
 
   setters.setError(null);
   setters.setQuery(query);
+
+  // Do not trigger a search if the only difference between the previous and
+  // the next query is white spaces.
+  if (query !== '' && state.query.trim() === query.trim()) {
+    return;
+  }
+
   setters.setIsLoading(true);
 
   lastStallId = environment.setTimeout(() => {

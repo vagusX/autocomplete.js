@@ -754,7 +754,7 @@ function ControlledAutocomplete(props: ControlledAutocompleteProps) {
                   setIsOpen(false);
 
                   // The second Escape hit should reset the query.
-                  if (!shouldOpen) {
+                  if (!shouldOpen && query !== '') {
                     onInput({
                       query: '',
                       state,

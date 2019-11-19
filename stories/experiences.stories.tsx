@@ -47,11 +47,10 @@ storiesOf('Experiences', module).add(
         },
         templates: {
           header() {
-            return (
-              index.hits.length > 0 && (
-                <h5 className="suggestions-header">{header}</h5>
-              )
-            );
+            return <h5 className="suggestions-header">{header}</h5>;
+          },
+          empty({ state }) {
+            return <p>No results for "{state.query}".</p>;
           },
           suggestion({ suggestion }) {
             return (
@@ -218,8 +217,7 @@ storiesOf('Experiences', module).add(
             minLength: 0,
             showCompletion: true,
             defaultHighlightedIndex: -1,
-            onInput({ query, setIsOpen }) {
-              setIsOpen(true);
+            onInput({ query }) {
               refine(query);
             },
           });

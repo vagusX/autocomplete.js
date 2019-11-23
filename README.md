@@ -106,19 +106,19 @@ You can learn more about the [options](#options) and the [top-level API](#top-le
 Autocomplete.js is available on the [npm](https://www.npmjs.com/) registry.
 
 ```sh
-yarn add @francoischalifour/autocomplete.js
+yarn add @francoischalifour/autocomplete.js@alpha
 # or
-npm install @francoischalifour/autocomplete.js
+npm install @francoischalifour/autocomplete.js@alpha
 ```
 
 If you do not wish to use a package manager, you can use standalone endpoints:
 
 ```html
 <!-- jsDelivr -->
-<script src="https://cdn.jsdelivr.net/autocomplete.js/1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@francoischalifour/autocomplete.js@alpha"></script>
 
 <!-- unpkg -->
-<script src="https://unpkg.com/autocomplete.js/1"></script>
+<script src="https://unpkg.com/@francoischalifour/autocomplete.js@alpha"></script>
 ```
 
 ## API

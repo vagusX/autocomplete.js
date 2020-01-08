@@ -55,7 +55,7 @@ Autocomplete.js is a JavaScript library that creates a fast and fully-featured a
 
 ## Usage
 
-> [Try it out live](https://codesandbox.io/s/github/algolia/create-instantsearch-app/tree/templates/autocomplete.js)
+> [Try it out live](http://codesandbox.io/s/github/francoischalifour/autocomplete.js/tree/next/examples/autocomplete.js)
 
 ###### HTML
 

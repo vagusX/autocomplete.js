@@ -324,6 +324,7 @@ function UncontrolledAutocomplete(
     getSources = getNormalizedSources(props.getSources),
     environment = defaultEnvironment,
     navigator = {
+      ...props.navigator,
       navigate({ suggestionUrl }) {
         environment.location.assign(suggestionUrl);
       },

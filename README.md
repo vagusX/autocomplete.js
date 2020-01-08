@@ -177,7 +177,7 @@ interface DropdownPosition {
 
 ```js
 autocomplete({
-  /// ...
+  // ...
   getDropdownPosition({ dropdownPosition }) {
     // Desktop: we want to return the dropdown position as is.
     if (window.matchMedia('(min-width: 650px)').matches) {

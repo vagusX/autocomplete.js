@@ -15,4 +15,19 @@ module.exports = {
     const versionPath = path.resolve(dir, 'src/version.ts');
     fs.writeFileSync(versionPath, `export const version = '${version}';\n`);
   },
+  afterPublish({ exec, dir }) {
+    // Update the Autocomplete.js version in the examples
+    const examplePath = path.resolve(dir, 'examples/autocomplete.js');
+    const { version } = require('./package.json');
+
+    // eslint-disable-next-line no-console
+    console.log('Updating Autocomplete.js dependency in examples...');
+
+    exec(
+      `cd ${examplePath} && yarn upgrade @francoischalifour/autocomplete.js@${version}`
+    );
+    exec('git add examples');
+    exec('git commit -m "chore(examples): update autocomplete.js dependency"');
+    exec('git push origin next');
+  },
 };

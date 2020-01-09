@@ -790,12 +790,12 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@francoischalifour/autocomplete.js@1.0.0-alpha.9":
-  version "1.0.0-alpha.9"
-  resolved "https://registry.yarnpkg.com/@francoischalifour/autocomplete.js/-/autocomplete.js-1.0.0-alpha.9.tgz#bf9fba2040c79f54d4a1239961037a2a48ce53a8"
-  integrity sha512-39y2mn6fP4hcoVr2XXTxy+zQ/qIye48Pn3CempUKPRN9Qj4Fi0i2tCDMbR5xOrwzXWvWenCRiI9aMxM8qHsZpg==
+"@francoischalifour/autocomplete.js@1.0.0-alpha.10":
+  version "1.0.0-alpha.10"
+  resolved "https://registry.yarnpkg.com/@francoischalifour/autocomplete.js/-/autocomplete.js-1.0.0-alpha.10.tgz#1b06b660cfdaed9a880e4bc1279556a0724eda09"
+  integrity sha512-T4aj50YFeScUpZo1XUT5USgJxiXjY6Pev75nkTvRddHWBcEWMqkTqQCt71lcLwJOpkW/b+gtZds0z/Kad8QeMg==
   dependencies:
-    downshift francoischalifour/downshift#preact-build
+    downshift "https://github.com/francoischalifour/downshift#ac372e473eea78ac7db8775acbae6726adc7e325"
     preact "^10.0.0"
 
 "@iarna/toml@^2.2.0":
@@ -1994,9 +1994,9 @@ dotenv@^5.0.0:
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-5.0.1.tgz#a5317459bd3d79ab88cff6e44057a6a3fbb1fcef"
   integrity sha512-4As8uPrjfwb7VXC+WnLCbXK7y+Ueb2B3zgNCePYfhxS1PYeaO1YTeplffTEcbfLhvFNGLAz90VvJs9yomG7bow==
 
-downshift@francoischalifour/downshift#preact-build:
+"downshift@https://github.com/francoischalifour/downshift#ac372e473eea78ac7db8775acbae6726adc7e325":
   version "0.0.0-semantically-released"
-  resolved "https://codeload.github.com/francoischalifour/downshift/tar.gz/ac372e473eea78ac7db8775acbae6726adc7e325"
+  resolved "https://github.com/francoischalifour/downshift#ac372e473eea78ac7db8775acbae6726adc7e325"
   dependencies:
     "@babel/runtime" "^7.4.5"
     compute-scroll-into-view "^1.0.9"

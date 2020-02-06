@@ -76,7 +76,14 @@ interface Suggestion<TItem> {
   source: AutocompleteSource;
 }
 
-export interface AutocompleteState<TItem> extends AutocompleteSetters<TItem> {
+export interface AutocompleteAccessibilityGetters<TItem> {
+  getInputProps: GetInputProps;
+  getItemProps: GetItemProps<TItem>;
+  getLabelProps: GetLabelProps;
+  getMenuProps: GetMenuProps;
+}
+
+export interface AutocompleteState<TItem> {
   highlightedIndex: number;
   query: string;
   suggestions: Array<Suggestion<TItem>>;
@@ -86,10 +93,11 @@ export interface AutocompleteState<TItem> extends AutocompleteSetters<TItem> {
     error?: Error;
   };
   context: { [key: string]: unknown };
-  getInputProps: GetInputProps;
-  getItemProps: GetItemProps<TItem>;
-  getLabelProps: GetLabelProps;
-  getMenuProps: GetMenuProps;
+}
+
+export interface AutocompleteInstance<TItem>
+  extends AutocompleteSetters<TItem>,
+    AutocompleteAccessibilityGetters<TItem> {
   onKeyDown(event: KeyboardEvent): void;
 }
 
@@ -153,7 +161,7 @@ export interface AutocompleteOptions<TItem> {
   /**
    * The function called when an item is selected.
    */
-  onSelect(): void;
+  // onSelect(): void;
   /**
    * The container for the autocomplete dropdown.
    *
@@ -193,7 +201,7 @@ export interface AutocompleteOptions<TItem> {
   /**
    * The sources to get the suggestions from.
    */
-  getSources?(
+  getSources(
     options: SuggestionsOptions
   ): AutocompleteSource[] | Promise<AutocompleteSource[]>;
   /**

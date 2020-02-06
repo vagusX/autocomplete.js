@@ -5,7 +5,7 @@ import {
   GetMenuProps,
 } from './types';
 
-const noop = () => {};
+// const noop = () => {};
 
 export function getAccessibilityGetters<TItem>(id: string) {
   const getInputProps: GetInputProps = props => {
@@ -16,11 +16,10 @@ export function getAccessibilityGetters<TItem>(id: string) {
       'aria-controls': null,
       'aria-labelledby': `${id}-label`,
       autoComplete: 'off',
-      value: '',
       id: `${id}-input`,
-      onInput: noop,
-      onKeyDown: noop,
-      onBlur: noop,
+      // onInput: noop,
+      // onKeyDown: noop,
+      // onBlur: noop,
     };
   };
 
@@ -34,9 +33,9 @@ export function getAccessibilityGetters<TItem>(id: string) {
       id: `${id}-item-${props.item.id}`,
       role: 'option',
       'aria-selected': props.item.isActive,
-      onMouseMove: noop,
-      onMouseDown: noop,
-      onClick: noop,
+      // onMouseMove: noop,
+      // onMouseDown: noop,
+      // onClick: noop,
     };
   };
 

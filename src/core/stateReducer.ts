@@ -19,8 +19,6 @@ export const stateReducer = <TItem>(
   state: AutocompleteState<TItem>,
   action: Action
 ): AutocompleteState<TItem> => {
-  console.info('stateReducer', action.type);
-
   switch (action.type) {
     case 'setHighlightedIndex': {
       return {

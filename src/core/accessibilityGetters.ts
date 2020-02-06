@@ -7,7 +7,7 @@ import {
 
 // const noop = () => {};
 
-export function getAccessibilityGetters<TItem>(id: string) {
+export function getAccessibilityGetters<TItem>(id: string, store) {
   const getInputProps: GetInputProps = props => {
     return {
       ...props,
@@ -30,9 +30,10 @@ export function getAccessibilityGetters<TItem>(id: string) {
 
     return {
       ...props,
-      id: `${id}-item-${props.item.id}`,
+      id: `${id}-item-${props.item.__autocomplete_id}`,
       role: 'option',
-      'aria-selected': props.item.isActive,
+      'aria-selected':
+        store.getState().highlightedIndex === props.item.__autocomplete_id,
       // onMouseMove: noop,
       // onMouseDown: noop,
       // onClick: noop,

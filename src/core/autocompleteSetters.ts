@@ -17,7 +17,18 @@ export function getAutocompleteSetters<TItem>({ store, onStateChange }) {
     onStateChange({ state: store.getState() });
   };
 
-  const setSuggestions: AutocompleteState<TItem>['setSuggestions'] = value => {
+  const setSuggestions: AutocompleteState<
+    TItem
+  >['setSuggestions'] = rawValue => {
+    let baseItemId = 0;
+    const value = rawValue.map(suggestion => ({
+      ...suggestion,
+      items: suggestion.items.map(item => ({
+        ...item,
+        __autocomplete_id: baseItemId++,
+      })),
+    }));
+
     store.setState(
       stateReducer(store.getState(), { type: 'setSuggestions', value })
     );

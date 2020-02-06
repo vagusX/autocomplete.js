@@ -1,4 +1,5 @@
 import { AutocompleteState } from './types';
+import { getItemsCount, getNextHighlightedIndex } from './utils';
 
 type ActionType =
   | 'setHighlightedIndex'
@@ -62,17 +63,25 @@ export const stateReducer = <TItem>(
       };
     }
 
-    case 'ArrowUp': {
-      return {
-        ...state,
-        highlightedIndex: state.highlightedIndex - 1,
-      };
-    }
-
     case 'ArrowDown': {
       return {
         ...state,
-        highlightedIndex: state.highlightedIndex + 1,
+        highlightedIndex: getNextHighlightedIndex(
+          action.value.shiftKey ? 5 : 1,
+          state.highlightedIndex,
+          getItemsCount(state)
+        ),
+      };
+    }
+
+    case 'ArrowUp': {
+      return {
+        ...state,
+        highlightedIndex: getNextHighlightedIndex(
+          action.value.shiftKey ? -5 : -1,
+          state.highlightedIndex,
+          getItemsCount(state)
+        ),
       };
     }
 

@@ -59,7 +59,7 @@ const createAutocomplete: CreateAutocomplete = <
     getItemProps,
     getLabelProps,
     getMenuProps,
-  } = getAccessibilityGetters(id);
+  } = getAccessibilityGetters(id, store);
 
   const onInput = (event: InputEvent) => {
     const query = (event.currentTarget as HTMLInputElement).value;

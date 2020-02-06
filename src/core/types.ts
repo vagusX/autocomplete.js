@@ -147,6 +147,33 @@ export interface ItemEventHandlerOptions<TItem>
   source: AutocompleteSource;
 }
 
+interface Navigator {
+  /**
+   * Called when a URL should be open in the current page.
+   */
+  navigate: ({
+    suggestionUrl: string,
+    suggestion: Suggestion,
+    state: AutocompleteState,
+  }) => void;
+  /**
+   * Called when a URL should be open in a new tab.
+   */
+  navigateNewTab: ({
+    suggestionUrl: string,
+    suggestion: Suggestion,
+    state: AutocompleteState,
+  }) => void;
+  /**
+   * Called when a URL should be open in a new window.
+   */
+  navigateNewWindow: ({
+    suggestionUrl: string,
+    suggestion: Suggestion,
+    state: AutocompleteState,
+  }) => void;
+}
+
 export interface AutocompleteOptions<TItem> {
   /**
    * The Autocomplete ID to create accessible attributes.
@@ -162,19 +189,6 @@ export interface AutocompleteOptions<TItem> {
    * The function called when an item is selected.
    */
   // onSelect(): void;
-  /**
-   * The container for the autocomplete dropdown.
-   *
-   * @default environment.document.body
-   */
-  dropdownContainer?: HTMLElement;
-  /**
-   * The dropdown position related to the container.
-   * Possible values are `"left"` and `"right"`.
-   *
-   * @default "left"
-   */
-  dropdownAlignment?: 'left' | 'right';
   /**
    * Whether to show the highlighted suggestion as completion in the input.
    *
@@ -215,69 +229,27 @@ export interface AutocompleteOptions<TItem> {
   /**
    * Navigator's API to redirect the user when a link should be open.
    */
-  navigator?: {
-    /**
-     * Called when a URL should be open in the current page.
-     */
-    navigate: ({
-      suggestionUrl: string,
-      suggestion: Suggestion,
-      state: AutocompleteState,
-    }) => void;
-    /**
-     * Called when a URL should be open in a new tab.
-     */
-    navigateNewTab: ({
-      suggestionUrl: string,
-      suggestion: Suggestion,
-      state: AutocompleteState,
-    }) => void;
-    /**
-     * Called when a URL should be open in a new window.
-     */
-    navigateNewWindow: ({
-      suggestionUrl: string,
-      suggestion: Suggestion,
-      state: AutocompleteState,
-    }) => void;
-  };
-  /**
-   * Called when the input is focused.
-   */
-  onFocus?: (options: EventHandlerOptions<TItem>) => void;
-  /**
-   * Called when a `click` event is fired on an item.
-   *
-   * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event
-   */
-  onClick?: (
-    event: MouseEvent,
-    options: ItemEventHandlerOptions<TItem>
-  ) => void;
-  /**
-   * Called when a `keydown` event is fired.
-   *
-   * @see https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event
-   */
-  onKeyDown?: (
-    event: KeyboardEvent,
-    options: EventHandlerOptions<TItem> &
-      Partial<ItemEventHandlerOptions<TItem>>
-  ) => void;
-  /**
-   * Called when an error is thrown while getting the suggestions.
-   */
-  onError?: (options: EventHandlerOptions<TItem>) => void;
-  /**
-   * Called when the input changes.
-   */
-  onInput?: (
-    options: EventHandlerOptions<TItem> & {
-      query: string;
-    }
-  ) => void | Promise<void | { state: AutocompleteState<TItem> }>;
-  /**
-   * Called to check whether the dropdown should open based on the Autocomplete state.
-   */
+  navigator?: Navigator;
   shouldDropdownOpen?(options: { state: AutocompleteState<TItem> }): boolean;
+}
+
+type NormalizedAutocompleteSource = {
+  [KParam in keyof AutocompleteSource]-?: AutocompleteSource[KParam];
+};
+
+type NormalizedGetSources = (
+  options: SuggestionsOptions
+) => Promise<NormalizedAutocompleteSource[]>;
+
+export interface RequiredAutocompleteOptions<TItem> {
+  id: string;
+  onStateChange<TItem>(props: { state: AutocompleteState<TItem> }): void;
+  showCompletion: boolean;
+  minLength: number;
+  stallThreshold: number;
+  initialState: Partial<AutocompleteState<TItem>>;
+  getSources: NormalizedGetSources;
+  environment: Environment;
+  navigator: Navigator;
+  shouldDropdownOpen(options: { state: AutocompleteState<TItem> }): boolean;
 }

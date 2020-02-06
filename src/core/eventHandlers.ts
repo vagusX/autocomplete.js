@@ -2,7 +2,7 @@ import { stateReducer } from './stateReducer';
 
 import { AutocompleteState } from './types';
 
-export function getEventHandlers<TItem>({ store, onStateChange }) {
+export function getEventHandlers<TItem>({ store, onStateChange, props }) {
   const onKeyDown: AutocompleteState<TItem>['onKeyDown'] = event => {
     if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       // Default browser behavior changes the caret placement on ArrowUp and
@@ -10,16 +10,36 @@ export function getEventHandlers<TItem>({ store, onStateChange }) {
       event.preventDefault();
 
       store.setState(
-        stateReducer(store.getState(), {
-          type: event.key,
-          value: { shiftKey: event.shiftKey },
-        })
+        stateReducer(
+          store.getState(),
+          {
+            type: event.key,
+            value: { shiftKey: event.shiftKey },
+          },
+          props
+        )
       );
       onStateChange({ state: store.getState() });
     }
   };
 
+  const onReset: AutocompleteState<TItem>['onReset'] = () => {
+    store.setState(
+      stateReducer(store.getState(), { type: 'reset', value: {} }, props)
+    );
+    onStateChange({ state: store.getState() });
+  };
+
+  const onFocus: AutocompleteState<TItem>['onFocus'] = () => {
+    store.setState(
+      stateReducer(store.getState(), { type: 'focus', value: {} }, props)
+    );
+    onStateChange({ state: store.getState() });
+  };
+
   return {
     onKeyDown,
+    onReset,
+    onFocus,
   };
 }

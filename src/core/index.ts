@@ -3,17 +3,15 @@ import { getAccessibilityGetters } from './accessibilityGetters';
 import { getAutocompleteSetters } from './autocompleteSetters';
 import { getEventHandlers } from './eventHandlers';
 import { normalizeGetSources } from './sources';
+import { getItemsCount } from './utils';
 
 import {
   AutocompleteOptions,
   AutocompleteState,
   AutocompleteInstance,
+  RequiredAutocompleteOptions,
 } from './types';
 
-type AutocompleteItem = {
-  id: string;
-  isActive: boolean;
-};
 let autocompleteId = 0;
 
 const generateAutocompleteId = () => {
@@ -24,28 +22,70 @@ type CreateAutocomplete = <TItem>(
   options: AutocompleteOptions<TItem>
 ) => AutocompleteInstance<TItem>;
 
+function getDefaultProps<TItem>(
+  props: AutocompleteOptions<TItem>
+): RequiredAutocompleteOptions<TItem> {
+  const environment =
+    typeof window !== 'undefined' ? window : ({} as typeof window);
+
+  return {
+    id: generateAutocompleteId(),
+    minLength: 1,
+    showCompletion: false,
+    stallThreshold: 300,
+    environment,
+    navigator: {
+      navigate({ suggestionUrl }) {
+        environment.location.assign(suggestionUrl);
+      },
+      navigateNewTab({ suggestionUrl }) {
+        const windowReference = environment.open(
+          suggestionUrl,
+          '_blank',
+          'noopener'
+        );
+
+        if (windowReference) {
+          windowReference.focus();
+        }
+      },
+      navigateNewWindow({ suggestionUrl }) {
+        environment.open(suggestionUrl, '_blank', 'noopener');
+      },
+      ...props.navigator,
+    },
+    initialState: {
+      highlightedIndex: 0,
+      query: '',
+      suggestions: [],
+      isOpen: false,
+      status: 'idle',
+      statusContext: {},
+      context: {},
+      ...props.initialState,
+    },
+    getSources: normalizeGetSources(props.getSources),
+    shouldDropdownOpen: ({ state }) => getItemsCount(state) > 0,
+    ...props,
+  };
+}
+
 const createAutocomplete: CreateAutocomplete = <
   TItem // extends AutocompleteItem
->({
-  id = generateAutocompleteId(),
-  onStateChange,
-  initialState,
-  getSources: originalGetSources,
-}) => {
-  const state: AutocompleteState<TItem> = {
-    highlightedIndex: 0,
-    query: '',
-    suggestions: [],
-    isOpen: false,
-    status: 'idle',
-    statusContext: {},
-    context: {},
-    ...initialState,
-  };
-  const store = createStore(state);
-  const getSources = normalizeGetSources(originalGetSources);
+>(
+  props: AutocompleteOptions<TItem>
+) => {
+  const { id, onStateChange, initialState, getSources } = getDefaultProps(
+    props
+  );
 
-  const { onKeyDown } = getEventHandlers({ store, onStateChange });
+  const store = createStore(initialState as AutocompleteState<TItem>);
+
+  const { onKeyDown, onReset, onFocus } = getEventHandlers({
+    store,
+    onStateChange,
+    props,
+  });
   const {
     setHighlightedIndex,
     setQuery,
@@ -68,16 +108,18 @@ const createAutocomplete: CreateAutocomplete = <
     setStatus('loading');
     setQuery(query);
 
-    getSources({
-      query,
-      state: store.getState(),
-      setHighlightedIndex,
-      setQuery,
-      setSuggestions,
-      setIsOpen,
-      setStatus,
-      setContext,
-    }).then(sources => {
+    Promise.resolve(
+      getSources({
+        query,
+        state: store.getState(),
+        setHighlightedIndex,
+        setQuery,
+        setSuggestions,
+        setIsOpen,
+        setStatus,
+        setContext,
+      })
+    ).then(sources => {
       setStatus('loading');
 
       // @TODO: convert `Promise.all` to fetching strategy.
@@ -128,6 +170,8 @@ const createAutocomplete: CreateAutocomplete = <
     getMenuProps,
     onKeyDown,
     onInput,
+    onFocus,
+    onReset,
   };
 };
 

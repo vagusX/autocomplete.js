@@ -1,5 +1,6 @@
-import { AutocompleteState } from './types';
 import { getItemsCount, getNextHighlightedIndex } from './utils';
+
+import { AutocompleteState, AutocompleteOptions } from './types';
 
 type ActionType =
   | 'setHighlightedIndex'
@@ -9,7 +10,9 @@ type ActionType =
   | 'setStatus'
   | 'setContext'
   | 'ArrowUp'
-  | 'ArrowDown';
+  | 'ArrowDown'
+  | 'reset'
+  | 'focus';
 
 interface Action {
   type: ActionType;
@@ -18,7 +21,8 @@ interface Action {
 
 export const stateReducer = <TItem>(
   state: AutocompleteState<TItem>,
-  action: Action
+  action: Action,
+  props: AutocompleteOptions<TItem>
 ): AutocompleteState<TItem> => {
   switch (action.type) {
     case 'setHighlightedIndex': {
@@ -82,6 +86,26 @@ export const stateReducer = <TItem>(
           state.highlightedIndex,
           getItemsCount(state)
         ),
+      };
+    }
+
+    case 'reset': {
+      // @TODO: support with menu opening by default
+      return {
+        ...state,
+        highlightedIndex: -1,
+        isOpen: false,
+        status: 'idle',
+        statusContext: {},
+        query: '',
+        suggestions: [],
+      };
+    }
+
+    case 'focus': {
+      return {
+        ...state,
+        isOpen: state.query.length >= props.minLength,
       };
     }
 

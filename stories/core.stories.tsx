@@ -53,9 +53,12 @@ storiesOf('Core', module).add(
         })
       );
 
+      const inputRef = useRef<HTMLInputElement | null>(null);
+
       return (
         <div>
           <SearchBox
+            onInputRef={inputRef}
             placeholder={placeholder}
             autoFocus={autoFocus}
             completion=""
@@ -65,8 +68,14 @@ storiesOf('Core', module).add(
             getInputProps={autocomplete.current.getInputProps}
             onKeyDown={autocomplete.current.onKeyDown}
             onInput={autocomplete.current.onInput}
-            onFocus={() => {}}
-            onReset={() => {}}
+            onFocus={autocomplete.current.onFocus}
+            onReset={() => {
+              autocomplete.current.onReset();
+
+              if (inputRef.current) {
+                inputRef.current.focus();
+              }
+            }}
             onSubmit={() => {}}
           />
 

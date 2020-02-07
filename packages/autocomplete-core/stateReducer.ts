@@ -138,7 +138,7 @@ export const stateReducer = <TItem>(
       // to use the browser dev tools.
       return {
         ...state,
-        isOpen: __DEV__,
+        isOpen: __DEV__ ? state.isOpen : false,
         highlightedIndex: -1,
       };
     }

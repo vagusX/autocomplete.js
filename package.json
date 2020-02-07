@@ -1,25 +1,9 @@
 {
-  "name": "@francoischalifour/autocomplete.js",
-  "description": "Fast and fully-featured autocomplete JavaScript library.",
-  "version": "1.0.0-alpha.10",
-  "license": "MIT",
-  "homepage": "https://github.com/algolia/autocomplete.js",
-  "repository": "algolia/autocomplete.js",
-  "author": {
-    "name": "Algolia, Inc.",
-    "url": "https://www.algolia.com"
-  },
-  "files": [
-    "dist/"
+  "name": "@francoischalifour/autocomplete-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*"
   ],
-  "source": "src/index.tsx",
-  "types": "dist/es/index.d.ts",
-  "module": "dist/es/index.js",
-  "main": "dist/umd/autocomplete.js",
-  "umd:main": "dist/umd/autocomplete.js",
-  "unpkg": "dist/umd/autocomplete.js",
-  "jsdelivr": "dist/umd/autocomplete.js",
-  "sideEffects": false,
   "scripts": {
     "start": "yarn run storybook",
     "test": "jest",
@@ -37,10 +21,6 @@
     "website:build": "yarn run build && yarn run storybook:build",
     "release:prepare": "shipjs prepare",
     "release:trigger": "shipjs trigger"
-  },
-  "dependencies": {
-    "downshift": "https://github.com/francoischalifour/downshift#ac372e473eea78ac7db8775acbae6726adc7e325",
-    "preact": "^10.0.0"
   },
   "devDependencies": {
     "@babel/cli": "7.7.7",
@@ -75,6 +55,7 @@
     "instantsearch.js": "4.1.1",
     "jest": "24.9.0",
     "jest-watch-typeahead": "0.4.2",
+    "preact": "10.3.1",
     "prettier": "1.19.1",
     "recent-searches": "1.0.5",
     "rollup": "1.29.0",

@@ -15,7 +15,7 @@ function escape(value: string): string {
     : value;
 }
 
-export function parseHighlightedAttribute({
+function parseHighlightedAttribute({
   highlightPreTag,
   highlightPostTag,
   highlightedValue,

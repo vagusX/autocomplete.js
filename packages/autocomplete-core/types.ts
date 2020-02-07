@@ -196,7 +196,7 @@ export interface AutocompleteOptions<TItem> {
   /**
    * Function called when the internal state changes.
    */
-  onStateChange<TItem>(props: { state: AutocompleteState<TItem> }): void;
+  onStateChange?<TItem>(props: { state: AutocompleteState<TItem> }): void;
   /**
    * The text that appears in the search box input when there is no query.
    */

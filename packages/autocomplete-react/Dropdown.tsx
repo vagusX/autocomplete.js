@@ -2,7 +2,7 @@
 
 import { h } from 'preact';
 
-import { reverseHighlightAlgoliaHit } from '../utils/highlight';
+import { reverseHighlightAlgoliaHit } from '../autocomplete-presets';
 
 interface DropdownProps {
   isOpen: boolean;

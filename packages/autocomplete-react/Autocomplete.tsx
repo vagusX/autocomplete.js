@@ -1,0 +1,68 @@
+/** @jsx h */
+
+import { h } from 'preact';
+import { useRef, useState } from 'preact/hooks';
+
+import { createAutocomplete } from '../autocomplete-core';
+import {
+  AutocompleteState,
+  AutocompleteOptions,
+} from '../autocomplete-core/types';
+import { SearchBox } from './SearchBox';
+import { Dropdown } from './Dropdown';
+
+export function Autocomplete<TItem>(props: AutocompleteOptions<TItem>) {
+  const [state, setState] = useState<AutocompleteState<TItem>>({
+    highlightedIndex: 0,
+    query: '',
+    isOpen: false,
+    status: 'idle',
+    suggestions: [],
+    statusContext: {},
+    context: {},
+  });
+
+  const autocomplete = useRef(
+    createAutocomplete<TItem>({
+      ...props,
+      onStateChange({ state }) {
+        setState(state);
+
+        if (props.onStateChange) {
+          props.onStateChange({ state });
+        }
+      },
+    })
+  );
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  return (
+    <div>
+      <SearchBox
+        onInputRef={inputRef}
+        completion=""
+        query={state.query}
+        isOpen={state.isOpen}
+        status={state.status}
+        getInputProps={autocomplete.current.getInputProps}
+        onReset={() => {
+          autocomplete.current.onReset();
+
+          if (inputRef.current) {
+            inputRef.current.focus();
+          }
+        }}
+        onSubmit={() => {}}
+      />
+
+      <Dropdown
+        suggestions={state.suggestions}
+        isOpen={state.isOpen}
+        status={status}
+        getItemProps={autocomplete.current.getItemProps}
+        getMenuProps={autocomplete.current.getMenuProps}
+      />
+    </div>
+  );
+}

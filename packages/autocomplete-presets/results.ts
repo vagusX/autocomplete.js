@@ -5,8 +5,8 @@ import {
   Response,
 } from 'algoliasearch';
 
-import { version } from '../version';
-import { flatten } from '../utils';
+import { version } from './package.json';
+import { flatten } from './utils';
 
 export type SearchClient = Pick<Client, 'search' | 'searchForFacetValues'>;
 

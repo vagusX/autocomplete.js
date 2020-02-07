@@ -24,6 +24,7 @@ const plugins = [
     },
   }),
   replace({
+    __DEV__: JSON.stringify('production'),
     'process.env.NODE_ENV': JSON.stringify('production'),
   }),
   babel({

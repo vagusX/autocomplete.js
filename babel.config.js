@@ -22,6 +22,17 @@ module.exports = api => {
         },
       ],
     ],
-    plugins: [['@babel/plugin-transform-react-jsx', { pragma: 'h' }]],
+    plugins: [
+      ['@babel/plugin-transform-react-jsx', { pragma: 'h' }],
+      !isTest && [
+        'inline-replace-variables',
+        {
+          __DEV__: {
+            type: 'node',
+            replacement: "process.env.NODE_ENV === 'development'",
+          },
+        },
+      ],
+    ],
   };
 };

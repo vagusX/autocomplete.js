@@ -10,14 +10,8 @@ function createAutocomplete<TItem extends {}>(
   options: AutocompleteOptions<TItem>
 ): AutocompleteInstance<TItem> {
   const props = getDefaultProps(options);
-  const { onStateChange } = props;
   const store = createStore(props.initialState);
 
-  const { onReset } = getEventHandlers({
-    store,
-    onStateChange,
-    props,
-  });
   const {
     setHighlightedIndex,
     setQuery,
@@ -25,7 +19,17 @@ function createAutocomplete<TItem extends {}>(
     setIsOpen,
     setStatus,
     setContext,
-  } = getAutocompleteSetters({ store, onStateChange, props });
+  } = getAutocompleteSetters({ store, props });
+  const { onReset } = getEventHandlers({
+    store,
+    props,
+    setHighlightedIndex,
+    setQuery,
+    setSuggestions,
+    setIsOpen,
+    setStatus,
+    setContext,
+  });
   const {
     getInputProps,
     getItemProps,
@@ -33,7 +37,6 @@ function createAutocomplete<TItem extends {}>(
     getMenuProps,
   } = getPropGetters({
     store,
-    onStateChange,
     props,
     setHighlightedIndex,
     setQuery,

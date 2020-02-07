@@ -1,9 +1,7 @@
 import { stateReducer } from './stateReducer';
-import {
-  isSpecialClick,
-  getSuggestionFromHighlightedIndex,
-  getRelativeHighlightedIndex,
-} from './utils';
+import { onInput } from './onInput';
+import { onKeyDown } from './onKeyDown';
+import { isSpecialClick } from './utils';
 
 import {
   GetInputProps,
@@ -14,7 +12,6 @@ import {
 
 export function getPropGetters({
   store,
-  onStateChange,
   props,
   setHighlightedIndex,
   setQuery,
@@ -42,169 +39,31 @@ export function getPropGetters({
       placeholder: props.showCompletion ? '' : props.placeholder,
       // @TODO: see if this accessibility attribute is necessary
       // 'aria-expanded': store.getStore().isOpen,
-      onInput(event: InputEvent) {
-        const query = (event.currentTarget as HTMLInputElement).value;
-
-        setHighlightedIndex(0);
-        setStatus('loading');
-        setQuery(query);
-
-        props
-          .getSources({
-            query,
-            state: store.getState(),
-            setHighlightedIndex,
-            setQuery,
-            setSuggestions,
-            setIsOpen,
-            setStatus,
-            setContext,
-          })
-          .then(sources => {
-            setStatus('loading');
-
-            // @TODO: convert `Promise.all` to fetching strategy.
-            return Promise.all(
-              sources.map(source => {
-                return Promise.resolve(
-                  source.getSuggestions({
-                    query,
-                    state: store.getState(),
-                    setHighlightedIndex,
-                    setQuery,
-                    setSuggestions,
-                    setIsOpen,
-                    setStatus,
-                    setContext,
-                  })
-                ).then(items => {
-                  return {
-                    source,
-                    items,
-                  };
-                });
-              })
-            )
-              .then(suggestions => {
-                setStatus('idle');
-                setSuggestions(suggestions);
-                setIsOpen(
-                  props.shouldDropdownOpen({ state: store.getState() })
-                );
-              })
-              .catch(error => {
-                setStatus('error');
-
-                throw error;
-              });
-          });
+      onInput: (event: InputEvent) => {
+        onInput({
+          query: (event.currentTarget as HTMLInputElement).value,
+          store,
+          props,
+          setHighlightedIndex,
+          setQuery,
+          setSuggestions,
+          setIsOpen,
+          setStatus,
+          setContext,
+        });
       },
-      onKeyDown(event: KeyboardEvent) {
-        if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-          // Default browser behavior changes the caret placement on ArrowUp and
-          // Arrow down.
-          event.preventDefault();
-
-          store.setState(
-            stateReducer(
-              store.getState(),
-              {
-                type: event.key,
-                value: { shiftKey: event.shiftKey },
-              },
-              props
-            )
-          );
-          onStateChange({ state: store.getState() });
-        } else if (event.key === 'Escape') {
-          // This prevents the default browser behavior on `input[type="search"]`
-          // to remove the query right away because we first want to close the
-          // dropdown.
-          event.preventDefault();
-
-          store.setState(
-            stateReducer(
-              store.getState(),
-              {
-                type: event.key,
-                value: {},
-              },
-              props
-            )
-          );
-          onStateChange({ state: store.getState() });
-        } else if (event.key === 'Enter') {
-          // This prevents the `onSubmit` event to be sent.
-          event.preventDefault();
-
-          if (store.getState().highlightedIndex < 0) {
-            return;
-          }
-
-          const suggestion = getSuggestionFromHighlightedIndex({
-            highlightedIndex: store.getState().highlightedIndex,
-            state: store.getState(),
-          });
-
-          const item =
-            suggestion.items[
-              getRelativeHighlightedIndex({ store, suggestion })
-            ];
-          const itemUrl = suggestion.source.getSuggestionUrl({
-            suggestion: item,
-            state: store.getState(),
-          });
-          const inputValue = suggestion.source.getInputValue({
-            suggestion: item,
-            state: store.getState(),
-          });
-
-          if (event.metaKey || event.ctrlKey) {
-            if (itemUrl !== undefined) {
-              props.navigator.navigateNewTab({
-                suggestionUrl: itemUrl,
-                suggestion: item,
-                state: store.getState(),
-              });
-            }
-          } else if (event.shiftKey) {
-            if (itemUrl !== undefined) {
-              props.navigator.navigateNewWindow({
-                suggestionUrl: itemUrl,
-                suggestion: item,
-                state: store.getState(),
-              });
-            }
-          } else if (event.altKey) {
-            // Keep native browser behavior
-          } else {
-            store.setState(
-              stateReducer(
-                store.getState(),
-                {
-                  type: 'Enter',
-                  value: inputValue,
-                },
-                props
-              )
-            );
-            onStateChange({ state: store.getState() });
-
-            if (itemUrl !== undefined) {
-              props.navigator.navigate({
-                suggestionUrl: itemUrl,
-                suggestion: item,
-                state: store.getState(),
-              });
-            }
-          }
-        }
+      onKeyDown: (event: KeyboardEvent) => {
+        onKeyDown({
+          event,
+          store,
+          props,
+        });
       },
       onFocus() {
         store.setState(
           stateReducer(store.getState(), { type: 'focus', value: {} }, props)
         );
-        onStateChange({ state: store.getState() });
+        props.onStateChange({ state: store.getState() });
       },
       onBlur() {
         store.setState(
@@ -217,7 +76,7 @@ export function getPropGetters({
             props
           )
         );
-        onStateChange({ state: store.getState() });
+        props.onStateChange({ state: store.getState() });
       },
       ...getterProps,
     };
@@ -252,7 +111,7 @@ export function getPropGetters({
             props
           )
         );
-        onStateChange({ state: store.getState() });
+        props.onStateChange({ state: store.getState() });
       },
       onMouseDown(event: MouseEvent) {
         // Prevents the `activeElement` from being changed to the item so it
@@ -278,7 +137,7 @@ export function getPropGetters({
             props
           )
         );
-        onStateChange({ state: store.getState() });
+        props.onStateChange({ state: store.getState() });
       },
       ...getterProps,
     };

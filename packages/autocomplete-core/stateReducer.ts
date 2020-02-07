@@ -115,15 +115,14 @@ export const stateReducer = <TItem>(
     }
 
     case 'reset': {
-      // @TODO: support with menu opening by default
       return {
         ...state,
+        // @TODO: fallback to default value
         highlightedIndex: -1,
         isOpen: false,
         status: 'idle',
         statusContext: {},
         query: '',
-        suggestions: [],
       };
     }
 
@@ -136,14 +135,10 @@ export const stateReducer = <TItem>(
 
     case 'blur': {
       // In development mode, we prefer keeping the dropdown open on blur
-      // to better leverage the browser inspect tools.
-      if (__DEV__) {
-        return state;
-      }
-
+      // to use the browser dev tools.
       return {
         ...state,
-        isOpen: false,
+        isOpen: __DEV__,
         highlightedIndex: -1,
       };
     }

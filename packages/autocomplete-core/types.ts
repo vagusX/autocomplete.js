@@ -22,6 +22,12 @@ export interface Environment {
   open: Window['open'];
 }
 
+export interface AutocompleteStore<TItem> {
+  state: AutocompleteState<TItem>;
+  getState(): AutocompleteState<TItem>;
+  setState(nextState: AutocompleteState<TItem>): void;
+}
+
 export type GetInputProps = (props?: {
   [key: string]: unknown;
 }) => {

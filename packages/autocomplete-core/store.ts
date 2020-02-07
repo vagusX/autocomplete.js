@@ -1,14 +1,8 @@
-import { AutocompleteState } from './types';
+import { AutocompleteState, AutocompleteStore } from './types';
 
-type CreateStore<TItem> = (
+export function createStore<TItem>(
   initialState: AutocompleteState<TItem>
-) => {
-  state: AutocompleteState<TItem>;
-  getState(): AutocompleteState<TItem>;
-  setState(nextState: AutocompleteState<TItem>): void;
-};
-
-export const createStore: CreateStore<any> = initialState => {
+): AutocompleteStore<TItem> {
   return {
     state: initialState,
     getState() {
@@ -18,4 +12,4 @@ export const createStore: CreateStore<any> = initialState => {
       this.state = nextState;
     },
   };
-};
+}

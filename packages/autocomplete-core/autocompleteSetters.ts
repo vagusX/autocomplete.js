@@ -4,7 +4,6 @@ import { AutocompleteInstance, AutocompleteItem } from './types';
 
 export function getAutocompleteSetters<TItem extends AutocompleteItem>({
   store,
-  onStateChange,
   props,
 }) {
   const setHighlightedIndex: AutocompleteInstance<
@@ -17,14 +16,14 @@ export function getAutocompleteSetters<TItem extends AutocompleteItem>({
         props
       )
     );
-    onStateChange({ state: store.getState() });
+    props.onStateChange({ state: store.getState() });
   };
 
   const setQuery: AutocompleteInstance<TItem>['setQuery'] = value => {
     store.setState(
       stateReducer(store.getState(), { type: 'setQuery', value }, props)
     );
-    onStateChange({ state: store.getState() });
+    props.onStateChange({ state: store.getState() });
   };
 
   const setSuggestions: AutocompleteInstance<
@@ -42,28 +41,28 @@ export function getAutocompleteSetters<TItem extends AutocompleteItem>({
     store.setState(
       stateReducer(store.getState(), { type: 'setSuggestions', value }, props)
     );
-    onStateChange({ state: store.getState() });
+    props.onStateChange({ state: store.getState() });
   };
 
   const setIsOpen: AutocompleteInstance<TItem>['setIsOpen'] = value => {
     store.setState(
       stateReducer(store.getState(), { type: 'setIsOpen', value }, props)
     );
-    onStateChange({ state: store.getState() });
+    props.onStateChange({ state: store.getState() });
   };
 
   const setStatus: AutocompleteInstance<TItem>['setStatus'] = value => {
     store.setState(
       stateReducer(store.getState(), { type: 'setStatus', value }, props)
     );
-    onStateChange({ state: store.getState() });
+    props.onStateChange({ state: store.getState() });
   };
 
   const setContext: AutocompleteInstance<TItem>['setContext'] = value => {
     store.setState(
       stateReducer(store.getState(), { type: 'setContext', value }, props)
     );
-    onStateChange({ state: store.getState() });
+    props.onStateChange({ state: store.getState() });
   };
 
   return {

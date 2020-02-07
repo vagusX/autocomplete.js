@@ -20,5 +20,6 @@ module.exports = {
     'react/prop-types': 0,
     'react/no-unescaped-entities': 0,
     'eslint-comments/disable-enable-pair': ['error', { allowWholeFile: true }],
+    'import/extensions': 0,
   },
 };

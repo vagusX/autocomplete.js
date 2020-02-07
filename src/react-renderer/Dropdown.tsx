@@ -2,7 +2,10 @@
 
 import { h } from 'preact';
 
+import { reverseHighlightAlgoliaHit } from '../utils/highlight';
+
 interface DropdownProps {
+  isOpen: boolean;
   suggestions: any;
   status: string;
   getItemProps(options?: object): any;
@@ -10,6 +13,7 @@ interface DropdownProps {
 }
 
 export const Dropdown = ({
+  isOpen,
   status,
   suggestions,
   getItemProps,
@@ -17,6 +21,7 @@ export const Dropdown = ({
 }: DropdownProps) => {
   return (
     <div
+      hidden={!isOpen}
       className={[
         'algolia-autocomplete-dropdown',
         status === 'stalled' && 'algolia-autocomplete-dropdown--stalled',
@@ -43,10 +48,18 @@ export const Dropdown = ({
                         className="algolia-autocomplete-suggestions-item"
                         {...getItemProps({
                           item,
+                          source,
                           tabIndex: 0,
                         })}
                       >
-                        {item.label}
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: reverseHighlightAlgoliaHit({
+                              hit: item,
+                              attribute: 'query',
+                            }),
+                          }}
+                        />
                       </li>
                     );
                   })}

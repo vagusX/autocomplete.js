@@ -4,7 +4,7 @@ export type StateUpdater<TState> = (
 
 type SuggestionsOptions = any;
 
-type AutocompleteSource = any;
+export type AutocompleteSource = any;
 
 export interface Environment {
   [prop: string]: unknown;
@@ -33,9 +33,10 @@ export type GetInputProps = (props?: {
   onBlur(event: any): void;
 };
 
-export type GetItemProps<TItem> = (props?: {
+export type GetItemProps<TItem> = (props: {
   [key: string]: unknown;
   item: TItem;
+  source: AutocompleteSource;
 }) => {
   id: string;
   role: string;
@@ -71,7 +72,7 @@ export interface AutocompleteSetters<TItem> {
   setContext: StateUpdater<AutocompleteState<TItem>['context']>;
 }
 
-interface Suggestion<TItem> {
+export interface Suggestion<TItem> {
   items: TItem[];
   source: AutocompleteSource;
 }
@@ -185,6 +186,7 @@ export interface AutocompleteOptions<TItem> {
    * Function called when the internal state changes.
    */
   onStateChange<TItem>(props: { state: AutocompleteState<TItem> }): void;
+  placeholder?: string;
   /**
    * The function called when an item is selected.
    */
@@ -244,6 +246,7 @@ type NormalizedGetSources = (
 export interface RequiredAutocompleteOptions<TItem> {
   id: string;
   onStateChange<TItem>(props: { state: AutocompleteState<TItem> }): void;
+  placeholder: string;
   showCompletion: boolean;
   minLength: number;
   stallThreshold: number;

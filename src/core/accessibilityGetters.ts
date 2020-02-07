@@ -1,3 +1,6 @@
+import { stateReducer } from './stateReducer';
+import { isSpecialClick, getSuggestionFromHighlightedIndex } from './utils';
+
 import {
   GetInputProps,
   GetItemProps,
@@ -5,55 +8,216 @@ import {
   GetMenuProps,
 } from './types';
 
-// const noop = () => {};
-
-export function getAccessibilityGetters<TItem>(id: string, store) {
-  const getInputProps: GetInputProps = props => {
+export function getAccessibilityGetters<TItem>({
+  store,
+  onStateChange,
+  props,
+}) {
+  const getInputProps: GetInputProps = getterProps => {
     return {
-      ...props,
       'aria-autocomplete': 'list',
-      'aria-activedescendant': null,
-      'aria-controls': null,
-      'aria-labelledby': `${id}-label`,
+      'aria-activedescendant':
+        store.getState().isOpen && props.highlightedIndex >= 0
+          ? `${props.id}-item-${store.getState().highlightedIndex}`
+          : null,
+      'aria-controls': store.getState().isOpen ? `${props.id}-menu` : null,
+      'aria-labelledby': `${props.id}-label`,
+      value: store.getState().query,
+      id: `${props.id}-input`,
       autoComplete: 'off',
-      id: `${id}-input`,
+      autoCorrect: 'off',
+      autoCapitalize: 'off',
+      spellCheck: 'false',
+      autofocus: props.autoFocus,
+      placeholder: props.showCompletion ? '' : props.placeholder,
+      // @TODO: see if this accessibility attribute is necessary
+      // 'aria-expanded': store.getStore().isOpen,
       // onInput: noop,
-      // onKeyDown: noop,
-      // onBlur: noop,
+      onKeyDown(event: KeyboardEvent) {
+        if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+          // Default browser behavior changes the caret placement on ArrowUp and
+          // Arrow down.
+          event.preventDefault();
+
+          store.setState(
+            stateReducer(
+              store.getState(),
+              {
+                type: event.key,
+                value: { shiftKey: event.shiftKey },
+              },
+              props
+            )
+          );
+          onStateChange({ state: store.getState() });
+        } else if (event.key === 'Escape') {
+          // This prevents the default browser behavior on `input[type="search"]`
+          // to remove the query right away because we first want to close the
+          // dropdown.
+          event.preventDefault();
+
+          store.setState(
+            stateReducer(
+              store.getState(),
+              {
+                type: event.key,
+                value: {},
+              },
+              props
+            )
+          );
+          onStateChange({ state: store.getState() });
+        } else if (event.key === 'Enter') {
+          // This prevents the `onSubmit` event to be sent.
+          event.preventDefault();
+
+          const suggestion = getSuggestionFromHighlightedIndex({
+            highlightedIndex: store.getState().highlightedIndex,
+            state: store.getState(),
+          });
+          const item = suggestion.items[store.getState().highlightedIndex];
+          const itemUrl = suggestion.source.getSuggestionUrl({
+            suggestion: item,
+            state: store.getState(),
+          });
+          const inputValue = suggestion.source.getInputValue({
+            suggestion: item,
+            state: store.getState(),
+          });
+
+          if (event.metaKey || event.ctrlKey) {
+            if (itemUrl !== undefined) {
+              props.navigator.navigateNewTab({
+                suggestionUrl: itemUrl,
+                suggestion: item,
+                state: store.getState(),
+              });
+            }
+          } else if (event.shiftKey) {
+            if (itemUrl !== undefined) {
+              props.navigator.navigateNewWindow({
+                suggestionUrl: itemUrl,
+                suggestion: item,
+                state: store.getState(),
+              });
+            }
+          } else if (event.altKey) {
+            // Keep native browser behavior
+          } else {
+            store.setState(
+              stateReducer(
+                store.getState(),
+                {
+                  type: 'Enter',
+                  value: inputValue,
+                },
+                props
+              )
+            );
+            onStateChange({ state: store.getState() });
+
+            if (itemUrl !== undefined) {
+              props.navigator.navigate({
+                suggestionUrl: itemUrl,
+                suggestion: item,
+                state: store.getState(),
+              });
+            }
+          }
+        }
+      },
+      onBlur() {
+        store.setState(
+          stateReducer(
+            store.getState(),
+            {
+              type: 'blur',
+              value: null,
+            },
+            props
+          )
+        );
+        onStateChange({ state: store.getState() });
+      },
+      ...getterProps,
     };
   };
 
-  const getItemProps: GetItemProps<TItem> = props => {
-    if (props.item === undefined) {
+  const getItemProps: GetItemProps<TItem> = getterProps => {
+    if (getterProps.item === undefined) {
       throw new Error('`getItemProps` expects an `item`.');
     }
 
     return {
-      ...props,
-      id: `${id}-item-${props.item.__autocomplete_id}`,
+      id: `${props.id}-item-${getterProps.item.__autocomplete_id}`,
       role: 'option',
       'aria-selected':
-        store.getState().highlightedIndex === props.item.__autocomplete_id,
-      // onMouseMove: noop,
-      // onMouseDown: noop,
-      // onClick: noop,
+        store.getState().highlightedIndex ===
+        getterProps.item.__autocomplete_id,
+      onMouseMove() {
+        if (
+          getterProps.item.__autocomplete_id ===
+          store.getState().highlightedIndex
+        ) {
+          return;
+        }
+
+        store.setState(
+          stateReducer(
+            store.getState(),
+            {
+              type: 'mousemove',
+              value: getterProps.item.__autocomplete_id,
+            },
+            props
+          )
+        );
+        onStateChange({ state: store.getState() });
+      },
+      onMouseDown(event: MouseEvent) {
+        // Prevents the `activeElement` from being changed to the item so it
+        // can remain with the current `activeElement`.
+        event.preventDefault();
+      },
+      onClick(event: MouseEvent) {
+        // We ignore all modified clicks to support default browsers' behavior.
+        if (isSpecialClick(event)) {
+          return;
+        }
+
+        store.setState(
+          stateReducer(
+            store.getState(),
+            {
+              type: 'click',
+              value: getterProps.source.getInputValue({
+                suggestion: getterProps.item,
+                state: store.getState(),
+              }),
+            },
+            props
+          )
+        );
+        onStateChange({ state: store.getState() });
+      },
+      ...getterProps,
     };
   };
 
-  const getLabelProps: GetLabelProps = props => {
+  const getLabelProps: GetLabelProps = getterProps => {
     return {
-      ...props,
-      htmlFor: `${id}-input`,
-      id: `${id}-label`,
+      htmlFor: `${props.id}-input`,
+      id: `${props.id}-label`,
+      ...getterProps,
     };
   };
 
-  const getMenuProps: GetMenuProps = props => {
+  const getMenuProps: GetMenuProps = getterProps => {
     return {
-      ...props,
       role: 'listbox',
-      'aria-labelledby': `${id}-label`,
-      id: `${id}-menu`,
+      'aria-labelledby': `${props.id}-label`,
+      id: `${props.id}-menu`,
+      ...getterProps,
     };
   };
 

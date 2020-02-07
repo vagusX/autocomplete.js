@@ -31,9 +31,24 @@ function getDefaultProps<TItem>(
   return {
     id: generateAutocompleteId(),
     minLength: 1,
+    placeholder: '',
     showCompletion: false,
     stallThreshold: 300,
     environment,
+    shouldDropdownOpen: ({ state }) => getItemsCount(state) > 0,
+    ...props,
+    // The following props need to be deeply defaulted.
+    initialState: {
+      highlightedIndex: 0,
+      query: '',
+      suggestions: [],
+      isOpen: false,
+      status: 'idle',
+      statusContext: {},
+      context: {},
+      ...props.initialState,
+    },
+    getSources: normalizeGetSources(props.getSources),
     navigator: {
       navigate({ suggestionUrl }) {
         environment.location.assign(suggestionUrl);
@@ -54,32 +69,17 @@ function getDefaultProps<TItem>(
       },
       ...props.navigator,
     },
-    initialState: {
-      highlightedIndex: 0,
-      query: '',
-      suggestions: [],
-      isOpen: false,
-      status: 'idle',
-      statusContext: {},
-      context: {},
-      ...props.initialState,
-    },
-    getSources: normalizeGetSources(props.getSources),
-    shouldDropdownOpen: ({ state }) => getItemsCount(state) > 0,
-    ...props,
   };
 }
 
 const createAutocomplete: CreateAutocomplete = <
   TItem // extends AutocompleteItem
 >(
-  props: AutocompleteOptions<TItem>
+  options: AutocompleteOptions<TItem>
 ) => {
-  const { id, onStateChange, initialState, getSources } = getDefaultProps(
-    props
-  );
-
-  const store = createStore(initialState as AutocompleteState<TItem>);
+  const props = getDefaultProps(options);
+  const { onStateChange } = props;
+  const store = createStore(props.initialState as AutocompleteState<TItem>);
 
   const { onKeyDown, onReset, onFocus } = getEventHandlers({
     store,
@@ -99,7 +99,7 @@ const createAutocomplete: CreateAutocomplete = <
     getItemProps,
     getLabelProps,
     getMenuProps,
-  } = getAccessibilityGetters(id, store);
+  } = getAccessibilityGetters({ store, onStateChange, props });
 
   const onInput = (event: InputEvent) => {
     const query = (event.currentTarget as HTMLInputElement).value;
@@ -108,8 +108,8 @@ const createAutocomplete: CreateAutocomplete = <
     setStatus('loading');
     setQuery(query);
 
-    Promise.resolve(
-      getSources({
+    props
+      .getSources({
         query,
         state: store.getState(),
         setHighlightedIndex,
@@ -119,42 +119,42 @@ const createAutocomplete: CreateAutocomplete = <
         setStatus,
         setContext,
       })
-    ).then(sources => {
-      setStatus('loading');
+      .then(sources => {
+        setStatus('loading');
 
-      // @TODO: convert `Promise.all` to fetching strategy.
-      return Promise.all(
-        sources.map(source => {
-          return Promise.resolve(
-            source.getSuggestions({
-              query,
-              state: store.getState(),
-              setHighlightedIndex,
-              setQuery,
-              setSuggestions,
-              setIsOpen,
-              setStatus,
-              setContext,
-            })
-          ).then(items => {
-            return {
-              source,
-              items,
-            };
+        // @TODO: convert `Promise.all` to fetching strategy.
+        return Promise.all(
+          sources.map(source => {
+            return Promise.resolve(
+              source.getSuggestions({
+                query,
+                state: store.getState(),
+                setHighlightedIndex,
+                setQuery,
+                setSuggestions,
+                setIsOpen,
+                setStatus,
+                setContext,
+              })
+            ).then(items => {
+              return {
+                source,
+                items,
+              };
+            });
+          })
+        )
+          .then(suggestions => {
+            setStatus('idle');
+            setSuggestions(suggestions);
+            setIsOpen(props.shouldDropdownOpen({ state: store.getState() }));
+          })
+          .catch(error => {
+            setStatus('error');
+
+            throw error;
           });
-        })
-      )
-        .then(suggestions => {
-          setStatus('idle');
-          setIsOpen(true);
-          setSuggestions(suggestions);
-        })
-        .catch(error => {
-          setStatus('error');
-
-          throw error;
-        });
-    });
+      });
   };
 
   return {

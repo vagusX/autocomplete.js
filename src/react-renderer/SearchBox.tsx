@@ -3,13 +3,10 @@
 import { h, Ref } from 'preact';
 
 export interface SearchBoxProps {
-  placeholder: string;
-  autoFocus: boolean;
   completion: string;
   isOpen: boolean;
   status: string;
   query: string;
-  onKeyDown: (event: KeyboardEvent) => void;
   onInput: (event: InputEvent) => void;
   onFocus: (event: FocusEvent) => void;
   onReset: (event: MouseEvent) => void;
@@ -84,19 +81,10 @@ export function SearchBox(props: SearchBoxProps) {
         <input
           className="algolia-autocomplete-input"
           {...props.getInputProps({
-            placeholder: showCompletion ? '' : props.placeholder,
             ref: props.onInputRef,
-            autofocus: props.autoFocus,
             type: 'search',
-            autoComplete: 'off',
-            autoCorrect: 'off',
-            autoCapitalize: 'off',
-            spellCheck: 'false',
             maxLength: '512',
-            'aria-expanded': props.isOpen,
-            value: props.query,
             onInput: props.onInput,
-            onKeyDown: props.onKeyDown,
             onFocus: props.onFocus,
             // When the dropdown is closed and you click on the input while
             // the input is focused, the `onFocus` event is not triggered.

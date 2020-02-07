@@ -1,4 +1,4 @@
-import { AutocompleteState } from './types';
+import { AutocompleteState, Suggestion, AutocompleteSource } from './types';
 
 export function getItemsCount(state: AutocompleteState<unknown>) {
   if (state.suggestions.length === 0) {
@@ -35,4 +35,55 @@ export function getNextHighlightedIndex(
   }
 
   return newIndex;
+}
+
+export function isSpecialClick(event: MouseEvent): boolean {
+  const isMiddleClick = event.button === 1;
+
+  return (
+    isMiddleClick ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey
+  );
+}
+
+// We don't have access to the autocomplete source when we call `onKeyDown`
+// or `onClick` because those are native browser events.
+// However, we can get the source from the suggestion index.
+export function getSuggestionFromHighlightedIndex<TItem>({
+  highlightedIndex,
+  state,
+}: {
+  highlightedIndex: number;
+  state: AutocompleteState<TItem>;
+}): AutocompleteSource | undefined {
+  // Given 3 sources with respectively 1, 2 and 3 suggestions: [1, 2, 3]
+  // We want to get the accumulated counts:
+  // [1, 1 + 2, 1 + 2 + 3] = [1, 3, 3 + 3] = [1, 3, 6]
+  const accumulatedSuggestionsCount = state.suggestions
+    .map(suggestion => suggestion.items.length)
+    .reduce<number[]>((acc, suggestionCount, index) => {
+      const previousValue = acc[index - 1] || 0;
+      const nextValue = previousValue + suggestionCount;
+
+      acc.push(nextValue);
+
+      return acc;
+    }, []);
+
+  // Based on the accumulated counts, we can infer the index of the suggestion.
+  const suggestionIndex = accumulatedSuggestionsCount.reduce((acc, current) => {
+    if (current <= highlightedIndex) {
+      return acc + 1;
+    }
+
+    return acc;
+  }, 0);
+
+  const suggestion: Suggestion<TItem> | undefined =
+    state.suggestions[suggestionIndex];
+
+  return suggestion;
 }

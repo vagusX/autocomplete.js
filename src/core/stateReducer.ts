@@ -11,8 +11,13 @@ type ActionType =
   | 'setContext'
   | 'ArrowUp'
   | 'ArrowDown'
+  | 'Escape'
+  | 'Enter'
   | 'reset'
-  | 'focus';
+  | 'focus'
+  | 'mousemove'
+  | 'click'
+  | 'blur';
 
 interface Action {
   type: ActionType;
@@ -24,6 +29,10 @@ export const stateReducer = <TItem>(
   action: Action,
   props: AutocompleteOptions<TItem>
 ): AutocompleteState<TItem> => {
+  console.group('stateReducer');
+  console.log(action.type);
+  console.groupEnd();
+
   switch (action.type) {
     case 'setHighlightedIndex': {
       return {
@@ -89,6 +98,23 @@ export const stateReducer = <TItem>(
       };
     }
 
+    case 'Escape': {
+      if (state.isOpen) {
+        return {
+          ...state,
+          isOpen: false,
+        };
+      }
+
+      return {
+        ...state,
+        query: '',
+        status: 'idle',
+        statusContext: {},
+        suggestions: [],
+      };
+    }
+
     case 'reset': {
       // @TODO: support with menu opening by default
       return {
@@ -106,6 +132,35 @@ export const stateReducer = <TItem>(
       return {
         ...state,
         isOpen: state.query.length >= props.minLength,
+      };
+    }
+
+    case 'blur': {
+      // In development mode, you can uncomment the following line
+      // to have better access to the inspector.
+      return state;
+
+      // return {
+      //   ...state,
+      //   isOpen: false,
+      //   highlightedIndex: -1,
+      // };
+    }
+
+    case 'mousemove': {
+      return {
+        ...state,
+        highlightedIndex: action.value,
+      };
+    }
+
+    case 'Enter':
+    case 'click': {
+      return {
+        ...state,
+        isOpen: !state.isOpen,
+        highlightedIndex: -1,
+        query: action.value,
       };
     }
 

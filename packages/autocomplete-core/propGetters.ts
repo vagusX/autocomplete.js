@@ -1,5 +1,9 @@
 import { stateReducer } from './stateReducer';
-import { isSpecialClick, getSuggestionFromHighlightedIndex } from './utils';
+import {
+  isSpecialClick,
+  getSuggestionFromHighlightedIndex,
+  getRelativeHighlightedIndex,
+} from './utils';
 
 import {
   GetInputProps,
@@ -141,7 +145,11 @@ export function getPropGetters({
             highlightedIndex: store.getState().highlightedIndex,
             state: store.getState(),
           });
-          const item = suggestion.items[store.getState().highlightedIndex];
+
+          const item =
+            suggestion.items[
+              getRelativeHighlightedIndex({ store, suggestion })
+            ];
           const itemUrl = suggestion.source.getSuggestionUrl({
             suggestion: item,
             state: store.getState(),

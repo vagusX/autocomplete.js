@@ -25,6 +25,47 @@ export function getItemsCount(state: AutocompleteState<unknown>) {
   );
 }
 
+export function isSpecialClick(event: MouseEvent): boolean {
+  const isMiddleClick = event.button === 1;
+
+  return (
+    isMiddleClick ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey
+  );
+}
+
+function normalizeSource(source: AutocompleteSource) {
+  return {
+    getInputValue({ state }) {
+      return state.query;
+    },
+    getSuggestionUrl() {
+      return undefined;
+    },
+    onSelect({ setIsOpen }) {
+      setIsOpen(false);
+    },
+    ...source,
+  };
+}
+
+export function normalizeGetSources<TItem>(
+  getSources: AutocompleteOptions<TItem>['getSources']
+): NormalizedGetSources {
+  return options => {
+    return Promise.resolve(getSources(options)).then(sources =>
+      Promise.all(
+        sources.map(source => {
+          return Promise.resolve(normalizeSource(source));
+        })
+      )
+    );
+  };
+}
+
 export function getNextHighlightedIndex(
   moveAmount: number,
   baseIndex: number,
@@ -49,18 +90,6 @@ export function getNextHighlightedIndex(
   }
 
   return newIndex;
-}
-
-export function isSpecialClick(event: MouseEvent): boolean {
-  const isMiddleClick = event.button === 1;
-
-  return (
-    isMiddleClick ||
-    event.altKey ||
-    event.ctrlKey ||
-    event.metaKey ||
-    event.shiftKey
-  );
 }
 
 // We don't have access to the autocomplete source when we call `onKeyDown`
@@ -102,31 +131,33 @@ export function getSuggestionFromHighlightedIndex<TItem>({
   return suggestion;
 }
 
-function normalizeSource(source: AutocompleteSource) {
-  return {
-    getInputValue({ state }) {
-      return state.query;
-    },
-    getSuggestionUrl() {
-      return undefined;
-    },
-    onSelect({ setIsOpen }) {
-      setIsOpen(false);
-    },
-    ...source,
-  };
-}
+/**
+ * Gets the highlighted index relative to a suggestion object (not the absolute
+ * highlighted index).
+ *
+ * Example:
+ *  [['a', 'b'], ['c', 'd', 'e'], ['f']]
+ *                      ↑
+ *         (absolute: 3, relative: 1)
+ * @param param0
+ */
+export function getRelativeHighlightedIndex({ store, suggestion }): number {
+  let isOffsetFound = false;
+  let counter = 0;
+  let previousItemsOffset = 0;
 
-export function normalizeGetSources<TItem>(
-  getSources: AutocompleteOptions<TItem>['getSources']
-): NormalizedGetSources {
-  return options => {
-    return Promise.resolve(getSources(options)).then(sources =>
-      Promise.all(
-        sources.map(source => {
-          return Promise.resolve(normalizeSource(source));
-        })
-      )
-    );
-  };
+  while (isOffsetFound === false) {
+    const currentSuggestion = store.getState().suggestions[counter];
+
+    if (currentSuggestion === suggestion) {
+      isOffsetFound = true;
+      break;
+    }
+
+    previousItemsOffset += currentSuggestion.items.length;
+
+    counter++;
+  }
+
+  return store.getState().highlightedIndex - previousItemsOffset;
 }

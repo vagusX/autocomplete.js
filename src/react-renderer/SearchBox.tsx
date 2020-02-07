@@ -86,11 +86,11 @@ export function SearchBox(props: SearchBoxProps) {
             // the input is focused, the `onFocus` event is not triggered.
             // We mimic this event by catching the `onClick` event which
             // triggers the `onFocus` for the dropdown to open.
-            onClick: () => {
-              if (!props.isOpen) {
-                props.onFocus();
-              }
-            },
+            // onClick: () => {
+            //   if (!props.isOpen) {
+            //     props.onFocus();
+            //   }
+            // },
           })}
         />
       </div>

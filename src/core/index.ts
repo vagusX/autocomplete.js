@@ -1,5 +1,5 @@
 import { createStore } from './store';
-import { getAccessibilityGetters } from './accessibilityGetters';
+import { getPropGetters } from './propGetters';
 import { getAutocompleteSetters } from './autocompleteSetters';
 import { getEventHandlers } from './eventHandlers';
 import { getItemsCount, normalizeGetSources } from './utils';
@@ -93,7 +93,7 @@ function createAutocomplete<TItem extends {}>(
     getItemProps,
     getLabelProps,
     getMenuProps,
-  } = getAccessibilityGetters({
+  } = getPropGetters({
     store,
     onStateChange,
     props,

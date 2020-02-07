@@ -8,7 +8,7 @@ import {
   GetMenuProps,
 } from './types';
 
-export function getAccessibilityGetters({
+export function getPropGetters({
   store,
   onStateChange,
   props,

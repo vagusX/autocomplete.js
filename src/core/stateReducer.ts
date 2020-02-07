@@ -135,15 +135,17 @@ export const stateReducer = <TItem>(
     }
 
     case 'blur': {
-      // In development mode, you can uncomment the following line
-      // to have better access to the inspector.
-      return state;
+      // In development mode, we prefer keeping the dropdown open on blur
+      // to better leverage the browser inspect tools.
+      if (__DEV__) {
+        return state;
+      }
 
-      // return {
-      //   ...state,
-      //   isOpen: false,
-      //   highlightedIndex: -1,
-      // };
+      return {
+        ...state,
+        isOpen: false,
+        highlightedIndex: -1,
+      };
     }
 
     case 'mousemove': {

@@ -21,5 +21,6 @@ module.exports = {
     'react/no-unescaped-entities': 0,
     'eslint-comments/disable-enable-pair': ['error', { allowWholeFile: true }],
     'import/extensions': 0,
+    '@typescript-eslint/camelcase': ['error', { allow: ['__autocomplete_id'] }],
   },
 };

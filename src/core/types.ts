@@ -2,6 +2,10 @@ export type StateUpdater<TState> = (
   value: TState // | ((prevState: TState) => TState)
 ) => void;
 
+export interface AutocompleteItem {
+  __autocomplete_id: number;
+}
+
 type SuggestionsOptions = any;
 
 export type AutocompleteSource = any;
@@ -21,16 +25,21 @@ export interface Environment {
 export type GetInputProps = (props?: {
   [key: string]: unknown;
 }) => {
-  'aria-autocomplete': 'list';
-  'aria-activedescendant': null;
-  'aria-controls': null;
-  'aria-labelledby': string;
-  autoComplete: 'on' | 'off';
-  value: string;
   id: string;
-  onInput(event: any): void;
-  onKeyDown(event: any): void;
-  onBlur(event: any): void;
+  value: string;
+  autofocus: boolean;
+  placeholder: string;
+  autoComplete: 'on' | 'off';
+  autoCorrect: 'off';
+  autoCapitalize: 'off';
+  spellCheck: boolean;
+  'aria-autocomplete': 'list';
+  'aria-activedescendant': string | null;
+  'aria-controls': string | null;
+  'aria-labelledby': string;
+  onInput(event: InputEvent): void;
+  onKeyDown(event: KeyboardEvent): void;
+  onBlur(event: FocusEvent): void;
 };
 
 export type GetItemProps<TItem> = (props: {
@@ -41,9 +50,9 @@ export type GetItemProps<TItem> = (props: {
   id: string;
   role: string;
   'aria-selected': boolean;
-  onMouseMove(event: any): void;
-  onMouseDown(event: any): void;
-  onClick(event: any): void;
+  onMouseMove(event: MouseEvent): void;
+  onMouseDown(event: MouseEvent): void;
+  onClick(event: MouseEvent): void;
 };
 
 export type GetLabelProps = (props?: {
@@ -84,12 +93,14 @@ export interface AutocompleteAccessibilityGetters<TItem> {
   getMenuProps: GetMenuProps;
 }
 
+type AutocompleteStatus = 'idle' | 'loading' | 'stalled' | 'error';
+
 export interface AutocompleteState<TItem> {
   highlightedIndex: number;
   query: string;
   suggestions: Array<Suggestion<TItem>>;
   isOpen: boolean;
-  status: 'idle' | 'loading' | 'stalled' | 'error';
+  status: AutocompleteStatus;
   statusContext: {
     error?: Error;
   };
@@ -99,7 +110,7 @@ export interface AutocompleteState<TItem> {
 export interface AutocompleteInstance<TItem>
   extends AutocompleteSetters<TItem>,
     AutocompleteAccessibilityGetters<TItem> {
-  onKeyDown(event: KeyboardEvent): void;
+  onReset(): void;
 }
 
 export interface AutocompleteSourceOptions<TItem> {
@@ -186,6 +197,9 @@ export interface AutocompleteOptions<TItem> {
    * Function called when the internal state changes.
    */
   onStateChange<TItem>(props: { state: AutocompleteState<TItem> }): void;
+  /**
+   * The text that appears in the search box input when there is no query.
+   */
   placeholder?: string;
   /**
    * The function called when an item is selected.
@@ -232,17 +246,21 @@ export interface AutocompleteOptions<TItem> {
    * Navigator's API to redirect the user when a link should be open.
    */
   navigator?: Navigator;
+  /**
+   * The function called to determine whether the dropdown should open.
+   */
   shouldDropdownOpen?(options: { state: AutocompleteState<TItem> }): boolean;
 }
 
-type NormalizedAutocompleteSource = {
+export type NormalizedAutocompleteSource = {
   [KParam in keyof AutocompleteSource]-?: AutocompleteSource[KParam];
 };
 
-type NormalizedGetSources = (
+export type NormalizedGetSources = (
   options: SuggestionsOptions
 ) => Promise<NormalizedAutocompleteSource[]>;
 
+// Props manipulated internally with default values.
 export interface RequiredAutocompleteOptions<TItem> {
   id: string;
   onStateChange<TItem>(props: { state: AutocompleteState<TItem> }): void;

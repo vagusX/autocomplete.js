@@ -2,8 +2,7 @@ import { createStore } from './store';
 import { getAccessibilityGetters } from './accessibilityGetters';
 import { getAutocompleteSetters } from './autocompleteSetters';
 import { getEventHandlers } from './eventHandlers';
-import { normalizeGetSources } from './sources';
-import { getItemsCount } from './utils';
+import { getItemsCount, normalizeGetSources } from './utils';
 
 import {
   AutocompleteOptions,
@@ -14,19 +13,16 @@ import {
 
 let autocompleteId = 0;
 
-const generateAutocompleteId = () => {
+function generateAutocompleteId() {
   return `autocomplete-${autocompleteId++}`;
-};
-
-type CreateAutocomplete = <TItem>(
-  options: AutocompleteOptions<TItem>
-) => AutocompleteInstance<TItem>;
+}
 
 function getDefaultProps<TItem>(
   props: AutocompleteOptions<TItem>
 ): RequiredAutocompleteOptions<TItem> {
-  const environment =
-    typeof window !== 'undefined' ? window : ({} as typeof window);
+  const environment: typeof window = (typeof window !== 'undefined'
+    ? window
+    : {}) as typeof window;
 
   return {
     id: generateAutocompleteId(),
@@ -72,16 +68,14 @@ function getDefaultProps<TItem>(
   };
 }
 
-const createAutocomplete: CreateAutocomplete = <
-  TItem // extends AutocompleteItem
->(
+function createAutocomplete<TItem extends {}>(
   options: AutocompleteOptions<TItem>
-) => {
+): AutocompleteInstance<TItem> {
   const props = getDefaultProps(options);
   const { onStateChange } = props;
   const store = createStore(props.initialState as AutocompleteState<TItem>);
 
-  const { onKeyDown, onReset, onFocus } = getEventHandlers({
+  const { onReset } = getEventHandlers({
     store,
     onStateChange,
     props,
@@ -93,69 +87,23 @@ const createAutocomplete: CreateAutocomplete = <
     setIsOpen,
     setStatus,
     setContext,
-  } = getAutocompleteSetters({ store, onStateChange });
+  } = getAutocompleteSetters({ store, onStateChange, props });
   const {
     getInputProps,
     getItemProps,
     getLabelProps,
     getMenuProps,
-  } = getAccessibilityGetters({ store, onStateChange, props });
-
-  const onInput = (event: InputEvent) => {
-    const query = (event.currentTarget as HTMLInputElement).value;
-
-    setHighlightedIndex(0);
-    setStatus('loading');
-    setQuery(query);
-
-    props
-      .getSources({
-        query,
-        state: store.getState(),
-        setHighlightedIndex,
-        setQuery,
-        setSuggestions,
-        setIsOpen,
-        setStatus,
-        setContext,
-      })
-      .then(sources => {
-        setStatus('loading');
-
-        // @TODO: convert `Promise.all` to fetching strategy.
-        return Promise.all(
-          sources.map(source => {
-            return Promise.resolve(
-              source.getSuggestions({
-                query,
-                state: store.getState(),
-                setHighlightedIndex,
-                setQuery,
-                setSuggestions,
-                setIsOpen,
-                setStatus,
-                setContext,
-              })
-            ).then(items => {
-              return {
-                source,
-                items,
-              };
-            });
-          })
-        )
-          .then(suggestions => {
-            setStatus('idle');
-            setSuggestions(suggestions);
-            setIsOpen(props.shouldDropdownOpen({ state: store.getState() }));
-          })
-          .catch(error => {
-            setStatus('error');
-
-            throw error;
-          });
-      });
-  };
+  } = getAccessibilityGetters({
+    store,
+    onStateChange,
+    props,
+    setHighlightedIndex,
+    setQuery,
+    setSuggestions,
+    setIsOpen,
+    setStatus,
+    setContext,
+  });
 
   return {
     setHighlightedIndex,
@@ -168,11 +116,8 @@ const createAutocomplete: CreateAutocomplete = <
     getItemProps,
     getLabelProps,
     getMenuProps,
-    onKeyDown,
-    onInput,
-    onFocus,
     onReset,
   };
-};
+}
 
 export { createAutocomplete };

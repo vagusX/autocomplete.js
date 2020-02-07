@@ -81,8 +81,6 @@ storiesOf('Core', module).add(
             isOpen={state.isOpen}
             status={state.status}
             getInputProps={autocomplete.current.getInputProps}
-            onInput={autocomplete.current.onInput}
-            onFocus={autocomplete.current.onFocus}
             onReset={() => {
               autocomplete.current.onReset();
 

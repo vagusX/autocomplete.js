@@ -1,4 +1,10 @@
-import { AutocompleteState, Suggestion, AutocompleteSource } from './types';
+import {
+  AutocompleteState,
+  AutocompleteOptions,
+  Suggestion,
+  AutocompleteSource,
+  NormalizedGetSources,
+} from './types';
 
 export function getItemsCount(state: AutocompleteState<unknown>) {
   if (state.suggestions.length === 0) {
@@ -86,4 +92,33 @@ export function getSuggestionFromHighlightedIndex<TItem>({
     state.suggestions[suggestionIndex];
 
   return suggestion;
+}
+
+function normalizeSource(source: AutocompleteSource) {
+  return {
+    getInputValue({ state }) {
+      return state.query;
+    },
+    getSuggestionUrl() {
+      return undefined;
+    },
+    onSelect({ setIsOpen }) {
+      setIsOpen(false);
+    },
+    ...source,
+  };
+}
+
+export function normalizeGetSources<TItem>(
+  getSources: AutocompleteOptions<TItem>['getSources']
+): NormalizedGetSources {
+  return options => {
+    return Promise.resolve(getSources(options)).then(sources =>
+      Promise.all(
+        sources.map(source => {
+          return Promise.resolve(normalizeSource(source));
+        })
+      )
+    );
+  };
 }

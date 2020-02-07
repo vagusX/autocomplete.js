@@ -7,8 +7,6 @@ export interface SearchBoxProps {
   isOpen: boolean;
   status: string;
   query: string;
-  onInput: (event: InputEvent) => void;
-  onFocus: (event: FocusEvent) => void;
   onReset: (event: MouseEvent) => void;
   onSubmit: (event: Event) => void;
   onInputRef?: Ref<HTMLInputElement | null>;
@@ -84,8 +82,6 @@ export function SearchBox(props: SearchBoxProps) {
             ref: props.onInputRef,
             type: 'search',
             maxLength: '512',
-            onInput: props.onInput,
-            onFocus: props.onFocus,
             // When the dropdown is closed and you click on the input while
             // the input is focused, the `onFocus` event is not triggered.
             // We mimic this event by catching the `onClick` event which

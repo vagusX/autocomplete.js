@@ -8,10 +8,16 @@ import {
   GetMenuProps,
 } from './types';
 
-export function getAccessibilityGetters<TItem>({
+export function getAccessibilityGetters({
   store,
   onStateChange,
   props,
+  setHighlightedIndex,
+  setQuery,
+  setSuggestions,
+  setIsOpen,
+  setStatus,
+  setContext,
 }) {
   const getInputProps: GetInputProps = getterProps => {
     return {
@@ -27,12 +33,68 @@ export function getAccessibilityGetters<TItem>({
       autoComplete: 'off',
       autoCorrect: 'off',
       autoCapitalize: 'off',
-      spellCheck: 'false',
+      spellCheck: false,
       autofocus: props.autoFocus,
       placeholder: props.showCompletion ? '' : props.placeholder,
       // @TODO: see if this accessibility attribute is necessary
       // 'aria-expanded': store.getStore().isOpen,
-      // onInput: noop,
+      onInput(event: InputEvent) {
+        const query = (event.currentTarget as HTMLInputElement).value;
+
+        setHighlightedIndex(0);
+        setStatus('loading');
+        setQuery(query);
+
+        props
+          .getSources({
+            query,
+            state: store.getState(),
+            setHighlightedIndex,
+            setQuery,
+            setSuggestions,
+            setIsOpen,
+            setStatus,
+            setContext,
+          })
+          .then(sources => {
+            setStatus('loading');
+
+            // @TODO: convert `Promise.all` to fetching strategy.
+            return Promise.all(
+              sources.map(source => {
+                return Promise.resolve(
+                  source.getSuggestions({
+                    query,
+                    state: store.getState(),
+                    setHighlightedIndex,
+                    setQuery,
+                    setSuggestions,
+                    setIsOpen,
+                    setStatus,
+                    setContext,
+                  })
+                ).then(items => {
+                  return {
+                    source,
+                    items,
+                  };
+                });
+              })
+            )
+              .then(suggestions => {
+                setStatus('idle');
+                setSuggestions(suggestions);
+                setIsOpen(
+                  props.shouldDropdownOpen({ state: store.getState() })
+                );
+              })
+              .catch(error => {
+                setStatus('error');
+
+                throw error;
+              });
+          });
+      },
       onKeyDown(event: KeyboardEvent) {
         if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
           // Default browser behavior changes the caret placement on ArrowUp and
@@ -70,6 +132,10 @@ export function getAccessibilityGetters<TItem>({
         } else if (event.key === 'Enter') {
           // This prevents the `onSubmit` event to be sent.
           event.preventDefault();
+
+          if (store.getState().highlightedIndex < 0) {
+            return;
+          }
 
           const suggestion = getSuggestionFromHighlightedIndex({
             highlightedIndex: store.getState().highlightedIndex,
@@ -126,6 +192,12 @@ export function getAccessibilityGetters<TItem>({
           }
         }
       },
+      onFocus() {
+        store.setState(
+          stateReducer(store.getState(), { type: 'focus', value: {} }, props)
+        );
+        onStateChange({ state: store.getState() });
+      },
       onBlur() {
         store.setState(
           stateReducer(
@@ -143,7 +215,7 @@ export function getAccessibilityGetters<TItem>({
     };
   };
 
-  const getItemProps: GetItemProps<TItem> = getterProps => {
+  const getItemProps: GetItemProps<any> = getterProps => {
     if (getterProps.item === undefined) {
       throw new Error('`getItemProps` expects an `item`.');
     }

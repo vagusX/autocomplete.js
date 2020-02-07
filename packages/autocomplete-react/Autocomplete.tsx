@@ -34,7 +34,15 @@ export function Autocomplete<TItem extends {}>(
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   return (
-    <div>
+    <div
+      className={[
+        'algolia-autocomplete',
+        state.status === 'stalled' && 'algolia-autocomplete--stalled',
+        state.status === 'error' && 'algolia-autocomplete--errored',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       <SearchBox
         onInputRef={inputRef}
         completion=""

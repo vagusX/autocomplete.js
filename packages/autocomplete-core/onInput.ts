@@ -4,6 +4,8 @@ import {
   RequiredAutocompleteOptions,
 } from './types';
 
+let lastStalledId: number | null = null;
+
 interface OnInputOptions<TItem> extends AutocompleteSetters<TItem> {
   query: string;
   store: AutocompleteStore<TItem>;
@@ -21,13 +23,22 @@ export function onInput<TItem>({
   setStatus,
   setContext,
 }: OnInputOptions<TItem>): void {
+  if (lastStalledId) {
+    clearTimeout(lastStalledId);
+  }
+
   if (query.length < props.minLength) {
+    setStatus('idle');
     return;
   }
 
   setHighlightedIndex(0);
   setStatus('loading');
   setQuery(query);
+
+  lastStalledId = props.environment.setTimeout(() => {
+    setStatus('stalled');
+  }, props.stallThreshold);
 
   props
     .getSources({
@@ -77,6 +88,11 @@ export function onInput<TItem>({
           setStatus('error');
 
           throw error;
+        })
+        .finally(() => {
+          if (lastStalledId) {
+            clearTimeout(lastStalledId);
+          }
         });
     });
 }

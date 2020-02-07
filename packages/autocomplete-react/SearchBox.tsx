@@ -99,7 +99,7 @@ export function SearchBox(props: SearchBoxProps) {
         type="reset"
         title="Clear the query"
         className="algolia-autocomplete-reset"
-        hidden={props.query.length === 0}
+        hidden={!props.query}
         onClick={props.onReset}
       >
         <svg viewBox="0 0 10 10">

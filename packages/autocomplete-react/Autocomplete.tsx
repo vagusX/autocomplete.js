@@ -4,6 +4,7 @@ import { h } from 'preact';
 import { useRef, useState } from 'preact/hooks';
 
 import { createAutocomplete } from '../autocomplete-core';
+import { getDefaultProps } from '../autocomplete-core/defaultProps';
 import {
   AutocompleteState,
   AutocompleteOptions,
@@ -11,22 +12,17 @@ import {
 import { SearchBox } from './SearchBox';
 import { Dropdown } from './Dropdown';
 
-export function Autocomplete<TItem>(props: AutocompleteOptions<TItem>) {
-  const [state, setState] = useState<AutocompleteState<TItem>>({
-    highlightedIndex: 0,
-    query: '',
-    isOpen: false,
-    status: 'idle',
-    suggestions: [],
-    statusContext: {},
-    context: {},
-  });
+export function Autocomplete<TItem extends {}>(
+  props: AutocompleteOptions<TItem>
+) {
+  const { initialState } = getDefaultProps(props);
+  const [state, setState] = useState<AutocompleteState<TItem>>(initialState);
 
   const autocomplete = useRef(
     createAutocomplete<TItem>({
       ...props,
       onStateChange({ state }) {
-        setState(state);
+        setState(state as any);
 
         if (props.onStateChange) {
           props.onStateChange({ state });

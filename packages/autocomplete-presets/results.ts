@@ -1,14 +1,10 @@
-import {
-  QueryParameters,
-  Client,
-  MultiResponse,
-  Response,
-} from 'algoliasearch';
-
 import { version } from './package.json';
 import { flatten } from './utils';
 
-export type SearchClient = Pick<Client, 'search' | 'searchForFacetValues'>;
+type SearchClient = any;
+type Client = any;
+type SearchResponse = any;
+type QueryParameters = any;
 
 interface SearchParameters {
   indexName: string;
@@ -26,7 +22,13 @@ export function getAlgoliaSource({
   queries,
 }: GetAlgoliaSourceOptions) {
   if (typeof (searchClient as Client).addAlgoliaAgent === 'function') {
-    (searchClient as Client).addAlgoliaAgent(`autocomplete.js (${version})`);
+    if (__DEV__) {
+      (searchClient as Client).addAlgoliaAgent(
+        `autocomplete.js (${version}-development)`
+      );
+    } else {
+      (searchClient as Client).addAlgoliaAgent(`autocomplete.js (${version})`);
+    }
   }
 
   return searchClient.search(
@@ -50,7 +52,7 @@ export function getAlgoliaSource({
 export function getAlgoliaResults({
   searchClient,
   queries,
-}: GetAlgoliaSourceOptions): Promise<MultiResponse['results']> {
+}: GetAlgoliaSourceOptions): Promise<SearchResponse['results']> {
   return getAlgoliaSource({ searchClient, queries }).then(response => {
     return response.results;
   });
@@ -59,7 +61,7 @@ export function getAlgoliaResults({
 export function getAlgoliaHits({
   searchClient,
   queries,
-}: GetAlgoliaSourceOptions): Promise<Response['hits']> {
+}: GetAlgoliaSourceOptions): Promise<SearchResponse['hits']> {
   return getAlgoliaSource({ searchClient, queries }).then(response => {
     const results = response.results;
 

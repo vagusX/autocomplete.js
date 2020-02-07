@@ -6,6 +6,14 @@ import {
   NormalizedGetSources,
 } from './types';
 
+export const noop = () => {};
+
+let autocompleteId = 0;
+
+export function generateAutocompleteId() {
+  return `autocomplete-${autocompleteId++}`;
+}
+
 export function getItemsCount(state: AutocompleteState<unknown>) {
   if (state.suggestions.length === 0) {
     return 0;

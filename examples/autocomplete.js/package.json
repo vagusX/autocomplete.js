@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "@francoischalifour/autocomplete.js": "1.0.0-alpha.10",
-    "algoliasearch": "4.0.0-beta.12",
-    "preact": "10.2.1"
+    "algoliasearch": "4.0.2",
+    "preact": "10.3.1"
   },
   "devDependencies": {
     "parcel-bundler": "1.12.4"

@@ -268,7 +268,7 @@ export interface RequiredAutocompleteOptions<TItem> {
   showCompletion: boolean;
   minLength: number;
   stallThreshold: number;
-  initialState: Partial<AutocompleteState<TItem>>;
+  initialState: AutocompleteState<TItem>;
   getSources: NormalizedGetSources;
   environment: Environment;
   navigator: Navigator;

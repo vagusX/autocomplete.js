@@ -15,7 +15,7 @@ const searchClient = algoliasearch(
 
 storiesOf('Core', module).add(
   'Default',
-  withPlayground(({ container, dropdownContainer }) => {
+  withPlayground(({ container }) => {
     render(
       <Autocomplete
         placeholder="Search items…"

@@ -58,6 +58,12 @@ export type GetInputProps = (props?: {
   onBlur(event: FocusEvent): void;
 };
 
+export type GetResetProps = (props?: {
+  [key: string]: unknown;
+}) => {
+  onReset(event: Event): void;
+};
+
 export type GetItemProps<TItem> = (props: {
   [key: string]: unknown;
   item: TItem;
@@ -105,6 +111,7 @@ export interface Suggestion<TItem> {
 export interface AutocompleteAccessibilityGetters<TItem> {
   getRootProps: GetRootProps;
   getInputProps: GetInputProps;
+  getResetProps: GetResetProps;
   getItemProps: GetItemProps<TItem>;
   getLabelProps: GetLabelProps;
   getMenuProps: GetMenuProps;
@@ -126,9 +133,7 @@ export interface AutocompleteState<TItem> {
 
 export interface AutocompleteInstance<TItem>
   extends AutocompleteSetters<TItem>,
-    AutocompleteAccessibilityGetters<TItem> {
-  onReset(): void;
-}
+    AutocompleteAccessibilityGetters<TItem> {}
 
 export interface AutocompleteSourceOptions<TItem> {
   /**

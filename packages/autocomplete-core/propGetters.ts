@@ -6,6 +6,7 @@ import { isSpecialClick } from './utils';
 import {
   GetRootProps,
   GetInputProps,
+  GetResetProps,
   GetItemProps,
   GetLabelProps,
   GetMenuProps,
@@ -21,18 +22,18 @@ export function getPropGetters({
   setStatus,
   setContext,
 }) {
-  const getRootProps: GetRootProps = getterProps => {
+  const getRootProps: GetRootProps = rest => {
     return {
       role: 'combobox',
       'aria-expanded': store.getState().isOpen,
       'aria-haspopup': 'listbox',
       'aria-owns': store.getState().isOpen ? `${props.id}-menu` : null,
       'aria-labelledby': `${props.id}-label`,
-      ...getterProps,
+      ...rest,
     };
   };
 
-  const getInputProps: GetInputProps = getterProps => {
+  const getInputProps: GetInputProps = rest => {
     return {
       'aria-autocomplete': 'list',
       'aria-activedescendant':
@@ -106,26 +107,50 @@ export function getPropGetters({
         );
         props.onStateChange({ state: store.getState() });
       },
-      ...getterProps,
+      ...rest,
     };
   };
 
-  const getItemProps: GetItemProps<any> = getterProps => {
-    if (getterProps.item === undefined) {
+  const getResetProps: GetResetProps = rest => {
+    return {
+      onReset(event) {
+        event.preventDefault();
+
+        if (props.minLength === 0) {
+          onInput({
+            query: '',
+            store,
+            props,
+            setHighlightedIndex,
+            setQuery,
+            setSuggestions,
+            setIsOpen,
+            setStatus,
+            setContext,
+          });
+        }
+
+        store.setState(
+          stateReducer(store.getState(), { type: 'reset', value: {} }, props)
+        );
+        props.onStateChange({ state: store.getState() });
+      },
+      ...rest,
+    };
+  };
+
+  const getItemProps: GetItemProps<any> = rest => {
+    if (rest.item === undefined) {
       throw new Error('`getItemProps` expects an `item`.');
     }
 
     return {
-      id: `${props.id}-item-${getterProps.item.__autocomplete_id}`,
+      id: `${props.id}-item-${rest.item.__autocomplete_id}`,
       role: 'option',
       'aria-selected':
-        store.getState().highlightedIndex ===
-        getterProps.item.__autocomplete_id,
+        store.getState().highlightedIndex === rest.item.__autocomplete_id,
       onMouseMove() {
-        if (
-          getterProps.item.__autocomplete_id ===
-          store.getState().highlightedIndex
-        ) {
+        if (rest.item.__autocomplete_id === store.getState().highlightedIndex) {
           return;
         }
 
@@ -134,7 +159,7 @@ export function getPropGetters({
             store.getState(),
             {
               type: 'mousemove',
-              value: getterProps.item.__autocomplete_id,
+              value: rest.item.__autocomplete_id,
             },
             props
           )
@@ -157,8 +182,8 @@ export function getPropGetters({
             store.getState(),
             {
               type: 'click',
-              value: getterProps.source.getInputValue({
-                suggestion: getterProps.item,
+              value: rest.source.getInputValue({
+                suggestion: rest.item,
                 state: store.getState(),
               }),
             },
@@ -167,30 +192,31 @@ export function getPropGetters({
         );
         props.onStateChange({ state: store.getState() });
       },
-      ...getterProps,
+      ...rest,
     };
   };
 
-  const getLabelProps: GetLabelProps = getterProps => {
+  const getLabelProps: GetLabelProps = rest => {
     return {
       htmlFor: `${props.id}-input`,
       id: `${props.id}-label`,
-      ...getterProps,
+      ...rest,
     };
   };
 
-  const getMenuProps: GetMenuProps = getterProps => {
+  const getMenuProps: GetMenuProps = rest => {
     return {
       role: 'listbox',
       'aria-labelledby': `${props.id}-label`,
       id: `${props.id}-menu`,
-      ...getterProps,
+      ...rest,
     };
   };
 
   return {
     getRootProps,
     getInputProps,
+    getResetProps,
     getItemProps,
     getLabelProps,
     getMenuProps,

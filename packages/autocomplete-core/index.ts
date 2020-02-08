@@ -2,7 +2,6 @@ import { getDefaultProps } from './defaultProps';
 import { createStore } from './store';
 import { getPropGetters } from './propGetters';
 import { getAutocompleteSetters } from './autocompleteSetters';
-import { getEventHandlers } from './eventHandlers';
 
 import { AutocompleteOptions, AutocompleteInstance } from './types';
 
@@ -20,19 +19,10 @@ function createAutocomplete<TItem extends {}>(
     setStatus,
     setContext,
   } = getAutocompleteSetters({ store, props });
-  const { onReset } = getEventHandlers({
-    store,
-    props,
-    setHighlightedIndex,
-    setQuery,
-    setSuggestions,
-    setIsOpen,
-    setStatus,
-    setContext,
-  });
   const {
     getRootProps,
     getInputProps,
+    getResetProps,
     getItemProps,
     getLabelProps,
     getMenuProps,
@@ -56,10 +46,10 @@ function createAutocomplete<TItem extends {}>(
     setContext,
     getRootProps,
     getInputProps,
+    getResetProps,
     getItemProps,
     getLabelProps,
     getMenuProps,
-    onReset,
   };
 }
 

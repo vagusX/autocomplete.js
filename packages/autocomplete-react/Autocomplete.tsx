@@ -51,8 +51,9 @@ export function Autocomplete<TItem extends {}>(
         isOpen={state.isOpen}
         status={state.status}
         getInputProps={autocomplete.current.getInputProps}
-        onReset={() => {
-          autocomplete.current.onReset();
+        onReset={event => {
+          const { onReset } = autocomplete.current.getResetProps();
+          onReset(event);
 
           if (inputRef.current) {
             inputRef.current.focus();

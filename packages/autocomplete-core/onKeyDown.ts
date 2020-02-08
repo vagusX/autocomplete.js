@@ -33,6 +33,11 @@ export function onKeyDown<TItem>({
       )
     );
     props.onStateChange({ state: store.getState() });
+
+    const nodeItem = props.environment.document.getElementById(
+      `${props.id}-item-${store.getState().highlightedIndex}`
+    );
+    nodeItem?.scrollIntoView(false);
   } else if (event.key === 'Escape') {
     // This prevents the default browser behavior on `input[type="search"]`
     // to remove the query right away because we first want to close the

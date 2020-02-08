@@ -27,14 +27,23 @@ export function onInput<TItem>({
     clearTimeout(lastStalledId);
   }
 
+  setHighlightedIndex(0);
+  setQuery(query);
+
   if (query.length < props.minLength) {
     setStatus('idle');
+    setSuggestions(
+      store.getState().suggestions.map(suggestion => ({
+        ...suggestion,
+        items: [],
+      }))
+    );
+    setIsOpen(props.shouldDropdownOpen({ state: store.getState() }));
+
     return;
   }
 
-  setHighlightedIndex(0);
   setStatus('loading');
-  setQuery(query);
 
   lastStalledId = props.environment.setTimeout(() => {
     setStatus('stalled');

@@ -28,6 +28,16 @@ export interface AutocompleteStore<TItem> {
   setState(nextState: AutocompleteState<TItem>): void;
 }
 
+export type GetRootProps = (props?: {
+  [key: string]: unknown;
+}) => {
+  role: string;
+  'aria-expanded': boolean;
+  'aria-haspopup': string;
+  'aria-owns': string | null;
+  'aria-labelledby': string;
+};
+
 export type GetInputProps = (props?: {
   [key: string]: unknown;
 }) => {
@@ -93,6 +103,7 @@ export interface Suggestion<TItem> {
 }
 
 export interface AutocompleteAccessibilityGetters<TItem> {
+  getRootProps: GetRootProps;
   getInputProps: GetInputProps;
   getItemProps: GetItemProps<TItem>;
   getLabelProps: GetLabelProps;

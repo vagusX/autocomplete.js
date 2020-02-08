@@ -42,6 +42,7 @@ export function Autocomplete<TItem extends {}>(
       ]
         .filter(Boolean)
         .join(' ')}
+      {...autocomplete.current.getRootProps()}
     >
       <SearchBox
         onInputRef={inputRef}

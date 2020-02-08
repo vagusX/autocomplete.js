@@ -4,6 +4,7 @@ import { onKeyDown } from './onKeyDown';
 import { isSpecialClick } from './utils';
 
 import {
+  GetRootProps,
   GetInputProps,
   GetItemProps,
   GetLabelProps,
@@ -20,6 +21,17 @@ export function getPropGetters({
   setStatus,
   setContext,
 }) {
+  const getRootProps: GetRootProps = getterProps => {
+    return {
+      role: 'combobox',
+      'aria-expanded': store.getState().isOpen,
+      'aria-haspopup': 'listbox',
+      'aria-owns': store.getState().isOpen ? `${props.id}-menu` : null,
+      'aria-labelledby': `${props.id}-label`,
+      ...getterProps,
+    };
+  };
+
   const getInputProps: GetInputProps = getterProps => {
     return {
       'aria-autocomplete': 'list',
@@ -177,6 +189,7 @@ export function getPropGetters({
   };
 
   return {
+    getRootProps,
     getInputProps,
     getItemProps,
     getLabelProps,

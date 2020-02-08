@@ -31,6 +31,7 @@ function createAutocomplete<TItem extends {}>(
     setContext,
   });
   const {
+    getRootProps,
     getInputProps,
     getItemProps,
     getLabelProps,
@@ -53,6 +54,7 @@ function createAutocomplete<TItem extends {}>(
     setIsOpen,
     setStatus,
     setContext,
+    getRootProps,
     getInputProps,
     getItemProps,
     getLabelProps,

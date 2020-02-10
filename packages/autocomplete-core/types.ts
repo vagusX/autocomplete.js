@@ -1,6 +1,4 @@
-export type StateUpdater<TState> = (
-  value: TState // | ((prevState: TState) => TState)
-) => void;
+export type StateUpdater<TState> = (value: TState) => void;
 
 export interface AutocompleteItem {
   __autocomplete_id: number;

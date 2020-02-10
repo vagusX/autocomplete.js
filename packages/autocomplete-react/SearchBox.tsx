@@ -4,6 +4,7 @@ import { h, Ref } from 'preact';
 
 export interface SearchBoxProps {
   completion: string;
+  placeholder: string;
   isOpen: boolean;
   status: string;
   query: string;
@@ -80,6 +81,7 @@ export function SearchBox(props: SearchBoxProps) {
           className="algolia-autocomplete-input"
           {...props.getInputProps({
             ref: props.onInputRef,
+            placeholder: props.placeholder,
             type: 'search',
             maxLength: '512',
             // When the dropdown is closed and you click on the input while

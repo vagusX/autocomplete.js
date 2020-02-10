@@ -45,6 +45,7 @@ export function Autocomplete<TItem extends {}>(
       {...autocomplete.current.getRootProps()}
     >
       <SearchBox
+        placeholder={props.placeholder}
         onInputRef={inputRef}
         completion=""
         query={state.query}

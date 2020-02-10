@@ -150,16 +150,6 @@ export const stateReducer = <TItem>(
       };
     }
 
-    case 'Enter':
-    case 'click': {
-      return {
-        ...state,
-        isOpen: !state.isOpen,
-        highlightedIndex: -1,
-        query: action.value,
-      };
-    }
-
     default:
       return state;
   }

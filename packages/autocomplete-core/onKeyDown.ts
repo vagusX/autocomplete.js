@@ -1,12 +1,17 @@
 import { stateReducer } from './stateReducer';
+import { onInput } from './onInput';
 import {
   getSuggestionFromHighlightedIndex,
   getRelativeHighlightedIndex,
 } from './utils';
 
-import { AutocompleteStore, RequiredAutocompleteOptions } from './types';
+import {
+  AutocompleteStore,
+  RequiredAutocompleteOptions,
+  AutocompleteSetters,
+} from './types';
 
-interface OnKeyDownOptions<TItem> {
+interface OnKeyDownOptions<TItem> extends AutocompleteSetters<TItem> {
   event: KeyboardEvent;
   store: AutocompleteStore<TItem>;
   props: RequiredAutocompleteOptions<TItem>;
@@ -16,6 +21,12 @@ export function onKeyDown<TItem>({
   event,
   store,
   props,
+  setHighlightedIndex,
+  setQuery,
+  setSuggestions,
+  setIsOpen,
+  setStatus,
+  setContext,
 }: OnKeyDownOptions<TItem>): void {
   if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
     // Default browser behavior changes the caret placement on ArrowUp and
@@ -98,16 +109,21 @@ export function onKeyDown<TItem>({
     } else if (event.altKey) {
       // Keep native browser behavior
     } else {
-      store.setState(
-        stateReducer(
-          store.getState(),
-          {
-            type: 'Enter',
-            value: inputValue,
-          },
-          props
-        )
-      );
+      onInput({
+        query: inputValue,
+        store,
+        props,
+        setHighlightedIndex,
+        setQuery,
+        setSuggestions,
+        setIsOpen,
+        setStatus,
+        setContext,
+        nextState: {
+          isOpen: false,
+        },
+      });
+
       props.onStateChange({ state: store.getState() });
 
       if (itemUrl !== undefined) {

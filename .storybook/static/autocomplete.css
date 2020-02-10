@@ -129,8 +129,7 @@
   max-width: 600px;
   overflow: scroll;
   -ms-overflow-style: none;
-  padding: 1rem;
-  position: absolute;
+  padding: 0.5rem;
   scrollbar-width: none;
   width: 100%;
   z-index: 1;

@@ -75,12 +75,13 @@ export function onKeyDown<TItem>({
     }
 
     const suggestion = getSuggestionFromHighlightedIndex({
-      highlightedIndex: store.getState().highlightedIndex,
       state: store.getState(),
     });
 
     const item =
-      suggestion.items[getRelativeHighlightedIndex({ store, suggestion })];
+      suggestion.items[
+        getRelativeHighlightedIndex({ state: store.getState(), suggestion })
+      ];
     const itemUrl = suggestion.source.getSuggestionUrl({
       suggestion: item,
       state: store.getState(),

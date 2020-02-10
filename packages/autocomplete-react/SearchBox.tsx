@@ -2,16 +2,18 @@
 
 import { h, Ref } from 'preact';
 
+import { GetInputProps } from '../autocomplete-core/types';
+
 export interface SearchBoxProps {
   placeholder: string;
   completion: string | null;
   isOpen: boolean;
   status: string;
   query: string;
-  onReset: (event: MouseEvent) => void;
+  onReset: (event: Event) => void;
   onSubmit: (event: Event) => void;
-  onInputRef?: Ref<HTMLInputElement | null>;
-  getInputProps(options?: object): any;
+  getInputProps: GetInputProps;
+  onInputRef: Ref<HTMLInputElement | null>;
 }
 
 export function SearchBox(props: SearchBoxProps) {

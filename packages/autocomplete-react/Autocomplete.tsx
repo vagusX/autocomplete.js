@@ -68,7 +68,7 @@ export function Autocomplete<TItem extends {}>(
       <Dropdown
         suggestions={state.suggestions}
         isOpen={state.isOpen}
-        status={status}
+        status={state.status}
         getItemProps={autocomplete.current.getItemProps}
         getMenuProps={autocomplete.current.getMenuProps}
       />

@@ -51,9 +51,10 @@ export type GetInputProps = (props?: {
   'aria-activedescendant': string | null;
   'aria-controls': string | null;
   'aria-labelledby': string;
-  onInput(event: InputEvent): void;
+  onInput(event: Event): void;
   onKeyDown(event: KeyboardEvent): void;
-  onBlur(event: FocusEvent): void;
+  onFocus(): void;
+  onBlur(): void;
 };
 
 export type GetResetProps = (props?: {

@@ -99,6 +99,7 @@ export interface AutocompleteSetters<TItem> {
   setSuggestions: StateUpdater<AutocompleteState<TItem>['suggestions']>;
   setIsOpen: StateUpdater<AutocompleteState<TItem>['isOpen']>;
   setStatus: StateUpdater<AutocompleteState<TItem>['status']>;
+  setStatusContext: StateUpdater<AutocompleteState<TItem>['statusContext']>;
   setContext: StateUpdater<AutocompleteState<TItem>['context']>;
 }
 
@@ -125,9 +126,16 @@ export interface AutocompleteState<TItem> {
   isOpen: boolean;
   status: AutocompleteStatus;
   statusContext: {
-    error?: Error;
+    error: Error | null;
   };
   context: { [key: string]: unknown };
+}
+
+export interface ErroredAutocompleteState<TItem>
+  extends AutocompleteState<TItem> {
+  statusContext: {
+    error: Error;
+  };
 }
 
 export interface AutocompleteInstance<TItem>
@@ -170,8 +178,9 @@ export interface AutocompleteSourceOptions<TItem> {
   onSelect?: (options: ItemEventHandlerOptions<TItem>) => void;
 }
 
-export interface EventHandlerOptions<TItem> extends AutocompleteSetters<TItem> {
-  state: AutocompleteState<TItem>;
+export interface EventHandlerOptions<TItem, TState = AutocompleteState<TItem>>
+  extends AutocompleteSetters<TItem> {
+  state: TState;
 }
 
 export interface ItemEventHandlerOptions<TItem>
@@ -285,6 +294,12 @@ export interface AutocompleteOptions<TItem> {
    * The function called to determine whether the dropdown should open.
    */
   shouldDropdownOpen?(options: { state: AutocompleteState<TItem> }): boolean;
+  /**
+   * Function called when an error is thrown while getting the suggestions.
+   */
+  onError?(
+    options: EventHandlerOptions<TItem, ErroredAutocompleteState<TItem>>
+  ): void;
 }
 
 export type NormalizedAutocompleteSource = {
@@ -310,4 +325,7 @@ export interface RequiredAutocompleteOptions<TItem> {
   environment: Environment;
   navigator: Navigator;
   shouldDropdownOpen(options: { state: AutocompleteState<TItem> }): boolean;
+  onError(
+    options: EventHandlerOptions<TItem, ErroredAutocompleteState<TItem>>
+  ): void;
 }

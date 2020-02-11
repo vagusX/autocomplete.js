@@ -8,6 +8,7 @@ type ActionType =
   | 'setSuggestions'
   | 'setIsOpen'
   | 'setStatus'
+  | 'setStatusContext'
   | 'setContext'
   | 'ArrowUp'
   | 'ArrowDown'
@@ -67,6 +68,13 @@ export const stateReducer = <TItem>(
       };
     }
 
+    case 'setStatusContext': {
+      return {
+        ...state,
+        statusContext: action.value,
+      };
+    }
+
     case 'setContext': {
       return {
         ...state,
@@ -111,7 +119,7 @@ export const stateReducer = <TItem>(
         ...state,
         query: '',
         status: 'idle',
-        statusContext: {},
+        statusContext: { error: null },
         suggestions: [],
       };
     }
@@ -122,7 +130,7 @@ export const stateReducer = <TItem>(
         highlightedIndex: -1,
         isOpen: false,
         status: 'idle',
-        statusContext: {},
+        statusContext: { error: null },
       };
     }
 
@@ -132,7 +140,7 @@ export const stateReducer = <TItem>(
         highlightedIndex: -1,
         isOpen: false,
         status: 'idle',
-        statusContext: {},
+        statusContext: { error: null },
         query: '',
       };
     }

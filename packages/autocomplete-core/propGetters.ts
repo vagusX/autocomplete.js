@@ -28,6 +28,7 @@ export function getPropGetters<TItem>({
   setSuggestions,
   setIsOpen,
   setStatus,
+  setStatusContext,
   setContext,
 }: GetPropGettersOptions<TItem>) {
   const getRootProps: GetRootProps = rest => {
@@ -70,6 +71,7 @@ export function getPropGetters<TItem>({
             setSuggestions,
             setIsOpen,
             setStatus,
+            setStatusContext,
             setContext,
           });
         }
@@ -101,6 +103,7 @@ export function getPropGetters<TItem>({
           setSuggestions,
           setIsOpen,
           setStatus,
+          setStatusContext,
           setContext,
         });
       }
@@ -139,6 +142,7 @@ export function getPropGetters<TItem>({
           setSuggestions,
           setIsOpen,
           setStatus,
+          setStatusContext,
           setContext,
         });
       },
@@ -152,6 +156,7 @@ export function getPropGetters<TItem>({
           setSuggestions,
           setIsOpen,
           setStatus,
+          setStatusContext,
           setContext,
         });
       },
@@ -239,6 +244,7 @@ export function getPropGetters<TItem>({
           setSuggestions,
           setIsOpen,
           setStatus,
+          setStatusContext,
           setContext,
           nextState: {
             isOpen: false,

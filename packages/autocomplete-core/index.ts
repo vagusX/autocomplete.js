@@ -18,6 +18,7 @@ function createAutocomplete<TItem extends {}>(
     setSuggestions,
     setIsOpen,
     setStatus,
+    setStatusContext,
     setContext,
   } = getAutocompleteSetters({ store, props });
   const {
@@ -35,6 +36,7 @@ function createAutocomplete<TItem extends {}>(
     setSuggestions,
     setIsOpen,
     setStatus,
+    setStatusContext,
     setContext,
   });
 
@@ -44,6 +46,7 @@ function createAutocomplete<TItem extends {}>(
     setSuggestions,
     setIsOpen,
     setStatus,
+    setStatusContext,
     setContext,
     getRootProps,
     getFormProps,

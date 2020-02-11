@@ -343,7 +343,7 @@ This function is also called when the input is clicked while already having the 
 
 #### `onError`
 
-> `(options: { state: AutocompleteState, ...setters }) => void` | defaults to `({ state }) => throw state.error`
+> `(options: { state: AutocompleteState, ...setters }) => void` | defaults to `({ state }) => { throw state.contextStatus.error }`
 
 Called when an error is thrown while getting the suggestions.
 

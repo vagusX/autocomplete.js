@@ -25,6 +25,9 @@ export function getDefaultProps<TItem>(
     environment,
     shouldDropdownOpen: ({ state }) => getItemsCount(state) > 0,
     onStateChange: noop,
+    onError: ({ state }) => {
+      throw state.statusContext.error;
+    },
     ...props,
     // The following props need to be deeply defaulted.
     initialState: {
@@ -33,7 +36,7 @@ export function getDefaultProps<TItem>(
       suggestions: [],
       isOpen: false,
       status: 'idle',
-      statusContext: {},
+      statusContext: { error: null },
       context: {},
       ...props.initialState,
     },

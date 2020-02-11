@@ -67,6 +67,15 @@ export function getAutocompleteSetters<TItem>({
     props.onStateChange({ state: store.getState() });
   };
 
+  const setStatusContext: AutocompleteInstance<
+    TItem
+  >['setStatusContext'] = value => {
+    store.setState(
+      stateReducer(store.getState(), { type: 'setStatusContext', value }, props)
+    );
+    props.onStateChange({ state: store.getState() });
+  };
+
   const setContext: AutocompleteInstance<TItem>['setContext'] = value => {
     store.setState(
       stateReducer(store.getState(), { type: 'setContext', value }, props)
@@ -80,6 +89,7 @@ export function getAutocompleteSetters<TItem>({
     setSuggestions,
     setIsOpen,
     setStatus,
+    setStatusContext,
     setContext,
   };
 }

@@ -3,6 +3,7 @@ import {
   AutocompleteSetters,
   RequiredAutocompleteOptions,
   AutocompleteState,
+  ErroredAutocompleteState,
 } from './types';
 
 let lastStalledId: number | null = null;
@@ -30,6 +31,7 @@ export function onInput<TItem>({
   setSuggestions,
   setIsOpen,
   setStatus,
+  setStatusContext,
   setContext,
   nextState = {},
 }: OnInputOptions<TItem>): void {
@@ -39,6 +41,7 @@ export function onInput<TItem>({
 
   setHighlightedIndex(props.defaultHighlightedIndex);
   setQuery(query);
+  setStatusContext({ error: null });
 
   if (query.length < props.minLength) {
     setStatus('idle');
@@ -108,8 +111,18 @@ export function onInput<TItem>({
         })
         .catch(error => {
           setStatus('error');
+          setStatusContext({ error });
 
-          throw error;
+          props.onError({
+            state: store.getState() as ErroredAutocompleteState<TItem>,
+            setHighlightedIndex,
+            setQuery,
+            setSuggestions,
+            setIsOpen,
+            setStatus,
+            setStatusContext,
+            setContext,
+          });
         })
         .finally(() => {
           if (lastStalledId) {

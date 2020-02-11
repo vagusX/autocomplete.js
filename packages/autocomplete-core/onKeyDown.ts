@@ -27,6 +27,7 @@ export function onKeyDown<TItem>({
   setSuggestions,
   setIsOpen,
   setStatus,
+  setStatusContext,
   setContext,
 }: OnKeyDownOptions<TItem>): void {
   if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
@@ -74,6 +75,7 @@ export function onKeyDown<TItem>({
         setSuggestions,
         setIsOpen,
         setStatus,
+        setStatusContext,
         setContext,
       });
 
@@ -152,6 +154,7 @@ export function onKeyDown<TItem>({
         setSuggestions,
         setIsOpen,
         setStatus,
+        setStatusContext,
         setContext,
         nextState: {
           isOpen: false,

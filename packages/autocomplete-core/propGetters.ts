@@ -5,8 +5,8 @@ import { isSpecialClick } from './utils';
 
 import {
   GetRootProps,
+  GetFormProps,
   GetInputProps,
-  GetResetProps,
   GetItemProps,
   GetLabelProps,
   GetMenuProps,
@@ -29,6 +29,52 @@ export function getPropGetters({
       'aria-haspopup': 'listbox',
       'aria-owns': store.getState().isOpen ? `${props.id}-menu` : null,
       'aria-labelledby': `${props.id}-label`,
+      ...rest,
+    };
+  };
+
+  const getFormProps: GetFormProps = rest => {
+    return {
+      onSubmit: event => {
+        event.preventDefault();
+
+        // @TODO: call the `onInputChange` or `onSubmit` user prop?
+
+        store.setState(
+          stateReducer(store.getState(), { type: 'submit', value: null }, props)
+        );
+        props.onStateChange({ state: store.getState() });
+
+        if (rest?.inputElement) {
+          rest.inputElement.blur();
+        }
+      },
+      onReset: event => {
+        event.preventDefault();
+
+        if (props.minLength === 0) {
+          onInput({
+            query: '',
+            store,
+            props,
+            setHighlightedIndex,
+            setQuery,
+            setSuggestions,
+            setIsOpen,
+            setStatus,
+            setContext,
+          });
+        }
+
+        store.setState(
+          stateReducer(store.getState(), { type: 'reset', value: {} }, props)
+        );
+        props.onStateChange({ state: store.getState() });
+
+        if (rest?.inputElement) {
+          rest.inputElement.focus();
+        }
+      },
       ...rest,
     };
   };
@@ -124,40 +170,12 @@ export function getPropGetters({
         // We mimic this event by catching the `onClick` event which
         // triggers the `onFocus` for the dropdown to open.
         if (
-          rest.inputElement === props.environment.document.activeElement &&
+          rest?.inputElement === props.environment.document.activeElement &&
           !store.getState().isOpen &&
           store.getState().query.length >= props.minLength
         ) {
           onFocus();
         }
-      },
-      ...rest,
-    };
-  };
-
-  const getResetProps: GetResetProps = rest => {
-    return {
-      onReset(event) {
-        event.preventDefault();
-
-        if (props.minLength === 0) {
-          onInput({
-            query: '',
-            store,
-            props,
-            setHighlightedIndex,
-            setQuery,
-            setSuggestions,
-            setIsOpen,
-            setStatus,
-            setContext,
-          });
-        }
-
-        store.setState(
-          stateReducer(store.getState(), { type: 'reset', value: {} }, props)
-        );
-        props.onStateChange({ state: store.getState() });
       },
       ...rest,
     };
@@ -257,8 +275,8 @@ export function getPropGetters({
 
   return {
     getRootProps,
+    getFormProps,
     getInputProps,
-    getResetProps,
     getItemProps,
     getLabelProps,
     getMenuProps,

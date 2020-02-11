@@ -79,18 +79,10 @@ export function SearchBox(props: SearchBoxProps) {
           className="algolia-autocomplete-input"
           {...props.getInputProps({
             ref: props.onInputRef,
+            inputElement: (props.onInputRef as any).current,
             placeholder: props.placeholder,
             type: 'search',
             maxLength: '512',
-            // When the dropdown is closed and you click on the input while
-            // the input is focused, the `onFocus` event is not triggered.
-            // We mimic this event by catching the `onClick` event which
-            // triggers the `onFocus` for the dropdown to open.
-            // onClick: () => {
-            //   if (!props.isOpen) {
-            //     props.onFocus();
-            //   }
-            // },
           })}
         />
       </div>

@@ -79,9 +79,9 @@ export function getPropGetters({
         });
       },
       onFocus() {
-        // We want to trigger a query when `minLength` is `0` because the
+        // We want to trigger a query when `minLength` is reached because the
         // dropdown should open with the current query.
-        if (props.minLength === 0) {
+        if (store.getState().query.length >= props.minLength) {
           onInput({
             query: store.getState().query,
             store,

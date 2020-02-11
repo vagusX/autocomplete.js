@@ -23,6 +23,11 @@ export function getCompletion<TItem>({
   }
 
   const suggestion = getSuggestionFromHighlightedIndex({ state });
+
+  if (!suggestion) {
+    return null;
+  }
+
   const item =
     suggestion.items[getRelativeHighlightedIndex({ state, suggestion })];
   const inputValue = suggestion.source.getInputValue({

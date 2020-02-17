@@ -15,6 +15,7 @@ import {
 } from '../autocomplete-core/types/index';
 import { useAutocomplete } from './useAutocomplete';
 import { useDropdown } from './useDropdown';
+import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 
 interface PublicRendererProps {
   /**
@@ -25,6 +26,10 @@ interface PublicRendererProps {
    * The dropdown placement related to the container.
    */
   dropdownPlacement?: 'start' | 'end';
+  /**
+   * The keyboard shortcuts keys to focus the input.
+   */
+  keyboardShortcuts?: string[];
 }
 
 export interface RendererProps extends Required<PublicRendererProps> {
@@ -47,6 +52,7 @@ export function getDefaultRendererProps<TItem>(
         )
       : autocompleteProps.environment.document.body,
     dropdownPlacement: rendererProps.dropdownPlacement ?? 'start',
+    keyboardShortcuts: rendererProps.keyboardShortcuts ?? [],
   };
 }
 
@@ -56,11 +62,12 @@ export function Autocomplete<TItem extends {}>(
   const {
     dropdownContainer,
     dropdownPlacement,
+    keyboardShortcuts,
     ...autocompleteProps
   } = providedProps;
   const props = getDefaultProps(autocompleteProps);
   const rendererProps = getDefaultRendererProps(
-    { dropdownContainer, dropdownPlacement },
+    { dropdownContainer, dropdownPlacement, keyboardShortcuts },
     props
   );
 
@@ -70,6 +77,7 @@ export function Autocomplete<TItem extends {}>(
 
   const [state, autocomplete] = useAutocomplete<TItem>(props);
   useDropdown<TItem>(rendererProps, state, searchBoxRef, dropdownRef);
+  useKeyboardShortcuts<TItem>(rendererProps, props, inputRef);
 
   return (
     <div

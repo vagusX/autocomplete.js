@@ -25,6 +25,15 @@ interface PublicRendererProps {
    * The dropdown placement related to the container.
    */
   dropdownPlacement?: 'start' | 'end';
+  /**
+   * The media query list that considers the experience as mobile.
+   *
+   * Styles are computed differently on mobile for the dropdown to render full
+   * width.
+   *
+   * @default window.matchMedia('(max-width: 640px)')
+   */
+  mobileMediaQuery?: MediaQueryList;
 }
 
 export interface RendererProps extends Required<PublicRendererProps> {
@@ -47,6 +56,9 @@ export function getDefaultRendererProps<TItem>(
         )
       : autocompleteProps.environment.document.body,
     dropdownPlacement: rendererProps.dropdownPlacement ?? 'start',
+    mobileMediaQuery:
+      rendererProps.mobileMediaQuery ??
+      autocompleteProps.environment.matchMedia('(max-width: 640px)'),
   };
 }
 
@@ -56,11 +68,12 @@ export function Autocomplete<TItem extends {}>(
   const {
     dropdownContainer,
     dropdownPlacement,
+    mobileMediaQuery,
     ...autocompleteProps
   } = providedProps;
   const props = getDefaultProps(autocompleteProps);
   const rendererProps = getDefaultRendererProps(
-    { dropdownContainer, dropdownPlacement },
+    { dropdownContainer, dropdownPlacement, mobileMediaQuery },
     props
   );
 

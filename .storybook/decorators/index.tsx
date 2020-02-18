@@ -24,6 +24,7 @@ export function withPlayground(storyFn: StoryFn, options?: StoryOptions) {
             border: '2px solid #f5f5fa',
             borderRadius: 3,
             padding: '1rem',
+            position: 'relative',
           }}
         >
           <Header searchBoxPosition={options?.searchBoxPosition}>

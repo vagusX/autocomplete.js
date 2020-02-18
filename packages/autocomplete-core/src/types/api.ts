@@ -102,6 +102,7 @@ export interface Environment {
     assign: Location['assign'];
   };
   open: Window['open'];
+  matchMedia: Window['matchMedia'];
 }
 
 interface Navigator<TItem> {

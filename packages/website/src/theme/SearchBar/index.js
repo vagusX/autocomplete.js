@@ -9,6 +9,25 @@ import { SearchButton } from 'docsearch-react';
 
 let DocSearch = null;
 
+let timerId;
+const debouncePushHistoryState = state => {
+  clearTimeout(timerId);
+
+  if (state.query && state.isOpen) {
+    timerId = setTimeout(() => {
+      window.history.pushState(
+        '',
+        '',
+        location.origin +
+          location.pathname +
+          location.hash +
+          '?q=' +
+          state.query
+      );
+    }, 400);
+  }
+};
+
 function SearchBar() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isShowing, setIsShowing] = useState(false);
@@ -53,8 +72,10 @@ function SearchBar() {
     function onClose() {
       setIsShowing(false);
       document.body.classList.remove('DocSearch--active');
+
+      history.push({ search: '' });
     },
-    [setIsShowing]
+    [setIsShowing, history]
   );
 
   useEffect(() => {
@@ -80,6 +101,12 @@ function SearchBar() {
     };
   }, [isShowing, onOpen, onClose]);
 
+  if (isShowing === false) {
+    if (new URL(window.location).searchParams.get('q')) {
+      onOpen();
+    }
+  }
+
   return (
     <>
       <SearchButton onClick={onOpen} />
@@ -95,7 +122,10 @@ function SearchBar() {
             onClose={onClose}
             navigator={{
               navigate({ suggestionUrl }) {
-                history.push(suggestionUrl);
+                history.push({
+                  pathname: suggestionUrl,
+                  search: '',
+                });
               },
             }}
             transformItems={items => {
@@ -111,6 +141,12 @@ function SearchBar() {
               });
             }}
             hitComponent={Hit}
+            initialState={{
+              query: new URL(window.location).searchParams.get('q'),
+            }}
+            onStateChange={({ state }) => {
+              debouncePushHistoryState(state);
+            }}
           />,
           document.body
         )}

@@ -42,6 +42,8 @@ export function DocSearch({
   transformItems = x => x,
   hitComponent = Hit,
   navigator,
+  initialState,
+  onStateChange,
 }: DocSearchProps) {
   const [state, setState] = React.useState<
     AutocompleteState<InternalDocSearchHit>
@@ -114,11 +116,14 @@ export function DocSearch({
         placeholder: 'Search docs',
         openOnFocus: true,
         initialState: {
-          query: initialQuery,
+          ...initialState,
+          query: initialState.query || initialQuery,
         },
         navigator,
-        onStateChange({ state }) {
-          setState(state as any);
+        onStateChange(params) {
+          setState(params.state as any);
+
+          onStateChange(params);
         },
         getSources({ query, state, setContext, setStatus }) {
           if (!query) {

@@ -12,6 +12,13 @@ yarn add @docsearch/react@alpha
 npm install @docsearch/react@alpha
 ```
 
+## Development Plan
+
+- [ ] prepare a playground for development
+- [ ] replace `src/icons` with `@ant-design/icons`
+- [ ] remove mobile support like touch events
+- [ ] replace UI components with `antd`
+
 ## Documentation
 
 [Read documentation →](https://autocomplete-experimental.netlify.app/docs/DocSearch)
